@@ -1,0 +1,18 @@
+title: "DSC 243: Advanced Optimization"
+description: "Course materials for DSC 243 – Advanced Optimization, UC San Diego"
+baseurl: "/DSC-243"
+url: "https://ddrusvyat.github.io"
+github_username: ddrusvyat
+repository: ddrusvyat/DSC-243
+
+# Build settings
+markdown: kramdown
+theme: jekyll-theme-minimal
+safe: false
+plugins:
+  - jekyll-seo-tag
+  - jekyll-relative-links
+
+relative_links:
+  enabled: true
+  collections: true
