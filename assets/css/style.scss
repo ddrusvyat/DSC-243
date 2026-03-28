@@ -4,18 +4,19 @@
 @import "{{ site.theme }}";
 
 header {
-  display: none;
+  display: none !important;
 }
 
 .wrapper {
   max-width: 1000px;
-  margin: 0 auto;
+  margin: 40px auto;
+  padding: 0 20px;
 }
 
 section {
-  max-width: 100%;
-  width: 100%;
-  float: none;
+  max-width: 100% !important;
+  width: 100% !important;
+  float: none !important;
 }
 
 table {
