@@ -58,6 +58,11 @@ All grades will be based on homework sets, which will be due roughly every two w
 
 Homework sets will appear here.
 
+## Canvas
+
+ I will use Canvas only for communicating by email with the class. All course material will appear on this webpage.
+
+
 ## Textbooks and references
 
 This course will largely be self-contained with no required textbook. Relevant sources and follow-up reading material will be cited during the lectures. In particular, I will draw on some material in these sources:
@@ -73,6 +78,3 @@ This course will largely be self-contained with no required textbook. Relevant s
 9. B. Recht and S. J. Wright. [*Optimization for Modern Data Analysis.*](https://people.eecs.berkeley.edu/~brecht/opt4ml_book/) Cambridge University Press, 2022.
 10. A. Sidford. [*Optimization Algorithms*](https://drive.google.com/file/d/1BfMkt2glaZpJGwg7gwsJw9T_XxH3o8gx/view).
 
-## Canvas
-
- I will use Canvas only for communicating by email with the class. All course material will appear on this webpage.
