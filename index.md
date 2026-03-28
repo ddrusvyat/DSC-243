@@ -36,14 +36,84 @@ All grades will be based on homework sets, which will be due roughly every two w
 
 ## Course outline
 
-| Week(s) | Topics | Lecture Notes |
-|---------|--------|---------------|
-| 1 | <ul><li>Gradient descent</li><li>Acceleration by Chebyshev stepsizes</li><li>Conjugate Gradient method</li></ul> | |
-| 2–3 | <ul><li>Proximal gradient descent and accelerated gradient descent for convex optimization</li><li>Lower complexity bounds for convex optimization</li><li>Mirror descent and accelerated mirror descent</li><li>Optimization of relatively smooth functions</li></ul> | |
-| 4–5 | <ul><li>Mirror descent for nonsmooth convex functions</li><li>Frank-Wolfe algorithm as subgradient method in the dual</li></ul> | |
-| 7 | <ul><li>Smoothing algorithms</li><li>Monotone operators and variational inequalities</li><li>Extragradient and Chambolle-Pock algorithms</li></ul> | |
-| 8 | <ul><li>Stochastic gradient method</li><li>Coordinate descent</li><li>Variance reduction: SVRG, SPIDER, STORM</li><li>Adaptive algorithms: ADAGRAD, ADAM, RMSPROP</li></ul> | |
-| 9–10 | <ul><li>SGD and STORM for nonconvex stochastic optimization</li><li>Polyak–Łojasiewicz condition and convergence of gradient systems</li><li>Examples in deep learning, sampling, control, and reinforcement learning</li></ul> | |
+<table>
+  <thead>
+    <tr>
+      <th>Week(s)</th>
+      <th>Topics</th>
+      <th>Lecture Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>
+        <ul>
+          <li>Gradient descent</li>
+          <li>Acceleration by Chebyshev stepsizes</li>
+          <li>Conjugate Gradient method</li>
+        </ul>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>2–3</td>
+      <td>
+        <ul>
+          <li>Proximal gradient descent and accelerated gradient descent for convex optimization</li>
+          <li>Lower complexity bounds for convex optimization</li>
+          <li>Mirror descent and accelerated mirror descent</li>
+          <li>Optimization of relatively smooth functions</li>
+        </ul>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>4–5</td>
+      <td>
+        <ul>
+          <li>Mirror descent for nonsmooth convex functions</li>
+          <li>Frank-Wolfe algorithm as subgradient method in the dual</li>
+        </ul>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>
+        <ul>
+          <li>Smoothing algorithms</li>
+          <li>Monotone operators and variational inequalities</li>
+          <li>Extragradient and Chambolle-Pock algorithms</li>
+        </ul>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>
+        <ul>
+          <li>Stochastic gradient method</li>
+          <li>Coordinate descent</li>
+          <li>Variance reduction: SVRG, SPIDER, STORM</li>
+          <li>Adaptive algorithms: ADAGRAD, ADAM, RMSPROP</li>
+        </ul>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>9–10</td>
+      <td>
+        <ul>
+          <li>SGD and STORM for nonconvex stochastic optimization</li>
+          <li>Polyak–Łojasiewicz condition and convergence of gradient systems</li>
+          <li>Examples in deep learning, sampling, control, and reinforcement learning</li>
+        </ul>
+      </td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## Homework
