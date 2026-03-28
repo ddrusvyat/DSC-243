@@ -36,6 +36,7 @@ All grades will be based on homework sets, which will be due roughly every two w
 
 ## Course outline
 
+{::nomarkdown}
 <table>
 <thead>
 <tr><th>Week(s)</th><th>Topics</th><th>Lecture Notes</th></tr>
@@ -49,6 +50,7 @@ All grades will be based on homework sets, which will be due roughly every two w
 <tr><td>9–10</td><td><ul><li>SGD and STORM for nonconvex stochastic optimization</li><li>Polyak–Łojasiewicz condition and convergence of gradient systems</li><li>Examples in deep learning, sampling, control, and reinforcement learning</li></ul></td><td></td></tr>
 </tbody>
 </table>
+{:/nomarkdown}
 
 
 ## Homework
