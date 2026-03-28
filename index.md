@@ -45,9 +45,6 @@ All grades will be based on homework sets, which will be due roughly every two w
 | 8 | <ul><li>Stochastic gradient method</li><li>Coordinate descent</li><li>Variance reduction: SVRG, SPIDER, STORM</li><li>Adaptive algorithms: ADAGRAD, ADAM, RMSPROP</li></ul> | |
 | 9–10 | <ul><li>SGD and STORM for nonconvex stochastic optimization</li><li>Polyak–Łojasiewicz condition and convergence of gradient systems</li><li>Examples in deep learning, sampling, control, and reinforcement learning</li></ul> | |
 
-## Lecture notes
-
-Lecture notes will appear here.
 
 ## Homework
 
@@ -55,7 +52,18 @@ Homework sets will appear here.
 
 ## Textbooks and references
 
-This course will largely be self-contained with no required textbook. Relevant sources and follow-up reading material will be cited during the lectures.
+This course will largely be self-contained with no required textbook. Relevant sources and follow-up reading material will be cited during the lectures. In particular, I will draw on some material in these sources:
+
+1. A. Beck. [*Introduction to Nonlinear Optimization – Theory, Algorithms and Applications.*](https://epubs.siam.org/doi/book/10.1137/1.9781611977622) SIAM, 2014.
+2. S. Bubeck. [*Convex Optimization: Algorithms and Complexity*](https://arxiv.org/pdf/1405.4980.pdf).
+3. S. Boyd and L. Vandenberghe. [*Convex Optimization*](https://web.stanford.edu/~boyd/cvxbook/).
+4. D. Drusvyatskiy. [*Convex Analysis and Nonsmooth Optimization*](https://sites.math.washington.edu/~ddrusv/crs/Math_516_2021/bookwithindex.pdf).
+5. J. Duchi. [*Introductory Lectures on Stochastic Convex Optimization*](https://stanford.edu/~jduchi/PCMIConvex/Duchi16.pdf).
+6. Y. T. Lee and S. Vempala. [*Techniques in Optimization and Sampling*](https://github.com/YinTat/optimizationbook/blob/main/main.pdf).
+7. G. Lan. [*First-order and Stochastic Optimization Methods for Machine Learning.*](https://link.springer.com/book/10.1007/978-3-030-39568-1) Springer, 2020.
+8. Y. Nesterov. [*Introductory Lectures on Convex Optimization: A Basic Course.*](https://link.springer.com/book/10.1007/978-1-4419-8853-9) Springer, 2004.
+9. B. Recht and S. J. Wright. [*Optimization for Modern Data Analysis.*](https://people.eecs.berkeley.edu/~brecht/opt4ml_book/) Cambridge University Press, 2022.
+10. A. Sidford. [*Optimization Algorithms*](https://drive.google.com/file/d/1BfMkt2glaZpJGwg7gwsJw9T_XxH3o8gx/view).
 
 ## Canvas
 
