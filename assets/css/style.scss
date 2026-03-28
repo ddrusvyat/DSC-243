@@ -3,13 +3,19 @@
 
 @import "{{ site.theme }}";
 
+header {
+  display: none;
+}
+
 .wrapper {
-  max-width: 1400px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 section {
-  max-width: 1000px;
-  width: 75%;
+  max-width: 100%;
+  width: 100%;
+  float: none;
 }
 
 table {
