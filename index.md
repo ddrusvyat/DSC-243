@@ -30,10 +30,6 @@ This course develops the foundations of the modern optimization methods that for
 - Introductory course on optimization (DSC 211 or equivalent)
 - Comfort with advanced linear algebra and multivariate calculus
 
-## Grading policy
-
-All grades will be based on homework sets, which will be due roughly every two weeks.
-
 ## Course outline
 
 {::nomarkdown}
@@ -51,6 +47,11 @@ All grades will be based on homework sets, which will be due roughly every two w
 </tbody>
 </table>
 {:/nomarkdown}
+
+
+## Grading policy
+
+All grades will be based on homework sets, which will be due roughly every two weeks.
 
 
 ## Homework
