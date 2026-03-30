@@ -73,8 +73,9 @@ Starting from $x_0 \in \mathbb{R}^d$, gradient descent with stepsize $\eta > 0$ 
 $$
 \begin{aligned}
 x_{k+1} = x_k - \eta \nabla f(x_k) &= x_k - \eta(Ax_k - b) \\
-         &= x_k - \eta A(x_k - x^\star), \tag{1}
+         &= x_k - \eta A(x_k - x^\star),
 \end{aligned}
+\tag{1}
 $$
 
 where $x^\star$ is any minimizer of $f$, i.e. one satisfying $Ax^\star=b$.
