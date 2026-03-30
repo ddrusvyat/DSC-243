@@ -384,6 +384,78 @@ def make_chebyshev_plot():
     print("  ✓ chebyshev_polynomials.png")
 
 
+# ── GIF 6: Optimal polynomials p_k^* on [alpha, beta] ─────────────
+
+def make_gif_optimal_poly():
+    alpha, beta = 1.0, 50.0
+    kappa = beta / alpha
+    sigma = (kappa + 1) / (kappa - 1)
+    k_max = 15
+
+    lam = np.linspace(alpha, beta, 500)
+    t = (beta + alpha - 2 * lam) / (beta - alpha)
+
+    fig, (ax_poly, ax_env) = plt.subplots(1, 2, figsize=(13, 5),
+                                          gridspec_kw={"width_ratios": [3, 2]})
+
+    ax_poly.set_xlim(alpha - 0.3, beta + 0.3)
+    ax_poly.set_ylim(-1.15, 1.15)
+    ax_poly.set_xlabel("$\\lambda$", fontsize=13)
+    ax_poly.set_ylabel("$p_k^*(\\lambda)$", fontsize=13)
+    ax_poly.axhline(0, color="grey", linewidth=0.5, alpha=0.4)
+    ax_poly.axvline(alpha, color="grey", linewidth=0.8, linestyle=":", alpha=0.5)
+    ax_poly.axvline(beta, color="grey", linewidth=0.8, linestyle=":", alpha=0.5)
+    ax_poly.grid(True, alpha=0.2)
+
+    ax_env.set_xlim(0, k_max + 1)
+    ax_env.set_ylim(1e-7, 2)
+    ax_env.set_yscale("log")
+    ax_env.set_xlabel("Degree $k$", fontsize=13)
+    ax_env.set_ylabel("$\\max_{\\lambda} \\, |p_k^*(\\lambda)|$", fontsize=13)
+    ax_env.grid(True, alpha=0.2)
+
+    ks_all = np.arange(1, k_max + 1)
+    env_all = 1.0 / np.cosh(ks_all * np.arccosh(sigma))
+    ax_env.plot(ks_all, env_all, "o--", color="grey", alpha=0.3, markersize=4, linewidth=1)
+
+    cheb_rate = ((np.sqrt(kappa) - 1) / (np.sqrt(kappa) + 1)) ** ks_all
+    ax_env.plot(ks_all, 2 * cheb_rate, ":", color="grey", alpha=0.4, linewidth=1,
+                label="$2\\rho_{\\rm Cheb}^k$")
+
+    curve, = ax_poly.plot([], [], linewidth=2.2, color="#2980b9")
+    env_line, = ax_env.plot([], [], "o-", color="#e74c3c", markersize=6, linewidth=2)
+    title = fig.suptitle("", fontsize=13)
+
+    ax_poly.set_title(
+        f"$p_k^*(\\lambda)$ on "
+        f"$[\\alpha, \\beta] = [{alpha:.0f},\\,{beta:.0f}]$"
+        f"  ($\\kappa = {kappa:.0f}$)",
+        fontsize=13)
+    ax_env.set_title("Max amplitude", fontsize=13)
+    ax_env.legend(fontsize=10, loc="upper right")
+    fig.tight_layout(rect=[0, 0, 1, 0.93])
+
+    hold = 10
+
+    def update(frame):
+        k = frame // hold + 1
+        Tk_sigma = np.cosh(k * np.arccosh(sigma))
+        pk = np.cos(k * np.arccos(np.clip(t, -1, 1))) / Tk_sigma
+
+        curve.set_data(lam, pk)
+        curve.set_color(plt.cm.viridis(k / k_max))
+
+        env_line.set_data(ks_all[:k], env_all[:k])
+        title.set_text(f"$k = {k}$,  $\\max |p_k^*| = {1/Tk_sigma:.4f}$")
+        return curve, env_line, title
+
+    anim = FuncAnimation(fig, update, frames=k_max * hold, interval=100, blit=False)
+    anim.save(FIGURES_DIR / "optimal_polynomials.gif",
+              writer=PillowWriter(fps=hold))
+    plt.close(fig)
+    print("  ✓ optimal_polynomials.gif")
+
+
 # ── Main ──────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -393,4 +465,5 @@ if __name__ == "__main__":
     make_gif_convergence()
     make_gif_cg()
     make_chebyshev_plot()
+    make_gif_optimal_poly()
     print("Done! Figures saved to", FIGURES_DIR)

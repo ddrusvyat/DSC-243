@@ -238,7 +238,7 @@ $$
 \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha, \beta]} p(\lambda)^2,
 $$
 
-where $\mathcal{P}_k$ denotes the set of polynomials of degree at most $k$. The solution to this classical approximation problem involves **Chebyshev polynomials**.
+where $\mathcal{P}_k$ denotes the set of polynomials of degree at most $k$. The solution to this classical approximation problem involves Chebyshev polynomials.
 
 ### Chebyshev polynomials
 
@@ -286,6 +286,10 @@ $$q_k^*(t) = \frac{T_k(t)}{T_k(\sigma)}$$
 an excellent candidate: it satisfies $q_k^*(\sigma) = 1$ and $\max_{t \in [-1,1]}\lvert q_k^*(t)\rvert = 1/T_k(\sigma)$, which is small because $T_k(\sigma)$ grows exponentially in $k$. Transforming back to the $\lambda$-variable, the optimal polynomial is
 
 $$p_k^*(\lambda) = \frac{T_k\!\left(\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}\right)}{T_k\!\left(\frac{\kappa + 1}{\kappa - 1}\right)}.$$
+
+The animation below shows $p_k^*(\lambda)$ on $[\alpha, \beta]$ for increasing degree $k$. As $k$ grows, the polynomial oscillates more rapidly yet its maximum amplitude $1/T_k(\sigma)$ shrinks exponentially---this is the mechanism behind the accelerated convergence.
+
+![Optimal polynomials on the eigenvalue interval](figures/optimal_polynomials.gif)
 
 Its roots on $[\alpha, \beta]$ are the images of the Chebyshev roots $t_j$ under the inverse map $t \mapsto \frac{\beta+\alpha}{2} - \frac{\beta-\alpha}{2}\,t$, giving the stepsizes $\eta_j = 1/\lambda_j$. We thus have arrived at the following theorem.
 
