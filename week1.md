@@ -31,12 +31,22 @@ where $A \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matri
 
 $$\nabla f(x) = Ax - b.$$
 
-In particular, the solutions of the problem are exactly the solutions of the linear system $$Ax=b.$$ Note that this linear system is special in that $A$ is a positive definite matrix---a property with important consequences for numerical methods.
+In particular, the solutions of the problem are exactly the solutions of the linear system $Ax=b$. Note that this linear system is special in that $A$ is a positive definite matrix---a property with important consequences for numerical methods.
 
-We denote the eigenvalues of $A$ by $$0 < \alpha = \lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_d = \beta$$ and its **condition number** by $\kappa = \beta / \alpha$.
+We denote the eigenvalues of $A$ by
+
+$$
+0 < \alpha = \lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_d = \beta
+$$
+
+and its **condition number** by $\kappa = \beta / \alpha$.
 
 A key example of convex quadratic optimization is **linear least squares**: 
-$$\min_{x \in \mathbb{R}^d} \;\tfrac{1}{2}\|Dx - y\|^2,$$under the corrspondence $A = D^\top D$ and $b = D^\top y$. In applications, $D \in \mathbb{R}^{m \times d}$ is usually a data matrix and $y \in \mathbb{R}^m$ is a vector of observations. 
+$$
+\min_{x \in \mathbb{R}^d} \;\tfrac{1}{2}\|Dx - y\|^2,
+$$
+
+under the correspondence $A = D^\top D$ and $b = D^\top y$. In applications, $D \in \mathbb{R}^{m \times d}$ is usually a data matrix and $y \in \mathbb{R}^m$ is a vector of observations. 
 
 
 **Why convex quadratic minimization?** The linear system $Ax = b$ arises everywhere: in linear regression for inference, as a subroutine in Newton's method and interior-point algorithms, and as a building block for preconditioning. Understanding how to solve it iteratively is fundamental.
@@ -104,8 +114,17 @@ $$
 
 The $A$-norm of the error therefore satisfies
 
-$$\|e_k\|_A^2 = \sum_{i=1}^d \lambda_i (1 - \eta\lambda_i)^{2k}\, c_i^2 \leq \max_{1 \leq i \leq d} (1 - \eta\lambda_i)^{2k} \cdot \sum_{i=1}^d \lambda_i\, c_i^2 = \rho(\eta)^{2k}\, \|e_0\|_A^2,$$where we set 
-$$\rho(\eta) := \max_{1 \leq i \leq d} |1 - \eta\lambda_i|=\max(|1 - \eta\alpha|, |1 - \eta \beta|).$$ We have thus proved the following.
+$$
+\|e_k\|_A^2 = \sum_{i=1}^d \lambda_i (1 - \eta\lambda_i)^{2k}\, c_i^2 \leq \max_{1 \leq i \leq d} (1 - \eta\lambda_i)^{2k} \cdot \sum_{i=1}^d \lambda_i\, c_i^2 = \rho(\eta)^{2k}\, \|e_0\|_A^2,
+$$
+
+where we set
+
+$$
+\rho(\eta) := \max_{1 \leq i \leq d} \lvert 1 - \eta\lambda_i\rvert=\max(\lvert 1 - \eta\alpha\rvert, \lvert 1 - \eta \beta\rvert).
+$$
+
+We have thus proved the following.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;">
 
@@ -120,7 +139,7 @@ $$f(x_k) - f(x^\star) \leq \rho(\eta)^{2k}\,\bigl(f(x_0) - f(x^\star)\bigr).$$
 
 ### Optimal stepsize
 
-The rate $\rho(\eta)$ depends on the stepsize $\eta$. To find the ``optimal'' fixed stepsize, we minimize $\rho(\eta) = \max(|1 - \eta\alpha|,\; |1 - \eta \beta|)$ over $\eta$. Observe that $1 - \eta\alpha$ is decreasing in $\eta$ while $\eta \beta - 1$ is increasing. These two expressions balance when $1 - \eta\alpha = \eta \beta - 1$, which gives
+The rate $\rho(\eta)$ depends on the stepsize $\eta$. To find the ``optimal'' fixed stepsize, we minimize $\rho(\eta) = \max(\lvert 1 - \eta\alpha\rvert,\; \lvert 1 - \eta \beta\rvert)$ over $\eta$. Observe that $1 - \eta\alpha$ is decreasing in $\eta$ while $\eta \beta - 1$ is increasing. These two expressions balance when $1 - \eta\alpha = \eta \beta - 1$, which gives
 
 $$\eta^\star = \frac{2}{\beta + \alpha}.$$
 
@@ -134,7 +153,7 @@ $$f(x_k) - f(x^\star) \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^{2k}\bigl(
 
 *Proof.* Substituting $\eta^\star$ into the expression for $\rho$ yields
 
-$$\rho(\eta^\star) = \left|1 - \frac{2\alpha}{\beta+\alpha}\right| = \frac{\beta - \alpha}{\beta + \alpha} = \frac{\kappa - 1}{\kappa + 1}.$$
+$$\rho(\eta^\star) = \left\lvert 1 - \frac{2\alpha}{\beta+\alpha}\right\rvert = \frac{\beta - \alpha}{\beta + \alpha} = \frac{\kappa - 1}{\kappa + 1}.$$
 
 The result follows from Theorem 1. <span style="float: right;">$\square$</span>
 
@@ -154,7 +173,7 @@ $$f(x_k) - f(x^\star) \leq \left(1 - \frac{1}{\kappa}\right)^{2k}\bigl(f(x_0) - 
 
 *Proof.* Substituting $\eta = 1/\beta$ into Theorem 1 yields:
 
-$$\rho(1/\beta) = \max\!\big(|1 - \alpha/\beta|,\; |1 - 1|\big) = 1 - \frac{1}{\kappa},$$
+$$\rho(1/\beta) = \max\!\big(\lvert 1 - \alpha/\beta\rvert,\; \lvert 1 - 1\rvert\big) = 1 - \frac{1}{\kappa},$$
 
 which completes the proof. <span style="float: right;">$\square$</span>
 
@@ -169,7 +188,11 @@ Thus the optimal stepsize is roughly twice as fast per step as $\eta = 1/\beta$-
 So far we have described how the suboptimality $f(x_k)-f(x^{\star})$ decays with with the iteration counted. An equivalent and often more informative viewpoint is to ask: *how many iterations are needed to reach a target accuracy $\varepsilon$?* This is the **iteration complexity** of the algorithm.
 
 From Theorem 1 with stepsize $\eta = 1/\beta$, we may use the elementary inequality $1 - x \leq e^{-x}$ to deduce that 
-$$k \geq \kappa\cdot\ln\left(\frac{1}{\varepsilon}\right)$$iterations suffice to achieve $\varepsilon$-accuracy $f(x_k)-f(x^\star)\leq \varepsilon$. This is the **iteration complexity** of gradient descent on quadratics.
+$$
+k \geq \kappa\cdot\ln\left(\frac{1}{\varepsilon}\right)
+$$
+
+iterations suffice to achieve $\varepsilon$-accuracy $f(x_k)-f(x^\star)\leq \varepsilon$. This is the **iteration complexity** of gradient descent on quadratics.
 
 This change of perspective---from contraction rate to iteration count---is valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$, which measures the intrinsic difficulty of the problem, and the **logarithmic accuracy** $\ln(1/\varepsilon)$, which measures how precisely we need to solve it.
 
@@ -207,7 +230,10 @@ Rearranging yields
 $$\frac{f(x_k) - f(x^\star)}{f(x_0) - f(x^\star)} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
 
 Fixed-stepsize gradient descent corresponds to the special case $p_k(\lambda) = (1 - \eta\lambda)^k$, but we are now free to choose *any* stepsizes. Notice that as we vary the stepsizes $\eta_0,\ldots \eta_{k-1}$, any degree $k$ polynomial $p(\lambda)$ satisfying $p(0)=1$ can be realized as $p_{k-1}(\lambda)$. Thus choosing time-varying stepsizes is equivalent to choosing such a polynomial.  The best possible convergence after $k$ steps is therefore determined by the **minimax polynomial problem**:
-$$\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha, \beta]} p(\lambda)^2,$$
+
+$$
+\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha, \beta]} p(\lambda)^2,
+$$
 
 where $\mathcal{P}_k$ denotes the set of polynomials of degree at most $k$. The solution to this classical approximation problem involves **Chebyshev polynomials**.
 
@@ -218,22 +244,28 @@ The **Chebyshev polynomial of the first kind** of degree $k$, denoted $T_k$, is 
 $$T_{k+1}(x) = 2x\,T_k(x) - T_{k-1}(x) \qquad \forall k\geq 1.$$
 
 An equivalent characterization of Chebychev polynomials is the equality 
-$$T_k(\cos\theta) = \cos(k\theta) \qquad \forall \theta \in [0,\pi].$$ Chebychev polynomials play a special role in numerical analysis because they solve the extremal problem: 
+$$
+T_k(\cos\theta) = \cos(k\theta) \qquad \forall \theta \in [0,\pi].
+$$
 
-> Any degree-$k$ polynomial $p(x)$ with the same leading coefficient as $T_k$ satisfies $$\max_{x\in [-1,1]} |p(x)|\geq \max_{x\in [-1,1]} |T_k(x)|=1.$$
+Chebychev polynomials play a special role in numerical analysis because they solve the extremal problem: 
 
- In words, among all degree-$k$ polynomials with the same leading coefficient as $T_k$, the Chebychev polynomial $T_k$ has the smallest maximum absolute value on $[-1,1]$. See the figure below.
+> Any degree-$k$ polynomial $p(x)$ with the same leading coefficient as $T_k$ satisfies
+>
+> $$\max_{x\in [-1,1]} \lvert p(x)\rvert\geq \max_{x\in [-1,1]} \lvert T_k(x)\rvert=1.$$
+
+In words, among all degree-$k$ polynomials with the same leading coefficient as $T_k$, the Chebychev polynomial $T_k$ has the smallest maximum absolute value on $[-1,1]$. See the figure below.
 
 
 ![Chebyshev polynomials of the first kind](figures/chebyshev_polynomials.png)
 
 
 Chebychev polynomials satisfy the following key properties:
-1. **Boundedness:** The inequality $|T_k(t)| \leq 1$ holds for all $t \in [-1,1]$ with equality at $t_j = \cos(j\pi/k)$ for $j = 0, \ldots, k$. 
+1. **Boundedness:** The inequality $\lvert T_k(t)\rvert \leq 1$ holds for all $t \in [-1,1]$ with equality at $t_j = \cos(j\pi/k)$ for $j = 0, \ldots, k$. 
 
 2. **Roots:** $T_k$ has $k$ roots in $(-1,1)$ at $t_j = \cos\!\left(\frac{(2j-1)\pi}{2k}\right)$ for $j = 1, \ldots, k$.
 
-3. **Explosion:** For $|t| > 1$, we have $T_k(t) = \cosh(k\,\operatorname{arccosh}(t))$.
+3. **Explosion:** For $\lvert t\rvert > 1$, we have $T_k(t) = \cosh(k\,\operatorname{arccosh}(t))$.
 
 
 
@@ -241,13 +273,13 @@ Chebychev polynomials satisfy the following key properties:
 ### The optimal polynomial
 Returning to gradient descent, we rescale the interval $[\alpha, \beta]$ to $[-1,1]$ with the affine change of coordinates $\lambda\mapsto\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}$. Not that this transformation sends $\lambda = 0$ to the point $\sigma := \frac{\beta + \alpha}{\beta - \alpha} = \frac{\kappa + 1}{\kappa - 1} > 1$. Thus, under this substitution, any degree-$k$ polynomial $p(\lambda)$ with $p(0) = 1$ corresponds to a degree-$k$ polynomial $q$ with $q(\sigma) = 1$, and
 
-$$\max_{\lambda \in [\alpha, \beta]}|p(\lambda)| = \max_{t \in [-1,1]}|q(t)|.$$
+$$\max_{\lambda \in [\alpha, \beta]}\lvert p(\lambda)\rvert = \max_{t \in [-1,1]}\lvert q(t)\rvert.$$
 
 We must therefore find the degree-$k$ polynomial $q$ with $q(\sigma) = 1$ that has the smallest maximum on $[-1,1]$. By properties 1 and 3 above, $T_k$ is bounded by 1 on $[-1,1]$ yet $T_k(\sigma) \gg 1$ for large $k$. This makes the rescaled polynomial
 
 $$q_k^*(t) = \frac{T_k(t)}{T_k(\sigma)}$$
 
-an excellent candidate: it satisfies $q_k^*(\sigma) = 1$ and $\max_{t \in [-1,1]}|q_k^*(t)| = 1/T_k(\sigma)$, which is small because $T_k(\sigma)$ grows exponentially in $k$. Transforming back to the $\lambda$-variable, the optimal polynomial is
+an excellent candidate: it satisfies $q_k^*(\sigma) = 1$ and $\max_{t \in [-1,1]}\lvert q_k^*(t)\rvert = 1/T_k(\sigma)$, which is small because $T_k(\sigma)$ grows exponentially in $k$. Transforming back to the $\lambda$-variable, the optimal polynomial is
 
 $$p_k^*(\lambda) = \frac{T_k\!\left(\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}\right)}{T_k\!\left(\frac{\kappa + 1}{\kappa - 1}\right)}.$$
 
@@ -256,25 +288,40 @@ Its roots on $[\alpha, \beta]$ are the images of the Chebyshev roots $t_j$ under
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;">
 
 **Theorem 2 (Chebyshev stepsizes).** *Define the stepsizes*
-$$\eta_j = \tfrac{1}{\lambda_j}~~ \textrm{where}~~\lambda_j = \tfrac{\beta + \alpha}{2} - \tfrac{\beta - \alpha}{2}\cos\!\left(\tfrac{(2j - 1)\pi}{2k}\right) ~~\textrm{for}~ j = 1, \ldots, k.$$*Then the gradient descent iterates satisfy*
+
+$$\eta_j = \tfrac{1}{\lambda_j}~~ \textrm{where}~~\lambda_j = \tfrac{\beta + \alpha}{2} - \tfrac{\beta - \alpha}{2}\cos\!\left(\tfrac{(2j - 1)\pi}{2k}\right) ~~\textrm{for}~ j = 1, \ldots, k.$$
+
+*Then the gradient descent iterates satisfy*
+
 $$f(x_k) - f(x^\star) \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f(x^\star)\bigr). \tag{2}$$
 
 </div>
 
 *Proof.* We have already shown that
 
-$$\frac{f(x_k) - f(x^\star)}{f(x_0) - f(x^\star)} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2},$$ It remains to estimate $T_k(\sigma)$. Using the expression $T_k(x) = \cosh(k\,\operatorname{arccosh}(x))$ for $x > 1$ we deduce
+$$
+\frac{f(x_k) - f(x^\star)}{f(x_0) - f(x^\star)} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2},
+$$
+
+where $\sigma = \frac{\kappa+1}{\kappa-1}$. It remains to estimate $T_k(\sigma)$. Using the expression $T_k(x) = \cosh(k\,\operatorname{arccosh}(x))$ for $x > 1$ we deduce
+
 $$
 \begin{aligned}
 \operatorname{arccosh}(\sigma)
 &= \ln\!\big(\sigma + \sqrt{\sigma^2 - 1}\big)  = \ln\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}.
 \end{aligned}
-$$Therefore:$$
+$$
+
+Therefore:
+
+$$
 \begin{aligned}
 T_k(\sigma) &= \cosh\!\left(k\ln\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right) = \frac{1}{2}\left[\left(\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right)^k + \left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^k\right] \\
 &\geq \frac{1}{2}\left(\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right)^k,
 \end{aligned}
-$$ which completes the proof.<span style="float: right;">$\square$</span>
+$$
+
+which completes the proof. <span style="float: right;">$\square$</span>
 
 Thus the effective per-step contraction rate is $\rho_{\rm Cheb} = \frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}$, a **square-root improvement** over the fixed-stepsize rate $\rho^\star = \frac{\kappa - 1}{\kappa + 1}$. For $\kappa = 100$, fixed-stepsize gradient descent has $\rho^\star \approx 0.98$ while the Chebyshev method achieves $\rho_{\rm Cheb} \approx 0.82$---a dramatic acceleration.
 
