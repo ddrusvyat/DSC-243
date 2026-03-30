@@ -107,10 +107,7 @@ Let $v_1, \ldots, v_d$ be an orthonormal eigenbasis of $A$ with $Av_i = \lambda_
 
 $$
 \begin{aligned}
-e_k &= (I - \eta A)^k\, e_0 \\
-    &= (I - \eta A)^k \sum_{i=1}^d c_i\, v_i \\
-    &= \sum_{i=1}^d c_i\, (I - \eta A)^k\, v_i \\
-    &= \sum_{i=1}^d c_i\, (1 - \eta\lambda_i)^k\, v_i.
+e_k &= (I - \eta A)^k\, e_0 = (I - \eta A)^k \sum_{i=1}^d c_i\, v_i = \sum_{i=1}^d c_i\, (I - \eta A)^k\, v_i = \sum_{i=1}^d c_i\, (1 - \eta\lambda_i)^k\, v_i.
 \end{aligned}
 $$
 
@@ -159,7 +156,7 @@ $$\rho(\eta^\star) = \left\lvert 1 - \frac{2\alpha}{\beta+\alpha}\right\rvert = 
 
 The result follows from Theorem 1. <span style="float: right;">$\square$</span>
 
-The rate $\rho^\star = \frac{\kappa - 1}{\kappa + 1}$ approaches $1$ as $\kappa \to \infty$, meaning convergence degrades for ill-conditioned problems. For example, when $\kappa = 100$ we get $\rho^\star \approx 0.98$, so roughly $k \approx 2{,}500$ iterations are needed to reduce the suboptimality by a factor of $e^{-50}$.
+
 
 ### The practical stepsize $\eta = 1/\beta$
 
@@ -223,8 +220,7 @@ Note that $p_k(0) = 1$ regardless of the choice of stepsizes. Expanding $e_k$ in
 $$
 \begin{aligned}
 f(x_k) - f(x^\star) = \tfrac{1}{2}\|e_k\|_A^2
-&= \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, p_k(\lambda_i)^2\, c_i^2 \\
-&\leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2 \cdot \tfrac{1}{2}\|e_0\|_A^2.
+&= \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, p_k(\lambda_i)^2\, c_i^2 \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2 \cdot \tfrac{1}{2}\|e_0\|_A^2.
 \end{aligned}
 $$
 
@@ -291,7 +287,55 @@ The animation below shows $p_k^*(\lambda)$ on $[\alpha, \beta]$ for increasing d
 
 ![Optimal polynomials on the eigenvalue interval](figures/optimal_polynomials.gif)
 
-Its roots on $[\alpha, \beta]$ are the images of the Chebyshev roots $t_j$ under the inverse map $t \mapsto \frac{\beta+\alpha}{2} - \frac{\beta-\alpha}{2}\,t$, giving the stepsizes $\eta_j = 1/\lambda_j$. We thus have arrived at the following theorem.
+
+Summarizing, we have the following lemma. 
+
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma 1 (Chebyshev minimax).** *With $\sigma = \frac{\kappa+1}{\kappa-1}$, the minimax value satisfies*
+
+$$\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha,\beta]} \lvert p(\lambda)\rvert \leq \frac{1}{T_k(\sigma)} \leq 2\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^k.$$
+
+</div>
+
+*Proof.* The first inequality follows from a feasible choice. Indeed, the rescaled polynomial
+
+$$
+p_k^*(\lambda) = \frac{T_k\!\big(\frac{\beta+\alpha-2\lambda}{\beta-\alpha}\big)}{T_k(\sigma)},
+$$
+
+is a polynomial of degree at most $k$ satisfying the condition $p_k^*(0)=1$. Moreover, the boundedness of the Chebyshev polynomial on the interval $[-1,1]$ yields the estimate
+
+$$
+\max_{\lambda \in [\alpha,\beta]} \lvert p_k^*(\lambda)\rvert = \frac{1}{T_k(\sigma)}.
+$$
+
+This proves the first inequality.
+
+For the second inequality, we use the identity $T_k(x) = \cosh(k\,\operatorname{arccosh}(x))$ valid for every real number $x>1$. Applying this identity with the quantity $\sigma$ gives the relation
+
+$$
+\begin{aligned}
+\operatorname{arccosh}(\sigma)
+&= \ln\!\big(\sigma + \sqrt{\sigma^2 - 1}\big)  = \ln\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}.
+\end{aligned}
+$$
+
+Consequently, the representation
+
+$$
+\begin{aligned}
+T_k(\sigma) &= \cosh\!\left(k\ln\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right) \\
+&= \frac{1}{2}\left[\left(\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right)^k + \left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^k\right] \\
+&\geq \frac{1}{2}\left(\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right)^k,
+\end{aligned}
+$$
+
+holds. Taking reciprocals gives the second claim. This completes the proof. <span style="float: right;">$\square$</span>
+
+
+Returning to choosing stepsizes for gradient descent, the roots of $p^*_k(\lambda)$ on $[\alpha, \beta]$ are the images of the Chebyshev roots $t_j$ under the inverse map $t \mapsto \frac{\beta+\alpha}{2} - \frac{\beta-\alpha}{2}\,t$, giving the stepsizes $\eta_j = 1/\lambda_j$. We thus have arrived at the main theorem of this section.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -305,33 +349,22 @@ $$f(x_k) - f(x^\star) \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\ri
 
 </div>
 
-*Proof.* We have already shown that
+
+*Proof of Theorem 2.* The polynomial estimate established above yields
 
 $$
-\frac{f(x_k) - f(x^\star)}{f(x_0) - f(x^\star)} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2},
+\frac{f(x_k) - f(x^\star)}{f(x_0) - f(x^\star)} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}.
 $$
 
-where $\sigma = \frac{\kappa+1}{\kappa-1}$. It remains to estimate $T_k(\sigma)$. Using the expression $T_k(x) = \cosh(k\,\operatorname{arccosh}(x))$ for $x > 1$ we deduce
+Applying Lemma 1 gives the bound
 
 $$
-\begin{aligned}
-\operatorname{arccosh}(\sigma)
-&= \ln\!\big(\sigma + \sqrt{\sigma^2 - 1}\big)  = \ln\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}.
-\end{aligned}
+\frac{1}{T_k(\sigma)^2} \leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
 $$
 
-Therefore:
+Combining the preceding two estimates yields the conclusion $(2)$. This completes the proof. <span style="float: right;">$\square$</span>
 
-$$
-\begin{aligned}
-T_k(\sigma) &= \cosh\!\left(k\ln\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right) = \frac{1}{2}\left[\left(\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right)^k + \left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^k\right] \\
-&\geq \frac{1}{2}\left(\frac{\sqrt{\kappa}+1}{\sqrt{\kappa}-1}\right)^k,
-\end{aligned}
-$$
-
-which completes the proof. <span style="float: right;">$\square$</span>
-
-Thus the effective per-step contraction rate is $\rho_{\rm Cheb} = \frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}$, a **square-root improvement** over the fixed-stepsize rate $\rho^\star = \frac{\kappa - 1}{\kappa + 1}$. For $\kappa = 100$, fixed-stepsize gradient descent has $\rho^\star \approx 0.98$ while the Chebyshev method achieves $\rho_{\rm Cheb} \approx 0.82$---a dramatic acceleration.
+Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\ln(1/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
 
 ### Comparing trajectories
 
@@ -343,35 +376,211 @@ The animation below overlays gradient descent (blue) and Chebyshev-accelerated G
 
 ## 4. The Conjugate Gradient Method
 
-### Motivation
+### From polynomials to Krylov subspaces
 
-Gradient descent chooses the steepest descent direction at each step. The Conjugate Gradient (CG) method instead builds a sequence of **$A$-conjugate** search directions $p_0, p_1, \ldots$ satisfying
+The Chebyshev method achieves the iteration complexity $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalue $\alpha$. Moreover, the maximal number of iterations needs to be set in order to define the stepsizes. A natural question arises: 
+>can we match this rate adaptively, without knowing the spectrum nor setting the time horizon?
 
-$$p_i^\top A p_j = 0 \quad \text{for } i \neq j.$$
+The key observation is that gradient descent with *any* sequence of stepsizes produces iterates that lie in a specific linear subspace. Due to the recursion $x_{j+1} = x_j - \eta_j(Ax_j - b)$, one readily verifies the inclusion
 
-This orthogonality condition ensures that each step makes "independent" progress, and no work is ever undone.
+$$x_k \in x_0 + \mathcal{K}_k(A, r_0),$$
+
+where $r_0 := b - Ax_0$ is the initial residual and
+
+$$\mathcal{K}_k(A, r_0) := \mathrm{span}\{r_0,\, Ar_0,\, A^2 r_0,\, \ldots,\, A^{k-1}r_0\}$$
+
+is the **Krylov subspace** of order $k$. Both fixed-stepsize gradient descent and the Chebyshev method search within this subspace. The **Conjugate Gradient (CG)** method is more agressive: at each step, it computes the point in $x_0 + \mathcal{K}_k(A, r_0)$ that minimizes $f$.
 
 ### Algorithm
 
-Starting from $x_0$, set $r_0 = b - Ax_0$ and $p_0 = r_0$. For $k = 0, 1, 2, \ldots$:
+How can we minimize $f$ over $x_0 + \mathcal{K}_k(A, r_0)$ efficiently? A direct approach would solve a $k \times k$ least-squares problem at each step---but the cost per iteration would grow with $k$. The CG method avoids this cost blow up by maintaining a basis of the Krylov subspaces that is orthonogonal with respect to the inner product $\langle x,y\rangle_A=x^\top Ay$ so that each successive minimization is cheap. To see how this can be done, suppose that $x_k$ indeed minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$. Then the residual $r_k=b-Ax_k=-\nabla f(x_k)$ satisfies the orthogonality relation
+$$r_k\perp \mathcal{K}_k(A, r_0).$$Imagine now that we are able to choose a direction $p_k\in \mathcal{K}_{k+1}(A, r_0)$ that is $A$-orthogonal to $\mathcal{K}_{k}(A, r_0)$. Then it is straightforward to see that the next iterate $x_{k+1}=\argmin_{\eta}f(x_k+\eta p_k)$ will be a minimizer of $f$ on $\mathcal{K}_{k+1}(A, r_0)$. The directions $p_k$ can be iteratively generated by a Gram-Schmidt process relative to the inner product $\langle\cdot,\cdot \rangle_A$. Namely, each new direction $p_{k+1}$ is constructed by taking the new residual $r_{k+1}$ and subtracting its $A$-projection onto $p_k$.
 
-$$\eta_k = \frac{r_k^\top r_k}{p_k^\top A p_k}, \qquad x_{k+1} = x_k + \eta_k p_k,$$
+Concretely, the conjugate gradient method takes the form:
 
-$$r_{k+1} = r_k - \eta_k A p_k, \qquad \beta_k = \frac{r_{k+1}^\top r_{k+1}}{r_k^\top r_k}, \qquad p_{k+1} = r_{k+1} + \beta_k p_k.$$
+<div style="background-color: #f8f8f8; border: 1px solid #ccc; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px; font-size: 0.97em;" markdown="1">
 
-### Key properties
+**Algorithm 1** (Conjugate Gradient Method)
 
-- **Finite termination:** CG solves a $d$-dimensional quadratic in at most $d$ iterations (in exact arithmetic).
-- **Optimal Krylov method:** Among all methods that search in the Krylov subspace $\mathcal{K}_k(A, r_0) = \mathrm{span}\{r_0, Ar_0, \ldots, A^{k-1}r_0\}$, CG minimizes $f$ at each step.
-- **Convergence rate:** Even before termination, CG satisfies
+**Input:** $x_0 \in \mathbb{R}^d$
 
-$$\frac{f(x_k) - f(x^\star)}{f(x_0) - f(x^\star)} \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k},$$
+1. Set $r_0 = b - Ax_0$, $\;p_0 = r_0$
+2. **For** $k = 0, 1, 2, \ldots$ do:
+3. $\qquad \eta_k = \dfrac{r_k^\top r_k}{p_k^\top A p_k}$
+4. $\qquad x_{k+1} = x_k + \eta_k\, p_k$
+5. $\qquad r_{k+1} = r_k - \eta_k\, A p_k$
+6. $\qquad \beta_k = \dfrac{r_{k+1}^\top r_{k+1}}{r_k^\top r_k}$
+7. $\qquad p_{k+1} = r_{k+1} + \beta_k\, p_k$
 
-which matches the Chebyshev rate (up to a constant) without requiring knowledge of $\alpha$ and $\beta$.
+</div>
+
+Note that each iteration requires one matrix-vector product $Ap_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Ax_k$ are the **residuals** (note that the identity $r_k = -\nabla f(x_k)$ holds) and the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $x_k + \eta\, p_k$, while $\beta_k$ ensures that $p_{k+1}$ is orthogonal to all previous directions with respect to the inner product $\langle\cdot,\cdot \rangle_A$.
+
+### $A$-conjugacy and optimality
+We now analyze CG formally.  The CG iterates satisfy two key orthogonality conditions that together guarantee optimality over the Krylov subspace.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 3 (CG optimality).** *The CG residuals and search directions satisfy, for all valid indices:*
+
+1. *$r_i^\top r_j = 0$ for $i \neq j$ (mutual orthogonality of residuals),*
+2. *$p_i^\top A p_j = 0$ for $i \neq j$ ($A$-conjugacy of search directions),*
+3. *$\mathrm{span}\{p_0, \ldots, p_{k-1}\} = \mathrm{span}\{r_0, \ldots, r_{k-1}\} = \mathcal{K}_k(A, r_0)$.*
+
+*Consequently, $x_k$ minimizes $f$ over the affine subspace $x_0 + \mathcal{K}_k(A, r_0)$.*
+
+</div>
+
+*Proof.* We prove properties 1--3 by induction on the index $k$. The base case $k=0$ is immediate, since the identity $p_0=r_0$ holds and the equality $\mathcal{K}_1(A,r_0)=\mathrm{span}\{r_0\}$ is valid. For the inductive step, assume that properties 1--3 hold through step $k$. The CG updates give the relations
+
+$$
+r_{k+1}=r_k-\eta_kAp_k, \qquad p_{k+1}=r_{k+1}+\beta_kp_k.
+$$
+
+We first verify property 1. Fix an index $j<k$. The inductive hypothesis gives the orthogonality relation $r_k^\top r_j=0$. In addition, property 3 implies that the vector $r_j$ belongs to the span $\mathrm{span}\{p_0,\ldots,p_j\}$. Since the vector $p_k$ is $A$-conjugate to every earlier search direction, the relation $p_k^\top Ar_j=0$ follows. Substituting these two relations into the residual update gives the identity
+
+$$
+r_{k+1}^\top r_j = r_k^\top r_j - \eta_k\,p_k^\top Ar_j = 0.
+$$
+
+For the remaining index $j=k$, the relation $r_k=p_k-\beta_{k-1}p_{k-1}$ and the $A$-conjugacy relation $p_k^\top Ap_{k-1}=0$ imply the identity $p_k^\top Ar_k=p_k^\top Ap_k$. Using the definition of the stepsize $\eta_k$ therefore yields the relation
+
+$$
+r_{k+1}^\top r_k = r_k^\top r_k - \eta_k\,p_k^\top Ap_k = \|r_k\|^2-\|r_k\|^2=0.
+$$
+
+Thus the residuals remain mutually orthogonal.
+
+We next verify property 3. The inductive hypothesis implies that the vector $p_k$ belongs to the Krylov subspace $\mathcal{K}_{k+1}(A,r_0)$. Hence the vector $Ap_k$ belongs to the larger Krylov subspace $\mathcal{K}_{k+2}(A,r_0)$. Since the vector $r_k$ also belongs to $\mathcal{K}_{k+1}(A,r_0)$, the residual update yields the inclusion
+
+$$
+r_{k+1}=r_k-\eta_kAp_k \in \mathcal{K}_{k+2}(A,r_0).
+$$
+
+The search-direction update then gives the inclusion $p_{k+1}\in \mathcal{K}_{k+2}(A,r_0)$ as well. Moreover, the relations $p_{k+1}=r_{k+1}+\beta_kp_k$ and $r_{k+1}=p_{k+1}-\beta_kp_k$ show that adjoining the vector $r_{k+1}$ or adjoining the vector $p_{k+1}$ produces the same span. Consequently, the identity
+
+$$
+\mathrm{span}\{r_0,\ldots,r_{k+1}\}=\mathrm{span}\{p_0,\ldots,p_{k+1}\}.
+$$
+
+holds.
+
+If the residual $r_{k+1}$ is nonzero, then property 1 shows that the vectors $r_0,\ldots,r_{k+1}$ are mutually orthogonal and therefore linearly independent. Their span therefore has dimension $k+2$. Since this span is contained in $\mathcal{K}_{k+2}(A,r_0)$, and since the Krylov subspace $\mathcal{K}_{k+2}(A,r_0)$ is generated by the $k+2$ vectors $r_0, Ar_0,\ldots,A^{k+1}r_0$, the dimension of $\mathcal{K}_{k+2}(A,r_0)$ is at most $k+2$. Hence the inclusion above is in fact an equality, and property 3 follows. If instead the residual $r_{k+1}$ vanishes, then the iterate $x_{k+1}$ already equals the minimizer and all later statements are trivial. Therefore property 3 holds in every valid case.
+
+We now verify property 2. The residual recursion implies the identity
+
+$$
+Ap_j=\frac{r_j-r_{j+1}}{\eta_j}.
+$$
+
+For every index $j<k$, property 1 gives the orthogonality relations $r_{k+1}^\top r_j=0$ and $r_{k+1}^\top r_{j+1}=0$. Substituting these relations into the identity above yields the relation
+
+$$
+r_{k+1}^\top Ap_j = \frac{r_{k+1}^\top r_j-r_{k+1}^\top r_{j+1}}{\eta_j}=0.
+$$
+
+Combining the preceding relation with the inductive hypothesis $p_k^\top Ap_j=0$ yields the identity
+
+$$
+p_{k+1}^\top Ap_j = r_{k+1}^\top Ap_j + \beta_k\,p_k^\top Ap_j = 0.
+$$
+
+For the remaining index $j=k$, the same identity with index $k$ gives the relation
+
+$$
+r_{k+1}^\top Ap_k = \frac{r_{k+1}^\top r_k-\|r_{k+1}\|^2}{\eta_k} = -\frac{\|r_{k+1}\|^2}{\eta_k}.
+$$
+
+where the orthogonality relation $r_{k+1}^\top r_k=0$ comes from property 1. Using again the definitions of $\beta_k$ and $\eta_k$, we obtain the calculation
+
+$$
+\beta_k\,p_k^\top Ap_k = \frac{\|r_{k+1}\|^2}{\|r_k\|^2}\cdot \frac{\|r_k\|^2}{\eta_k}=\frac{\|r_{k+1}\|^2}{\eta_k}.
+$$
+
+Combining the preceding two identities yields the relation
+
+$$
+p_{k+1}^\top Ap_k = r_{k+1}^\top Ap_k + \beta_k\,p_k^\top Ap_k = 0.
+$$
+
+Therefore, the search directions remain $A$-conjugate.
+
+It remains to prove optimality. Recall that a point $x_k$ minimizes the strictly convex quadratic $f$ over an affine subspace $x_0+V$ if and only if the gradient $\nabla f(x_k)$ is orthogonal to the subspace $V$. Since the negative gradient equals the residual $r_k = -\nabla f(x_k)$, the optimality condition reads
+
+$$
+r_k \perp \mathcal{K}_k(A,r_0).
+$$
+
+By property 3, the Krylov subspace $\mathcal{K}_k(A,r_0)$ coincides with the span $\mathrm{span}\{r_0,\ldots,r_{k-1}\}$. Property 1 states that the residual $r_k$ is orthogonal to every earlier residual $r_j$ with $j<k$. Combining these two facts shows that the orthogonality condition above holds, and therefore $x_k$ minimizes $f$ over the affine space $x_0+\mathcal{K}_k(A,r_0)$. This completes the proof. <span style="float: right;">$\square$</span>
+
+*Remark.* The CG algorithm can be viewed as performing Gram--Schmidt orthogonalization in the $A$-inner product $\langle u,v\rangle_A = u^\top Av$. Each new search direction $p_{k+1}$ is obtained by $A$-orthogonalizing the residual $r_{k+1}$ against the previous directions. The remarkable feature of CG is that the Krylov structure ensures a **short recurrence**: only the immediately preceding direction $p_k$ needs to be subtracted, rather than all previous directions. This is why each CG iteration costs $O(d)$ work beyond the single matrix-vector product.
+
+### Convergence rate and finite termination
+
+The connection to the polynomial framework of Section 3 now yields the convergence guarantee.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 4 (CG convergence).** *The conjugate gradient iterates satisfy*
+
+$$f(x_k) - f(x^\star) \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f(x^\star)\bigr). \tag{3}$$
+
+*Moreover, if $A$ has only $m \leq d$ distinct eigenvalues, CG converges in at most $m$ iterations.*
+
+</div>
+
+*Proof.* For simplicity, let $\mathcal{K}_k$ denote the Krylov subspace $\mathcal{K}_k(A,r_0)$ throughout the proof. By Theorem 3, the iterate $x_k$ minimizes the objective function $f$ over the affine space $x_0+\mathcal{K}_k$. Recall from Section 2 that the identity
+
+$$
+f(x) - f(x^\star) = \tfrac{1}{2}\|x - x^\star\|_A^2.
+$$
+
+holds for every vector $x$. Since the value $f(x^\star)$ is constant, minimizing the function $f$ over a subset is equivalent to minimizing the corresponding $A$-norm distance to the minimizer $x^\star$. Applying this observation with the subset $x_0+\mathcal{K}_k$ gives
+
+$$
+\tfrac{1}{2}\|e_k\|_A^2 = \tfrac{1}{2}\|x_k - x^\star\|_A^2 = \min_{x\,\in\, x_0 + \mathcal{K}_k}\; \tfrac{1}{2}\|x - x^\star\|_A^2.
+\tag{4}
+$$
+
+We now convert the geometric minimization problem in $(4)$ into a polynomial one. A vector $x$ belongs to the affine space $x_0+\mathcal{K}_k$ if and only if there exists a polynomial $q$ of degree at most $k-1$ such that
+
+$$
+x = x_0 + q(A)\,r_0.
+$$
+
+Using the identity $r_0=b-Ax_0=-Ae_0$, we obtain the representation
+
+$$
+x - x^\star = e_0 - q(A)\,Ae_0 = p(A)\,e_0.
+$$
+
+where the polynomial $p(\lambda):=1-\lambda q(\lambda)$ has degree at most $k$ and satisfies the normalization condition $p(0)=1$. The correspondence between the polynomials $p$ and $q$ is one-to-one. Substituting this representation into $(4)$ gives the estimate
+
+$$
+\|e_k\|_A^2 = \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \|p(A)\,e_0\|_A^2 \leq \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha,\beta]} p(\lambda)^2 \cdot \|e_0\|_A^2.
+$$
+
+Applying Lemma 1 yields the bound
+
+$$
+\|e_k\|_A^2 \leq \frac{\|e_0\|_A^2}{T_k(\sigma)^2} \leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}\|e_0\|_A^2.
+$$
+
+This proves the estimate $(3)$.
+
+For finite termination, let $\mu_1,\ldots,\mu_m$ denote the distinct eigenvalues of the matrix $A$, and consider the polynomial
+
+$$
+p(\lambda) = \prod_{i=1}^{m}\left(1 - \lambda/\mu_i\right).
+$$
+
+This polynomial has degree $m$, satisfies the normalization condition $p(0)=1$, and vanishes at every eigenvalue of the matrix $A$. Hence the matrix identity $p(A)=0$ holds. Applying the polynomial representation above with this choice gives the equality $\|e_m\|_A=0$. This completes the proof. <span style="float: right;">$\square$</span>
+
+The convergence bound $(3)$ is identical to the Chebyshev bound $(2)$ of Theorem 2, but CG achieves it *without knowing $\alpha$ or $\beta$*. The iteration complexity is the same $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$, and finite termination provides an absolute guarantee of at most $d$ steps that no polynomial method can offer. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
 
 ### Visualizing CG
 
-The animation below shows CG on a 2D quadratic. Notice that it converges in exactly 2 steps (the dimension of the problem). The red arrows indicate the search directions, which are $A$-conjugate.
+The animation below shows CG on a 2D quadratic. Notice that it converges in exactly 2 steps (the dimension of the problem). The red arrows indicate the search directions, which are $A$-conjugate: they are orthogonal with respect to the inner product $\langle u, v \rangle_A = u^\top A v$, not with respect to the standard dot product.
 
 ![Conjugate Gradient method](figures/conjugate_gradient.gif)
 
@@ -379,11 +588,11 @@ The animation below shows CG on a 2D quadratic. Notice that it converges in exac
 
 ## 5. Convergence Comparison
 
-The following animation compares the convergence of all three methods on the same problem, plotting $f(x_k)/f(x_0)$ on a log scale.
+The animation below compares the convergence of all three methods on the same ill-conditioned quadratic, plotting the relative suboptimality $f(x_k)/f(x_0)$ on a logarithmic scale.
 
-- **Gradient descent** (blue): linear convergence with rate $(\kappa-1)/(\kappa+1)$
-- **Chebyshev GD** (red): faster convergence with effective rate $(\sqrt{\kappa}-1)/(\sqrt{\kappa}+1)$
-- **Conjugate Gradients** (green): fastest, with finite termination
+- **Gradient descent** (blue): linear convergence with iteration complexity $O(\kappa\,\ln(1/\varepsilon))$.
+- **Chebyshev GD** (red): accelerated convergence with iteration complexity $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$, but requires knowledge of $\alpha$ and $\beta$.
+- **Conjugate Gradients** (green): matches the Chebyshev rate adaptively and terminates in at most $d$ steps.
 
 ![Convergence comparison](figures/convergence_comparison.gif)
 
@@ -391,13 +600,13 @@ The following animation compares the convergence of all three methods on the sam
 
 ## Summary
 
-| Method | Per-step cost | Convergence rate | Requires $\alpha, \beta$? |
-|--------|--------------|-----------------|-------------------|
-| Gradient descent | One matrix-vector product | $\left(\frac{\kappa-1}{\kappa+1}\right)^2$ | Yes (for optimal step) |
-| Chebyshev GD | One matrix-vector product | $\approx \left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^2$ | Yes |
-| Conjugate Gradients | One matrix-vector product | $\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}$, finite termination | No |
+| Method | Per-step cost | Iteration complexity | Requires $\alpha, \beta$? |
+|--------|--------------|---------------------|-------------------|
+| Gradient descent | One matvec | $O(\kappa\,\ln(1/\varepsilon))$ | Yes (for optimal step) |
+| Chebyshev GD | One matvec | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | Yes |
+| Conjugate Gradients | One matvec | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$, at most $d$ steps | No |
 
-The key takeaway: on quadratics, CG achieves the accelerated rate *adaptively*, without needing to know the condition number, and terminates in at most $d$ steps.
+The key takeaway: on quadratics, CG achieves the accelerated $\sqrt{\kappa}$ rate *adaptively*, without needing to know the eigenvalues, and terminates (in exact precision) in a number of steps that is bounded by the number of distinct eigenvalues of $A$. In practice CG doesn't exactly terminate after finitely many steps due to compounding of numerical errors. 
 
 ---
 
