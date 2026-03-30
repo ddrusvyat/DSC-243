@@ -15,9 +15,8 @@ title: Course Overview
 
 - [Course summary](#course-summary)
 - [Pre-requisites](#pre-requisites)
-- [Grading policy](#grading-policy)
 - [Course outline](#course-outline)
-- [Lecture notes](#lecture-notes)
+- [Grading policy](#grading-policy)
 - [Homework](#homework)
 - [Textbooks and references](#textbooks-and-references)
 
@@ -38,7 +37,7 @@ This course develops the foundations of the modern optimization methods that for
 <tr><th>Week(s)</th><th>Topics</th><th>Lecture Notes</th></tr>
 </thead>
 <tbody>
-<tr><td>1</td><td><ul><li>Gradient descent</li><li>Acceleration by Chebyshev stepsizes</li><li>Conjugate Gradient method</li></ul></td><td></td></tr>
+<tr><td>1</td><td><ul><li>Gradient descent</li><li>Acceleration by Chebyshev stepsizes</li><li>Conjugate Gradient method</li></ul></td><td><a href="week1.html">Week 1 Notes</a></td></tr>
 <tr><td>2–3</td><td><ul><li>Proximal gradient descent and accelerated gradient descent for convex optimization</li><li>Lower complexity bounds for convex optimization</li><li>Mirror descent and accelerated mirror descent</li><li>Optimization of relatively smooth functions</li></ul></td><td></td></tr>
 <tr><td>4–5</td><td><ul><li>Mirror descent for nonsmooth convex functions</li><li>Frank-Wolfe algorithm as subgradient method in the dual</li></ul></td><td></td></tr>
 <tr><td>7</td><td><ul><li>Smoothing algorithms</li><li>Monotone operators and variational inequalities</li><li>Extragradient and Chambolle-Pock algorithms</li></ul></td><td></td></tr>
