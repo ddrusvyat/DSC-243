@@ -402,13 +402,13 @@ $$
 r_k\perp \mathcal{K}_k(A, r_0).
 $$
 
-Imagine now that we are able to choose a direction $p_k\in \mathcal{K}_{k+1}(A, r_0)$ that is $A$-orthogonal to $\mathcal{K}_{k}(A, r_0)$. Then it is straightforward to see that the next iterate
+Imagine now that we are able to choose a direction \(p_k\in \mathcal{K}_{k+1}(A, r_0)\) that is \(A\)-orthogonal to \(\mathcal{K}_{k}(A, r_0)\). Then it is straightforward to see that the next iterate
 
 $$
 x_{k+1}=\argmin_{\eta}f(x_k+\eta p_k)
 $$
 
-will be a minimizer of $f$ on $x_0 + \mathcal{K}_{k+1}(A, r_0)$. The directions $p_k$ can be generated iteratively by a Gram--Schmidt process relative to the inner product $\langle\cdot,\cdot \rangle_A$. Namely, each new direction $p_{k+1}$ is constructed by taking the new residual $r_{k+1}$ and subtracting its $A$-projection onto the previous search space. The special structure of CG implies that this correction collapses to a one-term recurrence involving only $p_k$.
+will be a minimizer of \(f\) on \(x_0 + \mathcal{K}_{k+1}(A, r_0)\). The directions \(p_k\) can be generated iteratively by a Gram--Schmidt process relative to the inner product \(\langle\cdot,\cdot \rangle_A\). Namely, each new direction \(p_{k+1}\) is constructed by taking the new residual \(r_{k+1}\) and subtracting its \(A\)-projection onto the previous search space. The special structure of CG implies that this correction collapses to a one-term recurrence involving only \(p_k\).
 
 Concretely, the conjugate gradient method takes the form:
 
@@ -423,12 +423,12 @@ Concretely, the conjugate gradient method takes the form:
 3. $\qquad \eta_k = \dfrac{r_k^\top r_k}{p_k^\top A p_k}$
 4. $\qquad x_{k+1} = x_k + \eta_k\, p_k$
 5. $\qquad r_{k+1} = r_k - \eta_k\, A p_k$
-6. $\qquad \beta_k = \dfrac{r_{k+1}^\top r_{k+1}}{r_k^\top r_k}$
+6. $\qquad \beta_k = \dfrac{\|r_{k+1}\|^2}{\|r_k\|^2}$
 7. $\qquad p_{k+1} = r_{k+1} + \beta_k\, p_k$
 
 </div>
 
-Note that each iteration requires one matrix-vector product $Ap_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Ax_k$ are the **residuals** (note that the identity $r_k = -\nabla f(x_k)$ holds) and the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $x_k + \eta\, p_k$, while $\beta_k$ ensures that $p_{k+1}$ is orthogonal to all previous directions with respect to the inner product $\langle\cdot,\cdot \rangle_A$.
+Note that each iteration requires one matrix-vector product \(Ap_k\), the same per-step cost as gradient descent. The vectors \(r_k = b - Ax_k\) are the **residuals** and satisfy the identity \(r_k = -\nabla f(x_k)\), while the vectors \(p_k\) are the **search directions**. The stepsize \(\eta_k\) minimizes \(f\) along the ray \(x_k + \eta\, p_k\), while \(\beta_k\) ensures that \(p_{k+1}\) is orthogonal to all previous directions with respect to the inner product \(\langle\cdot,\cdot \rangle_A\).
 
 ### $A$-conjugacy and optimality
 We now analyze CG formally.  The CG iterates satisfy two key orthogonality conditions that together guarantee optimality over the Krylov subspace.
@@ -457,7 +457,7 @@ $$
 r_{k+1}^\top r_j = r_k^\top r_j - \eta_k\,p_k^\top Ar_j = 0.
 $$
 
-For the remaining index $j=k$, the relation $r_k=p_k-\beta_{k-1}p_{k-1}$ and the $A$-conjugacy relation $p_k^\top Ap_{k-1}=0$ imply the identity $p_k^\top Ar_k=p_k^\top Ap_k$. Using the definition of the stepsize $\eta_k$ therefore yields the relation
+For the remaining index \(j=k\), the relation \(r_k=p_k-\beta_{k-1}p_{k-1}\) and the \(A\)-conjugacy relation \(p_k^\top Ap_{k-1}=0\) imply the identity \(p_k^\top Ar_k=p_k^\top Ap_k\). Using the definition of the stepsize \(\eta_k\) therefore yields the relation
 
 $$
 r_{k+1}^\top r_k = r_k^\top r_k - \eta_k\,p_k^\top Ap_k = \|r_k\|^2-\|r_k\|^2=0.
@@ -465,13 +465,13 @@ $$
 
 Thus the residuals remain mutually orthogonal.
 
-We next verify property 3. The inductive hypothesis implies that the vector $p_k$ belongs to the Krylov subspace $\mathcal{K}_{k+1}(A,r_0)$. Hence the vector $Ap_k$ belongs to the larger Krylov subspace $\mathcal{K}_{k+2}(A,r_0)$. Since the vector $r_k$ also belongs to $\mathcal{K}_{k+1}(A,r_0)$, the residual update yields the inclusion
+We next verify property 3. The inductive hypothesis implies that the vector \(p_k\) belongs to the Krylov subspace \(\mathcal{K}_{k+1}(A,r_0)\). Hence the vector \(Ap_k\) belongs to the larger Krylov subspace \(\mathcal{K}_{k+2}(A,r_0)\). Since the vector \(r_k\) also belongs to \(\mathcal{K}_{k+1}(A,r_0)\), the residual update yields the inclusion
 
 $$
 r_{k+1}=r_k-\eta_kAp_k \in \mathcal{K}_{k+2}(A,r_0).
 $$
 
-The search-direction update then gives the inclusion $p_{k+1}\in \mathcal{K}_{k+2}(A,r_0)$ as well. Moreover, the relations $p_{k+1}=r_{k+1}+\beta_kp_k$ and $r_{k+1}=p_{k+1}-\beta_kp_k$ show that adjoining the vector $r_{k+1}$ or adjoining the vector $p_{k+1}$ produces the same span. Consequently, the identity
+The search-direction update then gives the inclusion \(p_{k+1}\in \mathcal{K}_{k+2}(A,r_0)\) as well. Moreover, the relations \(p_{k+1}=r_{k+1}+\beta_kp_k\) and \(r_{k+1}=p_{k+1}-\beta_kp_k\) show that adjoining the vector \(r_{k+1}\) or adjoining the vector \(p_{k+1}\) produces the same span. Consequently, the identity
 
 $$
 \mathrm{span}\{r_0,\ldots,r_{k+1}\}=\mathrm{span}\{p_0,\ldots,p_{k+1}\}.
@@ -479,7 +479,7 @@ $$
 
 holds.
 
-If the residual $r_{k+1}$ is nonzero, then property 1 shows that the vectors $r_0,\ldots,r_{k+1}$ are mutually orthogonal and therefore linearly independent. Their span therefore has dimension $k+2$. Since this span is contained in $\mathcal{K}_{k+2}(A,r_0)$, and since the Krylov subspace $\mathcal{K}_{k+2}(A,r_0)$ is generated by the $k+2$ vectors $r_0, Ar_0,\ldots,A^{k+1}r_0$, the dimension of $\mathcal{K}_{k+2}(A,r_0)$ is at most $k+2$. Hence the inclusion above is in fact an equality, and property 3 follows. If instead the residual $r_{k+1}$ vanishes, then the iterate $x_{k+1}$ already equals the minimizer and all later statements are trivial. Therefore property 3 holds in every valid case.
+If the residual \(r_{k+1}\) is nonzero, then property 1 shows that the vectors \(r_0,\ldots,r_{k+1}\) are mutually orthogonal and therefore linearly independent. Their span therefore has dimension \(k+2\). Since this span is contained in \(\mathcal{K}_{k+2}(A,r_0)\), and since the Krylov subspace \(\mathcal{K}_{k+2}(A,r_0)\) is generated by the \(k+2\) vectors \(r_0, Ar_0,\ldots,A^{k+1}r_0\), the dimension of \(\mathcal{K}_{k+2}(A,r_0)\) is at most \(k+2\). Hence the inclusion above is in fact an equality, and property 3 follows. If instead the residual \(r_{k+1}\) vanishes, then the iterate \(x_{k+1}\) already equals the minimizer and all later statements are trivial. Therefore property 3 holds in every valid case.
 
 We now verify property 2. The residual recursion implies the identity
 
@@ -487,7 +487,7 @@ $$
 Ap_j=\frac{r_j-r_{j+1}}{\eta_j}.
 $$
 
-For every index $j<k$, property 1 gives the orthogonality relations $r_{k+1}^\top r_j=0$ and $r_{k+1}^\top r_{j+1}=0$. Substituting these relations into the identity above yields the relation
+For every index \(j<k\), property 1 gives the orthogonality relations \(r_{k+1}^\top r_j=0\) and \(r_{k+1}^\top r_{j+1}=0\). Substituting these relations into the identity above yields the relation
 
 $$
 r_{k+1}^\top Ap_j = \frac{r_{k+1}^\top r_j-r_{k+1}^\top r_{j+1}}{\eta_j}=0.
@@ -499,13 +499,13 @@ $$
 p_{k+1}^\top Ap_j = r_{k+1}^\top Ap_j + \beta_k\,p_k^\top Ap_j = 0.
 $$
 
-For the remaining index $j=k$, the same identity with index $k$ gives the relation
+For the remaining index \(j=k\), the same identity with index \(k\) gives the relation
 
 $$
 r_{k+1}^\top Ap_k = \frac{r_{k+1}^\top r_k-\|r_{k+1}\|^2}{\eta_k} = -\frac{\|r_{k+1}\|^2}{\eta_k}.
 $$
 
-where the orthogonality relation $r_{k+1}^\top r_k=0$ comes from property 1. Using again the definitions of $\beta_k$ and $\eta_k$, we obtain the calculation
+where the orthogonality relation \(r_{k+1}^\top r_k=0\) comes from property 1. Using again the definitions of \(\beta_k\) and \(\eta_k\), we obtain the calculation
 
 $$
 \beta_k\,p_k^\top Ap_k = \frac{\|r_{k+1}\|^2}{\|r_k\|^2}\cdot \frac{\|r_k\|^2}{\eta_k}=\frac{\|r_{k+1}\|^2}{\eta_k}.
@@ -519,15 +519,15 @@ $$
 
 Therefore, the search directions remain $A$-conjugate.
 
-It remains to prove optimality. Recall that a point $x_k$ minimizes the strictly convex quadratic $f$ over an affine subspace $x_0+V$ if and only if the gradient $\nabla f(x_k)$ is orthogonal to the subspace $V$. Since the negative gradient equals the residual $r_k = -\nabla f(x_k)$, the optimality condition reads
+It remains to prove optimality. Recall that a point \(x_k\) minimizes the strictly convex quadratic \(f\) over an affine subspace \(x_0+V\) if and only if the gradient \(\nabla f(x_k)\) is orthogonal to the subspace \(V\). Since the negative gradient equals the residual \(r_k = -\nabla f(x_k)\), the optimality condition reads
 
 $$
 r_k \perp \mathcal{K}_k(A,r_0).
 $$
 
-By property 3, the Krylov subspace $\mathcal{K}_k(A,r_0)$ coincides with the span $\mathrm{span}\{r_0,\ldots,r_{k-1}\}$. Property 1 states that the residual $r_k$ is orthogonal to every earlier residual $r_j$ with $j<k$. Combining these two facts shows that the orthogonality condition above holds, and therefore $x_k$ minimizes $f$ over the affine space $x_0+\mathcal{K}_k(A,r_0)$. This completes the proof. <span style="float: right;">$\square$</span>
+By property 3, the Krylov subspace \(\mathcal{K}_k(A,r_0)\) coincides with the span \(\mathrm{span}\{r_0,\ldots,r_{k-1}\}\). Property 1 states that the residual \(r_k\) is orthogonal to every earlier residual \(r_j\) with \(j<k\). Combining these two facts shows that the orthogonality condition above holds, and therefore \(x_k\) minimizes \(f\) over the affine space \(x_0+\mathcal{K}_k(A,r_0)\). This completes the proof. <span style="float: right;">$\square$</span>
 
-*Remark.* The CG algorithm can be viewed as performing Gram--Schmidt orthogonalization in the $A$-inner product $\langle u,v\rangle_A = u^\top Av$. Each new search direction $p_{k+1}$ is obtained by $A$-orthogonalizing the residual $r_{k+1}$ against the previous directions. The remarkable feature of CG is that the Krylov structure ensures a **short recurrence**: only the immediately preceding direction $p_k$ needs to be subtracted, rather than all previous directions. This is why each CG iteration costs $O(d)$ work beyond the single matrix-vector product.
+*Remark.* The CG algorithm can be viewed as performing Gram--Schmidt orthogonalization in the \(A\)-inner product \(\langle u,v\rangle_A = u^\top Av\). Each new search direction \(p_{k+1}\) is obtained by \(A\)-orthogonalizing the residual \(r_{k+1}\) against the previous directions. The remarkable feature of CG is that the Krylov structure ensures a **short recurrence**: only the immediately preceding direction \(p_k\) needs to be subtracted, rather than all previous directions. This is why each CG iteration costs \(O(d)\) work beyond the single matrix-vector product.
 
 ### Convergence rate and finite termination
 
