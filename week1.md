@@ -41,7 +41,8 @@ $$
 
 and its **condition number** by $\kappa = \beta / \alpha$.
 
-A key example of convex quadratic optimization is **linear least squares**: 
+A key example of convex quadratic optimization is **linear least squares**:
+
 $$
 \min_{x \in \mathbb{R}^d} \;\tfrac{1}{2}\|Dx - y\|^2,
 $$
@@ -187,7 +188,8 @@ Thus the optimal stepsize is roughly twice as fast per step as $\eta = 1/\beta$-
 
 So far we have described how the suboptimality $f(x_k)-f(x^{\star})$ decays with with the iteration counted. An equivalent and often more informative viewpoint is to ask: *how many iterations are needed to reach a target accuracy $\varepsilon$?* This is the **iteration complexity** of the algorithm.
 
-From Theorem 1 with stepsize $\eta = 1/\beta$, we may use the elementary inequality $1 - x \leq e^{-x}$ to deduce that 
+From Theorem 1 with stepsize $\eta = 1/\beta$, we may use the elementary inequality $1 - x \leq e^{-x}$ to deduce that
+
 $$
 k \geq \kappa\cdot\ln\left(\frac{1}{\varepsilon}\right)
 $$
@@ -243,7 +245,8 @@ The **Chebyshev polynomial of the first kind** of degree $k$, denoted $T_k$, is 
 
 $$T_{k+1}(x) = 2x\,T_k(x) - T_{k-1}(x) \qquad \forall k\geq 1.$$
 
-An equivalent characterization of Chebychev polynomials is the equality 
+An equivalent characterization of Chebychev polynomials is the equality
+
 $$
 T_k(\cos\theta) = \cos(k\theta) \qquad \forall \theta \in [0,\pi].
 $$
