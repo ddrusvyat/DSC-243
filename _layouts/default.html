@@ -11,7 +11,11 @@
         tex: {
           inlineMath: [['$', '$'], ['\\(', '\\)']],
           displayMath: [['$$', '$$'], ['\\[', '\\]']],
-          tags: 'ams'
+          tags: 'ams',
+          macros: {
+            argmin: ['\\operatorname{arg\\,min}', 0],
+            argmax: ['\\operatorname{arg\\,max}', 0]
+          }
         }
       };
     </script>
