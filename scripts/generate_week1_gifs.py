@@ -456,6 +456,36 @@ def make_gif_optimal_poly():
     print("  ✓ optimal_polynomials.gif")
 
 
+# ── Plot: Chebyshev polynomials of the second kind ─────────────────
+
+def make_chebyshev2_plot():
+    x = np.linspace(-1, 1, 500)
+    theta = np.arccos(x)
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    colors = ["#2980b9", "#e74c3c", "#27ae60", "#8e44ad", "#e67e22"]
+    for k, c in zip(range(1, 6), colors):
+        with np.errstate(divide="ignore", invalid="ignore"):
+            y = np.sin((k + 1) * theta) / np.sin(theta)
+        y[0] = k + 1
+        y[-1] = (-1)**k * (k + 1)
+        ax.plot(x, y, color=c, linewidth=2, label=f"$U_{k}$")
+
+    ax.axhline(0, color="grey", linewidth=0.5, alpha=0.4)
+    ax.set_xlim(-1, 1)
+    ax.set_ylim(-6.5, 6.5)
+    ax.set_xlabel("$x$", fontsize=13)
+    ax.set_ylabel("$U_k(x)$", fontsize=13)
+    ax.set_title("Chebyshev Polynomials of the Second Kind", fontsize=14)
+    ax.legend(fontsize=12, loc="lower right", ncol=3)
+    ax.grid(True, alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "chebyshev_polynomials_2nd.png",
+                dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print("  ✓ chebyshev_polynomials_2nd.png")
+
+
 # ── Main ──────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -465,5 +495,6 @@ if __name__ == "__main__":
     make_gif_convergence()
     make_gif_cg()
     make_chebyshev_plot()
+    make_chebyshev2_plot()
     make_gif_optimal_poly()
     print("Done! Figures saved to", FIGURES_DIR)
