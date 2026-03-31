@@ -13,7 +13,7 @@ math:
 
 ## Overview
 
-This week we study optimization algorithms for the **convex quadratic problems**. This is the most basic and fundamental problem in numerical optimization. Surprisingly, many of the phonemona that hold for minimizng convex quadratics have direct analogues for highly nonlinear and complex models (e.g. deep learning). Since the objective function is a convex quadratic, this setting allows us to develop sharp intuition for convergence behavior using only basic linear algebraic tools. Moving beyond linear least squares will require combining linear algebra with analytic techniques---more on this later.
+These notes study one central question: how does an iterative method reduce error on a convex quadratic when its action is filtered through the spectrum of $A$? We begin with fixed-step gradient descent, whose behavior is governed by a scalar contraction on each eigendirection. We then enlarge the design space by allowing time-varying stepsizes, which leads to a polynomial viewpoint and Chebyshev acceleration. The same viewpoint then leads to Krylov subspaces and Conjugate gradient (CG), which realizes near-optimal behavior adaptively. After the positive definite case is understood, we revisit the same ideas in the singular positive semidefinite regime, where rates become sublinear. Finally, we refine worst-case bounds by incorporating spectral structure of the initialization and of the eigenvalue distribution.
 
 We cover three algorithms of increasing sophistication:
 
@@ -33,7 +33,10 @@ where $A \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matri
 
 $$\nabla f(x) = Ax - b.$$
 
-In particular, the solutions of the problem are exactly the solutions of the linear system $Ax=b$. Note that this linear system is special in that $A$ is a positive definite matrix---a property with important consequences for numerical methods.
+In particular, minimizing $f$ is equivalent to solving the linear system $Ax=b$.
+When $A \succ 0$, the minimizer is unique and classical linear-rate results apply.
+When $A \succeq 0$ with a nontrivial nullspace, uniqueness can fail and the convergence behavior changes qualitatively (Sections 6--7).
+Although we state the model in full PSD generality, we begin with the positive definite case ($\alpha>0$): the $A$-norm is nondegenerate there and the core contraction mechanism is easiest to see before extending to the singular regime.
 
 We denote the eigenvalues of $A$ by
 
@@ -41,7 +44,7 @@ $$
 0 \leq  \alpha = \lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_d = \beta
 $$
 
-and its **condition number** by $\kappa = \beta / \alpha$.
+When $\alpha > 0$, we denote the **condition number** by $\kappa = \beta / \alpha$.
 
 A key example of convex quadratic optimization is **linear least squares**:
 
@@ -60,13 +63,13 @@ under the correspondence $A = D^\top D$ and $b = D^\top y$. In applications, $D 
 
 We will be interested in algorithms that access the matrix $A$ only by evaluating matrix-vector products $v\mapsto Av$ for any query vector $v$. This **matrix-free** abstraction is powerful for several reasons:
 
-- **Storage.** In many applications $A$ is never formed explicitly. For instance, in least squares with $A = D^\top D$, the product $Av = D^\top(Dv)$ can be computed using two matrix-vector products with $D$ and $D^\top$, which costs $O(md)$ operations and requires storing only $D \in \mathbb{R}^{m \times d}$ rather than the $d \times d$ matrix $A$. When $m \ll d^2 / d = d$ or when $D$ is sparse or structured, this is a significant saving.
+- **Storage.** In many applications $A$ is never formed explicitly. For instance, in least squares with $A = D^\top D$, the product $Av = D^\top(Dv)$ can be computed using two matrix-vector products with $D$ and $D^\top$, which costs $O(md)$ operations and requires storing only $D \in \mathbb{R}^{m \times d}$ rather than the $d \times d$ matrix $A$. When $m \ll d$, or when $D$ is sparse/structured, this can be a major saving.
 
 - **Structure.** Many matrices arising in practice (e.g., discrete Laplacians, convolution operators, fast transforms) admit fast matrix-vector products via the FFT or other algorithms, costing $O(d \log d)$ or even $O(d)$ per product—far less than the $O(d^2)$ cost of a general dense multiply, and enormously less than the $O(d^3)$ cost of a direct factorization.
 
 - **Generality.** By treating $A$ as a "black box" that we can only query through products, we obtain algorithms that work unchanged whether $A$ is dense, sparse, or defined only implicitly through an operator. This abstraction cleanly separates the optimization algorithm from the problem-specific details of how $A$ acts on vectors.
 
-All three methods studied this week—gradient descent, Chebyshev-accelerated gradient descent, and conjugate gradients—are matrix-free: their only access to $A$ is through one matrix-vector product per iteration.
+All three methods studied this week---gradient descent, Chebyshev-accelerated gradient descent, and CG---are matrix-free: their only access to $A$ is through one matrix-vector product per iteration.
 
 ### Algorithm
 
@@ -166,13 +169,13 @@ The optimal stepsize $\eta^\star = 2/(\beta+\alpha)$ requires knowledge of both 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Corollary 2 (Stepsize $1/\beta$).** *Suppose $\alpha>0$  and set $\eta = 1/\beta$. Then gradient descent satisfies*
+**Corollary 2 (Stepsize $1/\beta$).** *Suppose $\alpha>0$ and set $\eta = 1/\beta$. Then gradient descent satisfies*
 
 $$f(x_k) - f(x^\star) \leq \left(1 - \frac{1}{\kappa}\right)^{2k}\bigl(f(x_0) - f(x^\star)\bigr).$$
 
 </div>
 
-*Proof.* Substituting $\eta = 1/\beta$ into Theorem 1 yields:
+*Proof.* Substituting $\eta = 1/\beta$ into Theorem 1 yields
 
 $$\rho(1/\beta) = \max\!\big(\lvert 1 - \alpha/\beta\rvert,\; \lvert 1 - 1\rvert\big) = 1 - \frac{1}{\kappa},$$
 
@@ -186,12 +189,12 @@ Thus the optimal stepsize is roughly twice as fast per step as $\eta = 1/\beta$-
 
 ### Iteration complexity
 
-So far we have described how the suboptimality $f(x_k)-f(x^{\star})$ decays with with the iteration counted. An equivalent and often more informative viewpoint is to ask: *how many iterations are needed to reach a target accuracy $\varepsilon$?* This is the **iteration complexity** of the algorithm.
+So far we have described how the suboptimality $f(x_k)-f(x^{\star})$ decays with the iteration count. An equivalent and often more informative viewpoint is to ask: *how many iterations are needed to reach a target accuracy $\varepsilon$?* This is the **iteration complexity** of the algorithm.
 
 From Theorem 1 with stepsize $\eta = 1/\beta$, we may use the elementary inequality $1 - x \leq e^{-x}$ to deduce that
 
 $$
-k \geq \kappa\cdot\ln\left(\frac{1}{\varepsilon}\right)
+k \geq \frac{\kappa}{2}\cdot\ln\left(\frac{1}{\varepsilon}\right)
 $$
 
 iterations suffice to achieve $\varepsilon$-accuracy $f(x_k)-f(x^\star)\leq \varepsilon$. This is the **iteration complexity** of gradient descent on quadratics.
@@ -204,12 +207,14 @@ The following animation shows gradient descent on two quadratics with the same s
 
 ![Gradient descent: well-conditioned vs ill-conditioned](figures/gd_condition.gif)
 
+At this point we have extracted essentially the best guarantee available from one fixed stepsize: the rate is controlled by the worst eigenvalue under repeated application of the scalar map $(1-\eta\lambda)$. The natural next question is whether coordinating multiple steps can outperform optimizing each step in isolation. That question forces a shift from stepwise updates to the polynomial $p_k(A)$ produced after $k$ iterations.
+
 ---
 
 ## 3. Acceleration by Chebyshev Stepsizes
 
 
-The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value in a single step. We now show that by monitoring performance across a longer time horizon, it is possible to choose a time-varying stepsize that yields a much faster rate of convergence.  To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = x_j - x^\star$ evolves as $e_{j+1} = (I - \eta_j A)\,e_j$. Therefore, after $k$ steps we have:
+The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value in a single step. We now show that by monitoring performance across a longer time horizon, it is possible to choose a time-varying stepsize that yields a much faster rate of convergence. To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = x_j - x^\star$ evolves as $e_{j+1} = (I - \eta_j A)\,e_j$. Therefore, after $k$ steps we have:
 
 $$e_k = (I - \eta_{k-1}A)(I - \eta_{k-2}A)\cdots(I - \eta_0 A)\,e_0 = p_k(A)\,e_0,$$
 
@@ -230,7 +235,7 @@ Rearranging yields
 
 $$\frac{f(x_k) - f(x^\star)}{f(x_0) - f(x^\star)} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
 
-Fixed-stepsize gradient descent corresponds to the special case $p_k(\lambda) = (1 - \eta\lambda)^k$, but we are now free to choose *any* stepsizes. Notice that as we vary the stepsizes $\eta_0,\ldots \eta_{k-1}$, any degree $k$ polynomial $p(\lambda)$ satisfying $p(0)=1$ can be realized as $p_{k-1}(\lambda)$. Thus choosing time-varying stepsizes is equivalent to choosing such a polynomial.  The best possible convergence after $k$ steps is therefore determined by the **minimax polynomial problem**:
+Fixed-stepsize gradient descent corresponds to the special case $p_k(\lambda) = (1 - \eta\lambda)^k$, but we are now free to choose *any* stepsizes. Notice that as we vary the stepsizes $\eta_0,\ldots,\eta_{k-1}$, any degree-$k$ polynomial $p(\lambda)$ satisfying $p(0)=1$ can be realized as $p_k(\lambda)$. Thus choosing time-varying stepsizes is equivalent to choosing such a polynomial. The best possible convergence after $k$ steps is therefore determined by the **minimax polynomial problem**:
 
 $$
 \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha, \beta]} p(\lambda)^2,
@@ -244,36 +249,36 @@ The **Chebyshev polynomial of the first kind** of degree $k$, denoted $T_k$, is 
 
 $$T_{k+1}(x) = 2x\,T_k(x) - T_{k-1}(x) \qquad \forall k\geq 1.$$
 
-An equivalent characterization of Chebychev polynomials is the equality
+An equivalent characterization of Chebyshev polynomials is the equality
 
 $$
 T_k(\cos\theta) = \cos(k\theta) \qquad \forall \theta \in [0,\pi].
 $$
 
-Chebychev polynomials play a special role in numerical analysis because they solve the extremal problem: 
+Chebyshev polynomials play a special role in numerical analysis because they solve the extremal problem:
 
 > Any degree-$k$ polynomial $p(x)$ with the same leading coefficient as $T_k$ satisfies
 >
 > $$\max_{x\in [-1,1]} \lvert p(x)\rvert\geq \max_{x\in [-1,1]} \lvert T_k(x)\rvert=1.$$
 
-In words, among all degree-$k$ polynomials with the same leading coefficient as $T_k$, the Chebychev polynomial $T_k$ has the smallest maximum absolute value on $[-1,1]$. See the figure below.
+In words, among all degree-$k$ polynomials with the same leading coefficient as $T_k$, the Chebyshev polynomial $T_k$ has the smallest maximum absolute value on $[-1,1]$. See the figure below.
 
 
 ![Chebyshev polynomials of the first kind](figures/chebyshev_polynomials.png)
 
 
-Chebychev polynomials satisfy the following key properties:
+Chebyshev polynomials satisfy the following key properties:
 1. **Boundedness:** The inequality $\lvert T_k(t)\rvert \leq 1$ holds for all $t \in [-1,1]$ with equality at $t_j = \cos(j\pi/k)$ for $j = 0, \ldots, k$. 
 
 2. **Roots:** $T_k$ has $k$ roots in $(-1,1)$ at $t_j = \cos\!\left(\frac{(2j-1)\pi}{2k}\right)$ for $j = 1, \ldots, k$.
 
-3. **Explosion:** For $\lvert t\rvert > 1$, we have $T_k(t) = \cosh(k\,\operatorname{arccosh}(t))$.
+3. **Explosion:** For $t > 1$, we have $T_k(t) = \cosh(k\,\operatorname{arccosh}(t))$.
 
 
 
 
 ### The optimal polynomial
-Returning to gradient descent, we rescale the interval $[\alpha, \beta]$ to $[-1,1]$ with the affine change of coordinates $\lambda\mapsto\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}$. Not that this transformation sends $\lambda = 0$ to the point $\sigma := \frac{\beta + \alpha}{\beta - \alpha} = \frac{\kappa + 1}{\kappa - 1}$, assuming $\alpha>0$. Thus, under this substitution, any degree-$k$ polynomial $p(\lambda)$ with $p(0) = 1$ corresponds to a degree-$k$ polynomial $q$ with $q(\sigma) = 1$, and
+Returning to gradient descent, we rescale the interval $[\alpha, \beta]$ to $[-1,1]$ with the affine change of coordinates $\lambda\mapsto\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}$. Note that this transformation sends $\lambda = 0$ to the point $\sigma := \frac{\beta + \alpha}{\beta - \alpha} = \frac{\kappa + 1}{\kappa - 1}$, assuming $\alpha>0$. Thus, under this substitution, any degree-$k$ polynomial $p(\lambda)$ with $p(0) = 1$ corresponds to a degree-$k$ polynomial $q$ with $q(\sigma) = 1$, and
 
 $$\max_{\lambda \in [\alpha, \beta]}\lvert p(\lambda)\rvert = \max_{t \in [-1,1]}\lvert q(t)\rvert.$$
 
@@ -364,19 +369,25 @@ $$
 
 Combining the preceding two estimates yields the conclusion $(2)$. This completes the proof. <span style="float: right;">$\square$</span>
 
-Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\ln(1/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
+Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\ln(1/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations (classical Chebyshev semi-iterative behavior; see [Var62, You71, Saa03]).
+
+The next figure shows how the accelerated Chebyshev stepsizes vary with the iteration budget $k$ in the positive definite case.
+
+![Chebyshev stepsizes in the positive definite case](figures/chebyshev_stepsizes_pd.jpg)
 
 ### Comparing trajectories
 
 The animation below overlays gradient descent (blue) and Chebyshev-accelerated GD (red) on the same ill-conditioned quadratic. The Chebyshev method reaches the minimizer much faster.
 
-![GD vs Chebyshev stepsizes](figures/gd_vs_chebyshev.gif)
+![Relative suboptimality versus iteration for GD (blue) and Chebyshev-accelerated GD (red)](figures/gd_vs_chebyshev.gif)
 
 ---
 
-## 4. The Krylov Subspace Method and Conjugate Gradients
+## 4. The Krylov Subspace Method and Conjugate Gradient
 
 ### From polynomials to Krylov subspaces
+
+Section 3 showed that acceleration is fundamentally a polynomial-design problem. Section 4 asks a stronger question: can we choose the best polynomial adaptively from iteration data, rather than prescribing it in advance? Krylov subspaces are exactly the right language for this question.
 
 The Chebyshev method achieves the iteration complexity $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
 
@@ -457,7 +468,7 @@ $$
 
 This polynomial has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $A$. Hence $p(A)=0$, and the polynomial representation gives $\lVert e_m\rVert_A=0$. <span style="float: right;">$\square$</span>
 
-The convergence bound $(4)$ is identical to the Chebyshev bound $(2)$ of Theorem 2, and the iteration complexity is the same $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$. The Krylov method achieves this rate *without knowing $\alpha$ or $\beta$*, and finite termination provides an absolute guarantee of at most $d$ steps. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
+The convergence bound $(4)$ is identical to the Chebyshev bound $(2)$ of Theorem 2, and the iteration complexity is the same $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$. The Krylov method achieves this rate *without knowing $\alpha$ or $\beta$*, and finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues (hence $m \le d$). In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
 
 ### The Conjugate Gradient algorithm
 
@@ -482,6 +493,8 @@ Concretely, the conjugate gradient method takes the form:
 7. $\qquad p_{k+1} = r_{k+1} + \beta_k\, p_k$
 
 </div>
+
+Here $p_k$ denotes a **search direction vector**. In Sections 3 and 7, polynomial filters are written as $p_k(\lambda)$ to distinguish them from these vectors.
 
 Each iteration requires one matrix-vector product $Ap_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Ax_k$ are the **residuals** satisfying $r_k = -\nabla f(x_k)$, while the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $x_k + \eta\, p_k$, while $\beta_k$ ensures $A$-conjugacy of consecutive search directions.
 
@@ -585,21 +598,27 @@ By property 3, the Krylov subspace $\mathcal{K}_k(A,r_0)$ coincides with $\mathr
 
 ### Visualizing CG
 
-The animation below shows CG on a 2D quadratic. Notice that it converges in exactly 2 steps (the dimension of the problem). The red arrows indicate the search directions, which are $A$-conjugate: they are orthogonal with respect to the inner product $\langle u, v \rangle_A = u^\top A v$, not with respect to the standard dot product.
+The animation below shows CG on a 2D quadratic. In this particular 2D instance (and in exact arithmetic), CG converges in exactly 2 steps. The red arrows indicate the search directions, which are $A$-conjugate: they are orthogonal with respect to the inner product $\langle u, v \rangle_A = u^\top A v$, not with respect to the standard dot product.
 
-![Conjugate Gradient method](figures/conjugate_gradient.gif)
+![CG trajectory on a 2D quadratic with A-conjugate search directions shown by red arrows](figures/conjugate_gradient.gif)
 
 ---
 
 ## 5. Convergence Comparison
 
-The animation below compares the convergence of all three methods on the same ill-conditioned quadratic, plotting the relative suboptimality $f(x_k)/f(x_0)$ on a logarithmic scale.
+The animation below compares the convergence of all three methods on the same ill-conditioned quadratic, plotting the relative suboptimality
+$$
+\frac{f(x_k)-f(x^\star)}{f(x_0)-f(x^\star)}
+$$
+on a logarithmic scale.
 
 - **Gradient descent** (blue): linear convergence with iteration complexity $O(\kappa\,\ln(1/\varepsilon))$.
 - **Chebyshev GD** (red): accelerated convergence with iteration complexity $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$, but requires knowledge of $\alpha$ and $\beta$.
-- **Conjugate Gradients** (green): matches the Chebyshev rate adaptively and terminates in at most $d$ steps.
+- **Conjugate Gradient** (green): matches the Chebyshev rate adaptively and terminates in at most $m$ steps (number of distinct eigenvalues, with $m\le d$).
 
-![Convergence comparison](figures/convergence_comparison.gif)
+![Relative suboptimality versus iteration for GD (blue), Chebyshev GD (red), and CG (green)](figures/convergence_comparison.gif)
+
+The positive definite story is now complete: all three methods fit one hierarchy, and polynomial acceleration is visible both in formulas and trajectories. Every bound so far, however, depends on $\alpha>0$. Section 6 asks what survives when $\alpha=0$, where the condition number is infinite and linear-rate proofs no longer apply directly.
 
 ---
 
@@ -609,7 +628,8 @@ The animation below compares the convergence of all three methods on the same il
 
 The convergence guarantees of the previous sections all rely on the assumption $\alpha > 0$---that is, $A$ is positive definite. When $\alpha = 0$, so that $A$ is positive semidefinite but singular, the condition number $\kappa = \beta/\alpha$ is infinite and the linear convergence bounds of Theorems 1, 2, and 3 become vacuous. This situation arises naturally in practice: in linear least squares with $A = D^\top D$, the matrix $A$ is singular whenever the data matrix $D \in \mathbb{R}^{m \times d}$ has fewer rows than columns ($m < d$), a common setting in modern high-dimensional statistics.
 
-Despite the infinite condition number, gradient descent still makes progress---the function value continues to decrease, even though the error vector $e_k$ may fail to converge in the Euclidean norm. A more refined analysis reveals two phenomena: gradient descent with a fixed stepsize converges at a **sublinear** $O(1/k)$ rate, while the conjugate gradient method maintains **linear** convergence by adapting automatically to the nonzero spectrum.
+When $A$ is singular, Euclidean error is no longer the right global quantity: nullspace components are invisible to the objective. The function gap remains meaningful, and the $A$-norm still measures progress along $\mathrm{range}(A)$.
+Despite the infinite condition number, gradient descent still makes progress---the function value continues to decrease, even though the error vector $e_k$ may fail to converge in the Euclidean norm. A more refined analysis reveals two phenomena: gradient descent with a fixed stepsize converges at a **sublinear** $O(1/k)$ rate, while CG maintains structured progress by adapting automatically to the nonzero spectrum.
 
 ### Setup
 
@@ -640,6 +660,8 @@ The bound $f(x_k) - f(x^\star) \leq \rho(\eta)^{2k}(f(x_0) - f(x^\star))$ theref
 In the polynomial framework of Section 3, the constraint $p_k(0) = 1$ forces $\max_{\lambda \in [0,\beta]}\lvert p_k(\lambda)\rvert \geq 1$ for every polynomial $p_k$, so the minimax approach on the full interval $[0, \beta]$ yields no convergence guarantee. The path forward is to exploit the eigenvalue weighting in the $A$-norm: the factor $\lambda_i$ in the sum $\sum_i \lambda_i\,p_k(\lambda_i)^2\,c_i^2$ suppresses contributions from eigenvalues near zero. Rather than bounding $(1 - \eta\lambda_i)^{2k}$ alone and pulling it out of the sum, we instead bound the product $\lambda_i(1 - \eta\lambda_i)^{2k}$ directly.
 
 ### Sublinear convergence of gradient descent
+
+The key idea is that the objective weights each eigendirection by $\lambda_i$. This suppresses troublesome directions near zero that break uniform contraction bounds. Accordingly, we maximize the weighted quantity $\lambda(1-\lambda/\beta)^{2k}$, not just $(1-\lambda/\beta)^{2k}$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -697,9 +719,9 @@ with $g(k) \to 0$ can hold uniformly over all starting points when $\alpha = 0$.
 
 ### Acceleration by Chebyshev stepsizes
 
-As in the positive definite case, the $O(1/k)$ rate of fixed-stepsize gradient descent can be improved by varying the stepsize across iterations. The polynomial viewpoint makes this transparent: gradient descent with stepsizes $\eta_1, \ldots, \eta_k$ produces the polynomial $p_k(\lambda) = \prod_{j=1}^{k}(1-\eta_j\lambda)$, and any degree-$k$ polynomial with $p(0) = 1$ can be realized by choosing the stepsizes as the reciprocals of its roots. Finding the optimal time-varying stepsizes is therefore equivalent to finding the degree-$k$ polynomial $p$ with $p(0) = 1$ that minimizes $\max_{\lambda \in (0,\beta]} \lambda\,p(\lambda)^2$.
+As in the positive definite case, the $O(1/k)$ rate of fixed-stepsize gradient descent can be improved by varying the stepsize across iterations. The polynomial viewpoint makes this transparent: gradient descent with stepsizes $\eta_1, \ldots, \eta_k$ produces the polynomial $p_k(\lambda) = \prod_{j=1}^{k}(1-\eta_j\lambda)$, and any degree-$k$ polynomial with $p(0) = 1$ can be realized by choosing the stepsizes as the reciprocals of its roots. (Up to reindexing, this is the same length-$k$ product convention used in Section 3.) Finding the optimal time-varying stepsizes is therefore equivalent to finding the degree-$k$ polynomial $p$ with $p(0) = 1$ that minimizes $\max_{\lambda \in (0,\beta]} \lambda\,p(\lambda)^2$.
 
-The solution involves the **Chebyshev polynomial of the second kind** of degree $j$, denoted $U_j$, which is characterized by the identity
+In the positive definite case, first-kind Chebyshev polynomials appear from an unweighted minimax problem. Here the additional factor $\lambda$ changes that minimax geometry, and the second-kind polynomial appears as the exact analogue. Concretely, the solution involves the **Chebyshev polynomial of the second kind** of degree $j$, denoted $U_j$, characterized by
 
 $$U_j(\cos\theta) = \frac{\sin\bigl((j+1)\theta\bigr)}{\sin\theta},$$
 
@@ -722,6 +744,10 @@ $$f(x_k) - f(x^\star) \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2. \tag{7}$$
 </div>
 
 This is a **quadratic improvement** over the $O(1/k)$ rate of Theorem 5: where fixed-stepsize gradient descent requires $O(1/\varepsilon)$ iterations to reach accuracy $\varepsilon$, the Chebyshev stepsizes require only $O(1/\sqrt{\varepsilon})$.
+
+The corresponding stepsize schedule in the positive semidefinite case is shown below for several values of $k$.
+
+![Chebyshev stepsizes in the positive semidefinite case](figures/chebyshev_stepsizes_psd.jpg)
 
 *Proof.* The stepsizes $\eta_1, \ldots, \eta_k$ produce the degree-$k$ polynomial
 
@@ -756,11 +782,11 @@ The iteration complexity is $O(\sqrt{\beta\,\|x_0 - x^\star\|^2/\varepsilon})$--
 
 As in the positive definite case, the Chebyshev stepsizes require knowledge of $\beta$ and the total number of iterations $k$ must be fixed in advance.
 
-### Conjugate gradients in the positive semidefinite case
+### Conjugate gradient in the positive semidefinite case
 
-The conjugate gradient method matches the $O(1/k^2)$ rate of the Chebyshev stepsizes *adaptively*, without requiring knowledge of $\beta$ or a preset iteration count. As in the positive definite case, CG achieves this by optimizing over the full Krylov subspace.
+The conjugate gradient method matches the $O(1/k^2)$ rate of the Chebyshev stepsizes *adaptively*, without requiring knowledge of $\beta$ or a preset iteration count. As in the positive definite case, CG achieves this by optimizing over the full Krylov subspace (see [HS52, Lan52, Saa03]).
 
-The correctness guarantee of Theorem 4 continues to hold: at each step, $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$. The only condition needed beyond those in the positive definite case is that $p_k^\top Ap_k > 0$ at each step. Since $b \in \mathrm{range}(A)$ and $Ax_0 \in \mathrm{range}(A)$, the initial residual $r_0 = b - Ax_0$ lies in $\mathrm{range}(A)$. The Krylov subspace $\mathcal{K}_k(A, r_0) = \mathrm{span}\{r_0, Ar_0, \ldots, A^{k-1}r_0\}$ is therefore contained in $\mathrm{range}(A)$, and so every search direction $p_k$ lies in $\mathrm{range}(A)$. Since $A$ is positive definite on its range, the inequality $p_k^\top Ap_k > 0$ holds whenever $p_k \neq 0$.
+The same Krylov-minimization logic used in Theorem 4 extends to the PSD case under $b\in\mathrm{range}(A)$ and non-breakdown ($p_k^\top Ap_k>0$ before termination): at each step, $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$. Since $b \in \mathrm{range}(A)$ and $Ax_0 \in \mathrm{range}(A)$, the initial residual $r_0 = b - Ax_0$ lies in $\mathrm{range}(A)$. The Krylov subspace $\mathcal{K}_k(A, r_0) = \mathrm{span}\{r_0, Ar_0, \ldots, A^{k-1}r_0\}$ is therefore contained in $\mathrm{range}(A)$, and so every search direction $p_k$ lies in $\mathrm{range}(A)$. Since $A$ is positive definite on its range, the inequality $p_k^\top Ap_k > 0$ holds whenever $p_k \neq 0$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -772,7 +798,7 @@ $$f(x_k) - f(x^\star) \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2, \tag{9}$$
 
 </div>
 
-*Proof.* By Theorem 4, the CG iterate $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$. Since $e_0 \in \mathrm{range}(A)$, the polynomial representation gives
+*Proof.* By the Krylov-minimization property stated above for the PSD case, the CG iterate $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$. Since $e_0 \in \mathrm{range}(A)$, the polynomial representation gives
 
 $$
 \|e_k\|_A^2 = \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}} \|p(A)\,e_0\|_A^2 \leq \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}}\; \max_{\lambda \in (0,\beta]}\, \lambda\,p(\lambda)^2 \cdot \|e_0\|^2.
@@ -784,11 +810,9 @@ $$f(x_k) - f(x^\star) = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{\beta}{8k^2}\,\|x_0 -
 
 For finite termination, the polynomial $p(\lambda) = \prod_{j=1}^{m}(1 - \lambda/\mu_j)$ has degree $m$, satisfies $p(0) = 1$, and vanishes at every nonzero eigenvalue of $A$. Since $e_0 \in \mathrm{range}(A)$, the identity $p(A)\,e_0 = 0$ follows, and therefore $\|e_m\|_A = 0$. <span style="float: right;">$\square$</span>
 
-*Remark.* CG also enjoys a linear rate of convergence in the positive semidefinite case. Applying the Chebyshev polynomial $T_k$ on $[\mu_1, \beta]$ as in the proof of Theorem 3 and using Lemma 1 with $\kappa' = \beta/\mu_1$ gives
+The bound $(9)$ matches the PSD Chebyshev bound $(7)$; the gain of CG is that it attains this behavior adaptively, without requiring $\beta$ or a preset horizon.
 
-$$f(x_k) - f(x^\star) \leq 4\left(\frac{\sqrt{\kappa'}-1}{\sqrt{\kappa'}+1}\right)^{2k}\bigl(f(x_0) - f(x^\star)\bigr).$$
 
-The sublinear bound $(9)$ is most useful when the smallest nonzero eigenvalue $\mu_1$ is very small or unknown, while the linear bound becomes tighter once $k$ is large relative to $\sqrt{\kappa'}$.
 
 ### Discussion
 
@@ -798,9 +822,404 @@ The parallel between the positive definite and positive semidefinite cases is no
 |---|---|---|
 | Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\|x_0-x^\star\|^2/\varepsilon)$ |
 | Chebyshev GD | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\star\|^2/\varepsilon})$ |
-| Conjugate Gradients | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\star\|^2/\varepsilon})$ |
+| Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\star\|^2/\varepsilon})$ |
 
 In every row, the Chebyshev and CG methods improve the gradient descent complexity by a square root. CG additionally terminates in at most $m$ iterations---the number of distinct nonzero eigenvalues---which may be much smaller than the ambient dimension $d$.
+
+---
+
+## 7. Convergence Under Spectral Structure
+
+### Beyond worst-case analysis
+
+Up to this point, we emphasized worst-case bounds obtained from extreme eigenvalues alone. Section 7 keeps the same exact error identities but stops discarding spectral information too early. This is a refinement of the previous theory, not a separate one: the same spectral decomposition now yields sharper rates when the initialization and eigenvalue distribution have structure.
+
+The convergence bounds of the preceding sections depend on the extreme eigenvalues of $A$ alone---the condition number $\kappa = \beta/\alpha$ in the positive definite case, or the largest eigenvalue $\beta$ in the positive semidefinite case. These bounds treat every eigenvalue configuration with the same extremes as equally hard. In high-dimensional problems, however, the *distribution* of eigenvalues is often far from the worst case, and exploiting this structure leads to substantially sharper estimates.
+
+Recall the exact error formula from Section 2 (combining the eigenbasis expansion with $\eta=1/\beta$):
+
+$$
+f(x_k) - f(x^\star) = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1 - \lambda_i/\beta)^{2k}\,c_i^2. \tag{10}
+$$
+
+The worst-case analysis bounds this sum by pulling out the maximum: $\max_i (1 - \lambda_i/\beta)^{2k}$ in the positive definite case, or $\max_i \lambda_i(1-\lambda_i/\beta)^{2k}$ in the positive semidefinite case. This upper bound ignores two sources of structure:
+
+1. **The initial error may be smooth relative to $A$.** If the components $c_i$ of the initial error are small for small eigenvalues, the sum is dominated by well-conditioned directions. This is captured by *source conditions*.
+
+2. **The eigenvalue density may be thin near the worst-case maximizer.** If most eigenvalues lie far from the point where $\lambda(1-\lambda/\beta)^{2k}$ is largest, replacing the sum by an integral against the spectral density gives a sharper estimate. This is the *spectral integral* approach.
+
+We develop both ideas in turn, then combine them.
+
+### Source conditions
+
+A **source condition** of order $s \geq 0$ is the assumption
+
+$$e_0 = A^s\,w \qquad \text{for some } w \in \mathbb{R}^d.$$
+
+In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_i = v_i^\top w$. The factor $\lambda_i^s$ suppresses the components of the initial error at small eigenvalues: the larger $s$, the smoother the initial error relative to $A$. The case $s = 0$ imposes no constraint (beyond $e_0 \in \mathrm{range}(A)$ when $\alpha = 0$). The case $s = 1$ says $e_0 \in \mathrm{range}(A)$ with the explicit factorization $e_0 = Aw$.
+
+Substituting into $(10)$:
+
+$$
+f(x_k) - f(x^\star) = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2 \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{11}
+$$
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 8 (Source condition).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. If the initial error satisfies $e_0 = A^s w$ for some $s \geq 0$, then GD with $\eta = 1/\beta$ satisfies*
+
+$$f(x_k) - f(x^\star) \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{12}$$
+
+*In particular, $f(x_k) - f(x^\star) = O\!\left(\beta^{1+2s}\,k^{-(1+2s)}\,\|w\|^2\right)$ as $k \to \infty$.*
+
+</div>
+
+*Proof.* By $(11)$, it suffices to maximize $g(t) = t^{1+2s}(1-t)^{2k}$ over $t \in [0,1]$, with the identification $\lambda = \beta t$. Differentiating:
+
+$$
+g'(t) = t^{2s}(1-t)^{2k-1}\bigl[(1+2s)(1-t) - 2k\,t\bigr].
+$$
+
+The unique interior maximizer is $t^\star = (1+2s)/(2k+1+2s)$, and the maximum value is
+
+$$
+g(t^\star) = \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\left(\frac{2k}{2k+1+2s}\right)^{2k} \leq \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s},
+$$
+
+where the inequality uses $(1-x)^{n} \leq 1$ for $x \in [0,1]$ and $n \geq 0$. Multiplying by $\beta^{1+2s}/2$ and $\|w\|^2$ gives the bound $(12)$. The asymptotic rate follows from $(1+2s)/(2k+1+2s) = O(1/k)$. <span style="float: right;">$\square$</span>
+
+For $s = 0$, the bound reduces to $\frac{\beta}{2(2k+1)}\|e_0\|^2$, recovering Theorem 5. Each unit increase in $s$ accelerates the rate by an additional factor of $1/k^2$:
+
+| Source order $s$ | Condition on $e_0$ | Rate |
+|---|---|---|
+| $0$ | $e_0 \in \mathrm{range}(A)$ | $O(1/k)$ |
+| $1/2$ | $e_0 = A^{1/2}w$ | $O(1/k^2)$ |
+| $1$ | $e_0 = Aw$ | $O(1/k^3)$ |
+| $s$ | $e_0 = A^s w$ | $O(k^{-(1+2s)})$ |
+
+The plot below visualizes Theorem 8 on log-log axes: increasing the source order steepens the slope exactly as $-(1+2s)$.
+
+![Source condition rates](figures/source_condition_rates.png)
+
+The source condition is natural in many settings. In inverse problems, $s$ measures the regularity of the unknown signal relative to the forward operator. In machine learning, when $A = X^\top X/n$ is a sample covariance and $e_0$ represents the regression error, the condition $e_0 = A^s w$ says that the initial error aligns with the principal components of the data, with larger $s$ indicating stronger alignment (see [EHN96, Han95]).
+
+### Source condition when $\alpha > 0$
+
+When $A \succ 0$, the same source-condition argument yields a refined two-phase estimate. Starting from
+
+$$
+f(x_k) - f(x^\star) \leq \frac{\|w\|^2}{2}\max_{\lambda \in [\alpha,\beta]} \lambda^{1+2s}(1-\lambda/\beta)^{2k},
+$$
+
+define $h_k(\lambda) = \lambda^{1+2s}(1-\lambda/\beta)^{2k}$. The unconstrained maximizer is
+
+$$
+\lambda_k^\star = \beta\frac{1+2s}{2k+1+2s}.
+$$
+
+Therefore:
+
+- if $\lambda_k^\star \geq \alpha$ (equivalently $k \leq \frac{1+2s}{2}(\kappa-1)$), the maximizer lies in the interior and one recovers the sublinear estimate of Theorem 8;
+- if $\lambda_k^\star < \alpha$ (equivalently $k > \frac{1+2s}{2}(\kappa-1)$), the constrained maximizer is the endpoint $\lambda=\alpha$, giving
+
+$$
+f(x_k)-f(x^\star)\leq \frac{\alpha^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2. \tag{13}
+$$
+
+Hence, for $\alpha>0$, the source-condition bound is sublinear in an initial regime and then transitions to linear convergence with the same exponential factor as Corollary 2 but a smaller prefactor. Relative to the crude estimate
+
+$$
+f(x_k)-f(x^\star)\leq \frac{\beta^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2,
+$$
+
+the late-phase bound $(13)$ improves the constant by a factor $\kappa^{-(1+2s)}$.
+
+The next figure shows this two-phase effect directly: an initial sublinear envelope transitions to an endpoint-driven linear regime near $k_{\mathrm{trans}}$.
+
+![Source condition phase transition](figures/source_condition_phase_transition.png)
+
+### The spectral integral
+
+Source conditions improve rates by constraining the *initial error*. A complementary improvement comes from constraining the *eigenvalue distribution*. Define the **spectral error measure**
+
+$$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
+
+so that $\|e_0\|^2 = \mu([0,\beta])$ and $(10)$ reads
+
+$$
+f(x_k) - f(x^\star) = \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,d\mu(\lambda). \tag{14}
+$$
+
+When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \|e_0\|^2/d$), then $\phi(\lambda) \approx \|e_0\|^2\rho_A(\lambda)$.
+
+Under this approximation, $(14)$ becomes
+
+$$
+f(x_k) - f(x^\star) \approx \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,\phi(\lambda)\,d\lambda.
+$$
+
+The integrand $\lambda(1-\lambda/\beta)^{2k}$ is sharply peaked near $\lambda^\star = \beta/(2k+1)$ for large $k$ and decays rapidly away from this point. The integral is therefore controlled by the behavior of $\phi$ near $\lambda^\star$---which shifts toward zero as $k$ grows. The next two subsections exploit this concentration to obtain convergence rates that depend on the spectral density.
+
+### Power-law spectral density
+
+When the spectral error density follows a power law near the origin,
+
+$$\phi(\lambda) = M\,\lambda^{a-1} \qquad \text{on } (0, \beta],$$
+
+the exponent $a > 0$ controls the spectral mass near zero. For $a > 1$, the density vanishes at zero (few eigenvalues near the origin); for $a = 1$, the density is flat; for $0 < a < 1$, the density diverges (but remains integrable). This model captures many natural eigenvalue distributions: polynomial eigenvalue decay $\lambda_i \propto i^{-\alpha}$ corresponds to spectral exponent $a = 1/\alpha$.
+
+Combining with a source condition of order $s$ replaces $\phi(\lambda)$ by $M\lambda^{a-1+2s}$, and the integral evaluates exactly via the Beta function.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 9 (Power-law spectral density).** *Assume the spectral error measure is absolutely continuous on $(0,\beta]$ with density $\phi(\lambda)=M\lambda^{a-1+2s}$ for some $M>0$, $a>0$, and $s\ge 0$. Then the gradient descent iterates with $\eta = 1/\beta$ satisfy*
+
+$$f(x_k) - f(x^\star) = \frac{M\,\beta^{a+2s+1}}{2}\cdot\frac{\Gamma(a+2s+1)\,\Gamma(2k+1)}{\Gamma(2k+a+2s+2)}.$$
+
+*In particular, as $k \to \infty$,*
+
+$$f(x_k) - f(x^\star) \sim \frac{M\,\Gamma(a+2s+1)\,\beta^{a+2s+1}}{2\,(2k)^{a+2s+1}}. \tag{15}$$
+
+</div>
+
+*Proof.* Substituting $t = \lambda/\beta$:
+
+$$
+\int_0^\beta \lambda^{a+2s}(1-\lambda/\beta)^{2k}\,d\lambda = \beta^{a+2s+1}\int_0^1 t^{a+2s}(1-t)^{2k}\,dt = \beta^{a+2s+1}\,B(a+2s+1,\, 2k+1),
+$$
+
+where $B(p,q) = \Gamma(p)\Gamma(q)/\Gamma(p+q)$ is the Beta function. The asymptotics follow from the standard estimate $\Gamma(n+c)/\Gamma(n) \sim n^c$ as $n \to \infty$, applied with $n = 2k+1$ and $c = a+2s+1$. <span style="float: right;">$\square$</span>
+
+The rate $O(k^{-(a+2s+1)})$ improves with both the spectral exponent $a$ (fewer eigenvalues near zero) and the source order $s$ (smoother initial error). Compared with the pointwise bound of Theorem 8, which gives $O(k^{-(1+2s)})$ regardless of the eigenvalue distribution, the spectral integral gains an extra factor of $k^{-a}$. This improvement is largest when $a$ is large---that is, when the spectral density is thin near zero.
+
+| Spectral exponent $a$ | Description | Rate ($s = 0$) | Rate (general $s$) |
+|---|---|---|---|
+| $0^+$ | Singular at $0$ | $O(1/k)$ | $O(k^{-(1+2s)})$ |
+| $1/2$ | Square-root vanishing | $O(1/k^{3/2})$ | $O(k^{-(3/2+2s)})$ |
+| $1$ | Uniform | $O(1/k^2)$ | $O(k^{-(2+2s)})$ |
+| $2$ | Linear vanishing | $O(1/k^3)$ | $O(k^{-(3+2s)})$ |
+
+*Example (uniform spectrum).* If $A$ has eigenvalues uniformly spread in $(0, \beta]$ and the initial error is isotropic ($c_i^2 \approx \|e_0\|^2/d$), then $a = 1$ and $s = 0$, giving $f(x_k) - f(x^\star) = O(1/k^2)$. This is a quadratic improvement over the worst-case $O(1/k)$ bound of Theorem 5, obtained solely from the uniform distribution of eigenvalues.
+
+The figure below illustrates both dimensions of Theorem 9: varying the spectral exponent $a$ and varying the source order $s$.
+
+![Power-law density rates](figures/power_law_density_rates.png)
+
+### The Laplace method for positive definite spectra
+
+When $A \succ 0$, the eigenvalues lie in $[\alpha, \beta]$ with $\alpha > 0$, and the base rate of convergence is exponential: $O((1-\alpha/\beta)^{2k})$. The spectral integral can still yield improvements, but they take the form of a *polynomial correction* to the exponential rate rather than a change in the polynomial exponent.
+
+The key tool is the **Laplace method** for integrals. In $(14)$, the factor $(1-\lambda/\beta)^{2k}$ is largest at $\lambda = \alpha$ and decays exponentially as $\lambda$ moves away from $\alpha$. For large $k$, the integral is dominated by a neighborhood of $\lambda = \alpha$ whose width shrinks as $O(1/k)$. The behavior of the spectral error density $\phi$ near $\lambda = \alpha$ therefore determines the polynomial correction (a standard edge-asymptotic viewpoint in spectral analysis; see [BS10]).
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 10 (Laplace estimate).** *Let $A \succ 0$ with eigenvalues in $[\alpha, \beta]$, and suppose the spectral error density $\phi$ is continuous on $[\alpha, \beta]$ with*
+
+$$\phi(\lambda) = C\,(\lambda - \alpha)^p\bigl(1 + O(\lambda - \alpha)\bigr) \quad \textit{as } \lambda \to \alpha^+$$
+
+*for constants $C > 0$ and $p > -1$. Then GD with $\eta = 1/\beta$ satisfies*
+
+$$f(x_k) - f(x^\star) \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{16}$$
+
+</div>
+
+*Proof.* Substitute $u = \lambda - \alpha$ in the spectral integral $(14)$:
+
+$$
+f(x_k) - f(x^\star) = \frac{1}{2}\int_0^{\beta-\alpha} (\alpha + u)\,\bigl(1 - \alpha/\beta - u/\beta\bigr)^{2k}\,\phi(\alpha + u)\,du.
+$$
+
+Factor out the dominant exponential using the identity $1-\alpha/\beta - u/\beta = (1-\alpha/\beta)(1 - u/(\beta - \alpha))$:
+
+$$
+= \frac{(1-\alpha/\beta)^{2k}}{2}\int_0^{\beta-\alpha} (\alpha + u)\left(1 - \frac{u}{\beta-\alpha}\right)^{2k}\phi(\alpha + u)\,du.
+$$
+
+For large $k$, the factor $(1-u/(\beta-\alpha))^{2k}$ concentrates the integrand near $u = 0$. Using the hypotheses $\phi(\alpha+u) = Cu^p(1+O(u))$ and $\alpha + u = \alpha(1+O(u))$, the integral is asymptotic to
+
+$$
+\alpha\,C\int_0^{\beta-\alpha} u^p\left(1 - \frac{u}{\beta-\alpha}\right)^{2k}du.
+$$
+
+The substitution $v = 2ku/(\beta-\alpha)$ converts this to
+
+$$
+\alpha\,C\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\int_0^{2k} v^p\left(1-\frac{v}{2k}\right)^{2k}dv.
+$$
+
+As $k \to \infty$, the integrand converges pointwise to $v^p\,e^{-v}$ and is bounded by $v^p\,e^{-v}$ (since $(1-v/n)^n \leq e^{-v}$ for $v \in [0,n]$). By the dominated convergence theorem, the integral converges to $\Gamma(p+1)$. Combining and noting that $(\beta-\alpha)/\beta = 1-\alpha/\beta$ yields the formula $(16)$. <span style="float: right;">$\square$</span>
+
+Compared with the worst-case bound $f(x_k) - f(x^\star) \leq (1-\alpha/\beta)^{2k}(f(x_0)-f(x^\star))$, the Laplace estimate reveals a polynomial improvement of order $k^{-(p+1)}$ that depends on how the spectral density vanishes at the left edge of the spectrum. A flat density ($p = 0$) gives a $1/k$ improvement; a square-root vanishing ($p = 1/2$) gives $k^{-3/2}$; higher-order vanishing gives even larger gains.
+
+The figure below compares several edge exponents $p$ against the same exponential backbone, showing the progressive polynomial correction predicted by Theorem 10.
+
+![Laplace edge asymptotics](figures/laplace_edge_asymptotics.png)
+
+### Application: Marchenko--Pastur spectrum
+
+The Marchenko--Pastur distribution arises as the limiting spectral distribution of sample covariance matrices $A = X^\top X/n$ when the entries of $X \in \mathbb{R}^{n \times d}$ are i.i.d. with zero mean and variance $1/d$, in the asymptotic regime $d/n \to \gamma > 0$ [MP67, BS10]. The absolutely continuous part has density
+
+$$
+\rho_{MP}(\lambda) = \frac{\sqrt{(\lambda_+ - \lambda)(\lambda - \lambda_-)}}{2\pi\gamma\,\lambda}, \qquad \lambda \in [\lambda_-, \lambda_+],
+$$
+
+where $\lambda_\pm = (1 \pm \sqrt{\gamma})^2$. The behavior depends on $\gamma$.
+
+1. **$\gamma < 1$ (no atom at zero).** Here $\lambda_- > 0$, so the problem is positive definite with
+
+$$\kappa = \frac{\lambda_+}{\lambda_-} = \frac{(1+\sqrt\gamma)^2}{(1-\sqrt\gamma)^2}.$$
+
+Near the left edge $\lambda_-$, the density vanishes like a square root:
+
+$$
+\rho_{MP}(\lambda) \sim \frac{\sqrt{(\lambda_+ - \lambda_-)(\lambda - \lambda_-)}}{2\pi\gamma\,\lambda_-} = \frac{2\gamma^{1/4}\sqrt{\lambda - \lambda_-}}{2\pi\gamma\,(1-\sqrt\gamma)^2} \quad \text{as } \lambda \to \lambda_-^+.
+$$
+
+With isotropic initialization ($\phi = \|e_0\|^2\rho_{MP}$), Theorem 10 applies with $\alpha = \lambda_-$, $\beta = \lambda_+$, and $p = 1/2$. Since $\Gamma(3/2) = \sqrt\pi/2$, the estimate $(16)$ gives
+
+$$
+f(x_k) - f(x^\star) \sim \frac{\tilde{C}(\gamma)}{k^{3/2}}\left(1 - \frac{1}{\kappa}\right)^{2k}\|e_0\|^2 \quad \text{as } k \to \infty,
+$$
+
+where $\tilde{C}(\gamma)$ is an explicit constant depending on the aspect ratio $\gamma$.
+
+2. **$\gamma = 1$ (hard edge at zero).** Then $\lambda_-=0$ and
+
+$$
+\rho_{MP}(\lambda) = \frac{\sqrt{4-\lambda}}{2\pi\sqrt{\lambda}} \sim \frac{1}{\pi\sqrt{\lambda}} \quad \text{as } \lambda \to 0^+.
+$$
+
+Thus $\phi(\lambda) \propto \lambda^{-1/2}$ (power-law exponent $a=1/2$ in Theorem 9 with $s=0$), and
+
+$$
+f(x_k)-f(x^\star)=O(k^{-3/2}).
+$$
+
+3. **$\gamma > 1$ (rank deficient).** The empirical spectrum has an atom at $0$ of asymptotic mass $1-1/\gamma$, so globally $\alpha=0$. However, the nonzero spectrum still lies in $[(\sqrt{\gamma}-1)^2,\ (\sqrt{\gamma}+1)^2]$. Since the objective gap carries the factor $\lambda$ in $(14)$, the nullspace part does not contribute to $f(x_k)-f(x^\star)$. Therefore the nonzero spectral component behaves as in the positive definite case, with
+
+$$
+\alpha_{\mathrm{eff}} = (\sqrt{\gamma}-1)^2,\qquad \beta=(\sqrt{\gamma}+1)^2,
+$$
+
+and the same asymptotic form
+
+$$
+f(x_k)-f(x^\star)\sim \frac{\hat{C}(\gamma)}{k^{3/2}}\left(1-\frac{\alpha_{\mathrm{eff}}}{\beta}\right)^{2k}\|e_0\|^2.
+$$
+
+In all three regimes, the square-root edge behavior of Marchenko--Pastur yields the same $k^{-3/2}$ polynomial factor; what changes is whether it multiplies an exponential term (gap $>0$) or appears alone (gap $=0$).
+
+The first figure summarizes the three Marchenko--Pastur spectral shapes, including the atom at zero when $\gamma>1$.
+
+![Marchenko--Pastur spectral densities for three aspect-ratio regimes, including the atom at zero when gamma is greater than 1](figures/marchenko_pastur_regimes.png)
+
+The next figure compares the corresponding convergence proxies over iterations.
+
+![Convergence-proxy curves versus iteration across Marchenko--Pastur regimes (gamma less than 1, gamma equals 1, gamma greater than 1)](figures/mp_convergence_regimes.png)
+
+### Discussion
+
+The two mechanisms---source conditions and spectral structure---are complementary and can be combined. With a source condition of order $s$ and a power-law spectral density with exponent $a$, the rate is $O(k^{-(a+2s+1)})$, improving both over the pointwise bound $O(k^{-(1+2s)})$ (Theorem 8) and the spectral bound without source condition $O(k^{-(a+1)})$.
+
+In the positive definite setting with source condition $e_0=A^s w$, there is a clear phase transition around
+
+$$
+k_{\mathrm{trans}} \approx \frac{1+2s}{2}(\kappa-1).
+$$
+
+before this scale, the source-condition estimate behaves sublinearly as $k^{-(1+2s)}$, while beyond it the linear factor $(1-1/\kappa)^{2k}$ dominates and the source condition appears primarily through an improved constant.
+
+The spectral integral approach also extends beyond gradient descent. In the polynomial framework of Section 3, any polynomial method with polynomial $p_k$ satisfying $p_k(0) = 1$ yields
+
+$$
+f(x_k) - f(x^\star) = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^2\,d\mu(\lambda).
+$$
+
+For the Krylov subspace method and CG, $p_k$ is chosen optimally over $\mathcal{P}_k$. This gives a direct generalization of all Section 7 results.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 11 (CG spectral variational form).** *Let $A \succeq 0$, assume $b \in \mathrm{range}(A)$, and let $x^\star=\mathrm{proj}_S(x_0)$. For each CG iterate before termination,*
+
+$$
+f(x_k^{\mathrm{CG}})-f(x^\star) = \frac{1}{2}\min_{\substack{p \in \mathcal{P}_k\\ p(0)=1}} \int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda). \tag{17}
+$$
+
+*Consequently, for every admissible polynomial $q_k$ with $q_k(0)=1$,*
+
+$$
+f(x_k^{\mathrm{CG}})-f(x^\star) \leq \frac{1}{2}\int_0^\beta \lambda\,q_k(\lambda)^2\,d\mu(\lambda).
+$$
+
+</div>
+
+Choosing $q_k(\lambda)=(1-\lambda/\beta)^k$ recovers gradient descent with stepsize $1/\beta$, hence
+
+$$
+f(x_k^{\mathrm{CG}})-f(x^\star)\le f(x_k^{\mathrm{GD}})-f(x^\star).
+$$
+
+Therefore every spectral bound proved in Section 7 for GD transfers immediately to CG (with the same assumptions and constants): source-condition rates from Theorem 8, power-law rates from Theorem 9, Laplace edge asymptotics from Theorem 10, and the three Marchenko--Pastur regimes. In each case, CG is never worse and can be strictly better because it optimizes over all degree-$k$ polynomials rather than using the single fixed polynomial $(1-\lambda/\beta)^k$ (see [Saa03, Gre97]).
+
+The figure below illustrates this dominance on a synthetic power-law spectrum: for matched initialization and steps, the CG curve stays below the GD curve.
+
+![CG vs GD on power-law spectrum](figures/cg_vs_gd_powerlaw.png)
+
+In particular, in the PSD baseline case ($s=0$), Theorem 7 already shows a sharper $O(1/k^2)$ CG rate versus the $O(1/k)$ GD rate from Theorem 5. Under favorable spectral structure (source conditions, edge decay, or Marchenko--Pastur geometry), the same mechanism yields at least the GD structured rate and often improves it further in practice.
+
+The next figure compares GD and CG across the three Marchenko--Pastur regimes ($\gamma<1$, $\gamma=1$, $\gamma>1$), again showing the same regime transitions with CG typically ahead.
+
+![CG vs GD across Marchenko--Pastur regimes](figures/cg_vs_gd_mp.png)
+
+The key message is that worst-case bounds, while universal, can be highly pessimistic when the problem has spectral structure. The spectral integral converts qualitative knowledge about the eigenvalue distribution into quantitative improvements in convergence rates, and the Laplace method provides a systematic tool for extracting these improvements.
+
+---
+
+## 8. Related Literature
+
+The main narrative of the notes is complete; this section situates the preceding results in the literature.
+The results discussed in these notes are classical and widely documented in numerical optimization, Krylov methods, inverse problems, and random matrix theory.
+
+- **Gradient descent and first-order complexity.** Linear-rate GD analysis for strongly convex quadratics and condition-number dependence are standard; see [Pol64, Nes04, Nes18].
+- **Chebyshev acceleration and semi-iterative methods.** The minimax polynomial viewpoint and Chebyshev stepsizes are classical; see [Var62, You71, Saa03].
+- **Conjugate gradient and Krylov optimality.** Foundational CG/Krylov results originate in [HS52, Lan52]; modern treatments include [Saa03, Gre97].
+- **Source conditions and spectral-decay rates.** The source-condition framework and decay-dependent rates are standard in inverse problems and regularization theory; see [EHN96, Han95].
+- **Marchenko--Pastur asymptotics.** The limiting spectral law is due to [MP67], with modern expositions in [BS10, Ver18].
+
+### How the present results map to the cited literature
+
+The notes combine ideas that appear in different communities; the table below makes this correspondence explicit.
+
+| Result in these notes | Where it appears in the literature | Relation |
+|---|---|---|
+| Theorem 1 + Corollaries 1--2 (GD linear rates on SPD quadratics) | [Pol64], [Nes04], [Nes18] | Standard spectral analysis of fixed-step gradient methods on strongly convex smooth quadratics. |
+| Theorem 2 (Chebyshev stepsizes, $O(\sqrt{\kappa}\ln(1/\varepsilon))$) | [Var62], [You71], [Saa03] | Classical Chebyshev semi-iterative acceleration and minimax polynomial construction on $[\alpha,\beta]$. |
+| Theorems 3--4 (Krylov optimality and CG correctness) | [HS52], [Lan52], [Saa03], [Gre97] | Canonical Krylov-space characterization: CG realizes the polynomial/Krylov minimizer with three-term recurrences. |
+| Theorems 5--7 (PSD regime: $O(1/k)$ for GD, $O(1/k^2)$ for Chebyshev/CG) | [Saa03], [EHN96], [Han95] | Same polynomial-filter mechanism appears in semi-iterative and regularization analyses when small eigenvalues dominate. |
+| Theorem 8 (source condition exponent $1+2s$) | [EHN96], [Han95] | Matches the inverse-problem viewpoint: smoothness/source conditions convert spectral decay assumptions into algebraic convergence exponents. |
+| Theorem 9 (power-law spectral density asymptotics) | [EHN96], [BS10], [Ver18] | This note adapts standard spectral-density asymptotics to GD error filters; the explicit Beta-function form is a direct specialization to quadratics. |
+| Theorem 10 (Laplace edge correction) | [BS10], [Ver18] | Uses edge asymptotics of spectral integrals; the $k^{-(p+1)}$ correction reflects local density behavior near the spectral edge. |
+| Marchenko--Pastur subsection | [MP67], [BS10], [Ver18] | Imports MP density/edge behavior into the optimization bounds, yielding regime-dependent prefactors and the $k^{-3/2}$ edge signature. |
+| Theorem 11 (CG variational spectral form) | [Saa03], [Gre97] | Restates the classical CG polynomial minimization property in the spectral-integral notation used in Section 7. |
+
+In particular, the novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
+
+### References
+
+- [HS52] Hestenes, M. R., and Stiefel, E. (1952). *Methods of conjugate gradients for solving linear systems*. Journal of Research of the National Bureau of Standards.
+- [Lan52] Lanczos, C. (1952). *An iteration method for the solution of the eigenvalue problem of linear differential and integral operators*. Journal of Research of the National Bureau of Standards.
+- [Pol64] Polyak, B. T. (1964). *Some methods of speeding up the convergence of iteration methods*. USSR Computational Mathematics and Mathematical Physics.
+- [Var62] Varga, R. S. (1962). *Matrix Iterative Analysis*. Prentice-Hall.
+- [You71] Young, D. M. (1971). *Iterative Solution of Large Linear Systems*. Academic Press.
+- [EHN96] Engl, H. W., Hanke, M., and Neubauer, A. (1996). *Regularization of Inverse Problems*. Kluwer.
+- [Han95] Hanke, M. (1995). *Conjugate Gradient Type Methods for Ill-Posed Problems*. Longman.
+- [Saa03] Saad, Y. (2003). *Iterative Methods for Sparse Linear Systems* (2nd ed.). SIAM.
+- [Gre97] Greenbaum, A. (1997). *Iterative Methods for Solving Linear Systems*. SIAM.
+- [MP67] Marchenko, V. A., and Pastur, L. A. (1967). *Distribution of eigenvalues for some sets of random matrices*. Mathematics of the USSR-Sbornik.
+- [BS10] Bai, Z. D., and Silverstein, J. W. (2010). *Spectral Analysis of Large Dimensional Random Matrices* (2nd ed.). Springer.
+- [Nes04] Nesterov, Y. (2004). *Introductory Lectures on Convex Optimization*. Kluwer.
+- [Nes18] Nesterov, Y. (2018). *Lectures on Convex Optimization* (2nd ed.). Springer.
+- [Ver18] Vershynin, R. (2018). *High-Dimensional Probability*. Cambridge University Press.
 
 ---
 
@@ -812,7 +1231,7 @@ In every row, the Chebyshev and CG methods improve the gradient descent complexi
 |--------|--------------|---------------------|-------------------|
 | Gradient descent | One matvec | $O(\kappa\,\ln(1/\varepsilon))$ | Yes (for optimal step) |
 | Chebyshev GD | One matvec | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | Yes |
-| Conjugate Gradients | One matvec | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$, at most $d$ steps | No |
+| Conjugate Gradient | One matvec | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$, at most $m$ steps ($m\le d$) | No |
 
 **Positive semidefinite case** ($\alpha = 0$):
 
@@ -820,9 +1239,20 @@ In every row, the Chebyshev and CG methods improve the gradient descent complexi
 |--------|--------------|---------------------|-----------|
 | Gradient descent | One matvec | $O(\beta\,\|x_0 - x^\star\|^2/\varepsilon)$ | Sublinear $O(1/k)$ |
 | Chebyshev GD | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\star\|^2/\varepsilon})$ | Sublinear $O(1/k^2)$ |
-| Conjugate Gradients | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\star\|^2/\varepsilon})$, at most $m$ steps | Sublinear $O(1/k^2)$ |
+| Conjugate Gradient | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\star\|^2/\varepsilon})$, at most $m$ steps | Sublinear $O(1/k^2)$ |
 
-The key takeaway: on quadratics, the Chebyshev and CG methods achieve a square-root improvement over gradient descent in *every* regime---whether measured by the condition number $\kappa$ in the positive definite case or by the iteration complexity in the positive semidefinite case. CG accomplishes this *adaptively*, without needing to know the eigenvalues or fixing the iteration count in advance, and terminates (in exact precision) in a number of steps bounded by the number of distinct nonzero eigenvalues of $A$. In practice CG doesn't exactly terminate after finitely many steps due to compounding of numerical errors.
+The key takeaway: one spectral idea runs through the entire development. On quadratics, the Chebyshev and CG methods achieve a square-root improvement over gradient descent in *every* regime---whether measured by the condition number $\kappa$ in the positive definite case or by the iteration complexity in the positive semidefinite case. CG accomplishes this *adaptively*, without needing to know the eigenvalues or fixing the iteration count in advance, and terminates (in exact arithmetic) in a number of steps bounded by the number of distinct nonzero eigenvalues of $A$. In practice CG does not exactly terminate after finitely many steps due to compounding of numerical errors.
+
+**Spectral structure** (Section 7):
+
+| Setting | Assumption | GD rate | CG rate |
+|---------|-----------|---------|---------|
+| Source condition, order $s$ | $e_0 = A^s w$ | $O(k^{-(1+2s)})$ | At least $O(k^{-(1+2s)})$, typically better |
+| Power-law density, exponent $a$ | $\phi(\lambda) \sim \lambda^{a-1}$ | $O(k^{-(a+2s+1)})$ | At least $O(k^{-(a+2s+1)})$, typically better |
+| PD, edge exponent $p$ | $\phi(\lambda) \sim (\lambda-\alpha)^p$ | $(1-1/\kappa)^{2k} \cdot O(k^{-(p+1)})$ | At least same bound, with adaptive improvement possible |
+| Marchenko--Pastur | $d/n \to \gamma$ | $\gamma \neq 1$: $(1-\alpha_{\mathrm{eff}}/\beta)^{2k}O(k^{-3/2})$, $\gamma=1$: $O(k^{-3/2})$ | At least same regime-wise rate, often faster in practice |
+
+When the spectrum has structure---whether through a source condition on the initial error, a favorable eigenvalue density, or both---the worst-case bounds can be improved by polynomial factors in $k$. The spectral integral and Laplace method provide the tools for extracting these improvements.
 
 ---
 
