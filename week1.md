@@ -244,9 +244,12 @@ Rearranging we deduce
 
 $$\frac{f(x_k) - f(x^\star)}{f(x_0) - f(x^\star)} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
 
+
+
+
 Fixed-stepsize gradient descent corresponds to the special case $p_k(\lambda) = (1 - \eta\lambda)^k$, but we are now free to choose *any* stepsizes. Notice that as we vary the stepsizes $\eta_0,\ldots,\eta_{k-1}$, any degree-$k$ polynomial $p(\lambda)$ satisfying $p(0)=1$ can be realized as $p_k(\lambda)$. Thus choosing time-varying stepsizes is equivalent to choosing such a polynomial. The best possible convergence after $k$ steps is therefore determined by the **minimax polynomial problem**:
 
-$$\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha, \beta]} p(\lambda)^2,$$
+$$\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha, \beta]} p(\lambda)^2. \tag{2}$$
 
 where $\mathcal{P}_k$ denotes the set of polynomials of degree at most $k$. The solution to this classical approximation problem involves Chebyshev polynomials.
 
@@ -285,7 +288,7 @@ In summary, the Chebyshev polynomials $T_k$ are designed to be highly oscillator
 
 
 ### The optimal polynomial
-Returning to gradient descent, let us see how Chebyshev polynomials yield a solution to the variational problem. we rescale the interval $[\alpha, \beta]$ to $[-1,1]$ with the affine change of coordinates $\lambda\mapsto\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}$. Note that this transformation sends $\lambda = 0$ to the point $\sigma := \frac{\beta + \alpha}{\beta - \alpha} = \frac{\kappa + 1}{\kappa - 1}$, assuming $\alpha>0$. Thus, under this substitution, any degree-$k$ polynomial $p(\lambda)$ with $p(0) = 1$ corresponds to a degree-$k$ polynomial $q$ with $q(\sigma) = 1$, and
+Returning to gradient descent, let us see how Chebyshev polynomials yield a solution to the minimax problem $(2)$. we rescale the interval $[\alpha, \beta]$ to $[-1,1]$ with the affine change of coordinates $\lambda\mapsto\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}$. Note that this transformation sends $\lambda = 0$ to the point $\sigma := \frac{\beta + \alpha}{\beta - \alpha} = \frac{\kappa + 1}{\kappa - 1}$, assuming $\alpha>0$. Thus, under this substitution, any degree-$k$ polynomial $p(\lambda)$ with $p(0) = 1$ corresponds to a degree-$k$ polynomial $q$ with $q(\sigma) = 1$, and
 
 $$\max_{\lambda \in [\alpha, \beta]}\lvert p(\lambda)\rvert = \max_{t \in [-1,1]}\lvert q(t)\rvert.$$
 
@@ -357,7 +360,7 @@ $$\eta_j = \tfrac{1}{\lambda_j}~~ \textrm{where}~~\lambda_j = \tfrac{\beta + \al
 
 *Then as long as $\alpha>0$ the gradient descent iterates satisfy*
 
-$$f(x_k) - f(x^\star) \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f(x^\star)\bigr). \tag{2}$$
+$$f(x_k) - f(x^\star) \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f(x^\star)\bigr). \tag{3}$$
 
 </div>
 
@@ -374,7 +377,7 @@ $$
 \frac{1}{T_k(\sigma)^2} \leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
 $$
 
-Combining the preceding two estimates yields the conclusion $(2)$. This completes the proof. <span style="float: right;">$\square$</span>
+Combining the preceding two estimates yields the conclusion $(3)$. This completes the proof. <span style="float: right;">$\square$</span>
 
 Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\ln(1/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations (classical Chebyshev semi-iterative behavior; see [Var62, You71, Saa03]).
 
@@ -418,17 +421,17 @@ is the **Krylov subspace** of order $k$. Both fixed-stepsize gradient descent an
 
 The **Krylov subspace method** is the idealized algorithm that, at each step $k$, sets
 
-$$x_k = \argmin_{x \,\in\, x_0 + \mathcal{K}_k(A,\,r_0)} f(x). \tag{3}$$
+$$x_k = \argmin_{x \,\in\, x_0 + \mathcal{K}_k(A,\,r_0)} f(x). \tag{4}$$
 
-Since $f$ is strictly convex (when $\alpha > 0$), the minimizer in $(3)$ is unique. The convergence analysis follows immediately from the polynomial framework developed in Section 3.
+Since $f$ is strictly convex (when $\alpha > 0$), the minimizer in $(4)$ is unique. The convergence analysis follows immediately from the polynomial framework developed in Section 3.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 3 (Krylov method convergence).** *Assuming $\alpha > 0$, the Krylov subspace method $(3)$ satisfies*
+**Theorem 3 (Krylov method convergence).** *Assuming $\alpha > 0$, the Krylov subspace method $(4)$ satisfies*
 
 $$
 f(x_k) - f(x^\star) \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f(x^\star)\bigr).
-\tag{4}
+\tag{5}
 $$
 
 *Moreover, the method converges in at most $m$ iterations, where $m$ is the number of distinct eigenvalues of $A$.*
@@ -465,7 +468,7 @@ $$
 \|e_k\|_A^2 \leq \frac{\|e_0\|_A^2}{T_k(\sigma)^2} \leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}\|e_0\|_A^2.
 $$
 
-This proves the estimate $(4)$.
+This proves the estimate $(5)$.
 
 For finite termination, let $\mu_1,\ldots,\mu_m$ denote the distinct eigenvalues of $A$, and consider the polynomial
 
@@ -475,11 +478,11 @@ $$
 
 This polynomial has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $A$. Hence $p(A)=0$, and the polynomial representation gives $\lVert e_m\rVert_A=0$. <span style="float: right;">$\square$</span>
 
-The convergence bound $(4)$ is identical to the Chebyshev bound $(2)$ of Theorem 2, and the iteration complexity is the same $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$. The Krylov method achieves this rate *without knowing $\alpha$ or $\beta$*, and finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues (hence $m \le d$). In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
+The convergence bound $(5)$ is identical to the Chebyshev bound $(3)$ of Theorem 2, and the iteration complexity is the same $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$. The Krylov method achieves this rate *without knowing $\alpha$ or $\beta$*, and finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues (hence $m \le d$). In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
 
 ### The Conjugate Gradient algorithm
 
-The Krylov subspace method $(3)$ is conceptual: a direct implementation would solve a $k$-dimensional optimization at each step, with cost growing as $k$ increases. The **Conjugate Gradient (CG)** algorithm is a remarkable implementation of the Krylov method that uses only **one matrix-vector product per iteration** and $O(d)$ additional work.
+The Krylov subspace method $(4)$ is conceptual: a direct implementation would solve a $k$-dimensional optimization at each step, with cost growing as $k$ increases. The **Conjugate Gradient (CG)** algorithm is a remarkable implementation of the Krylov method that uses only **one matrix-vector product per iteration** and $O(d)$ additional work.
 
 The key idea is to iteratively build a basis of the Krylov subspaces that is orthogonal with respect to the inner product $\langle x,y\rangle_A=x^\top Ay$, so that each successive minimization reduces to a single line search. Conceptually, this basis is formed by a Gram--Schmidt process. The special structure of Krylov subspaces ensures that each Gram--Schmidt update requires only the immediately preceding direction---a **short recurrence**---rather than all previous directions. This is why each CG iteration costs $O(d)$ work beyond the single matrix-vector product.
 
@@ -507,7 +510,7 @@ Each iteration requires one matrix-vector product $Ap_k$, the same per-step cost
 
 ### CG implements the Krylov method
 
-We now verify that the CG algorithm produces exactly the iterates of the Krylov subspace method $(3)$. The key is to show that the search directions span the Krylov subspace and that the residuals are mutually orthogonal---two properties that together force each CG iterate to minimize $f$ over the correct affine subspace.
+We now verify that the CG algorithm produces exactly the iterates of the Krylov subspace method $(4)$. The key is to show that the search directions span the Krylov subspace and that the residuals are mutually orthogonal---two properties that together force each CG iterate to minimize $f$ over the correct affine subspace.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -517,7 +520,7 @@ We now verify that the CG algorithm produces exactly the iterates of the Krylov 
 2. *$p_i^\top A p_j = 0$ for $i \neq j$ ($A$-conjugacy of search directions),*
 3. *$\mathrm{span}\lbrace p_0, \ldots, p_{k-1}\rbrace = \mathrm{span}\lbrace r_0, \ldots, r_{k-1}\rbrace = \mathcal{K}_k(A, r_0)$.*
 
-*Consequently, $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$, and the convergence guarantee $(4)$ of Theorem 3 applies to the CG iterates.*
+*Consequently, $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$, and the convergence guarantee $(5)$ of Theorem 3 applies to the CG iterates.*
 
 </div>
 
@@ -674,7 +677,7 @@ The key idea is that the objective weights each eigendirection by $\lambda_i$. T
 
 **Theorem 5 (Sublinear convergence of gradient descent).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. With stepsize $\eta = 1/\beta$, the gradient descent iterates satisfy*
 
-$$f(x_k) - f(x^\star) \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\star\|^2, \tag{5}$$
+$$f(x_k) - f(x^\star) \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\star\|^2, \tag{6}$$
 
 *where $x^\star = \mathrm{proj}_S(x_0)$ is the closest solution to $x_0$.*
 
@@ -700,7 +703,7 @@ where the inequality uses $(1-1/n)^{n-1} \leq 1$ for all integers $n \geq 2$, ap
 
 $$\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k} = \beta\,h(t^\star) \leq \frac{\beta}{2k+1}.$$
 
-Combining the preceding two estimates yields the conclusion $(5)$. <span style="float: right;">$\square$</span>
+Combining the preceding two estimates yields the conclusion $(6)$. <span style="float: right;">$\square$</span>
 
 ### Iteration complexity
 
@@ -720,7 +723,7 @@ An important feature of Theorem 5 is that the convergence bound involves the squ
 
 This change is unavoidable. Since $f(x_0) - f(x^\star) = \tfrac{1}{2}\sum_{i>r}\lambda_i\,c_i^2$ and $\|e_0\|^2 = \sum_{i>r}c_i^2$, the ratio $(f(x_0) - f(x^\star))/\|e_0\|^2$ can be arbitrarily small when the initial error concentrates along eigenvectors with small nonzero eigenvalues. Consequently, no bound of the form
 
-$$f(x_k) - f(x^\star) \leq g(k)\bigl(f(x_0) - f(x^\star)\bigr) \tag{6}$$
+$$f(x_k) - f(x^\star) \leq g(k)\bigl(f(x_0) - f(x^\star)\bigr) \tag{7}$$
 
 with $g(k) \to 0$ can hold uniformly over all starting points when $\alpha = 0$. The Euclidean distance $\|x_0 - x^\star\|$ is the natural measure of initial error in the positive semidefinite setting.
 
@@ -746,7 +749,7 @@ $$\eta_j = \frac{1}{\beta\sin^2(j\pi/(2k))} \qquad \textrm{for}~ j = 1, \ldots, 
 
 *Then the gradient descent iterates satisfy*
 
-$$f(x_k) - f(x^\star) \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2. \tag{7}$$
+$$f(x_k) - f(x^\star) \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2. \tag{8}$$
 
 </div>
 
@@ -766,9 +769,9 @@ $$\phi_k(\lambda) = \left(1 - \frac{\lambda}{\beta}\right)\frac{U_{k-1}(1 - 2\la
 
 where the factor $1/k$ ensures $\phi_k(0) = 1$ (since $U_{k-1}(1) = k$). We claim that
 
-$$\max_{\lambda \in (0,\beta]}\,\lambda\,\phi_k(\lambda)^2 \leq \frac{\beta}{4k^2}. \tag{8}$$
+$$\max_{\lambda \in (0,\beta]}\,\lambda\,\phi_k(\lambda)^2 \leq \frac{\beta}{4k^2}. \tag{9}$$
 
-To verify $(8)$, substitute $\cos\theta = 1 - 2\lambda/\beta$ for $\theta \in [0,\pi]$, so that $\lambda = \beta\sin^2(\theta/2)$ and $1 - \lambda/\beta = \cos^2(\theta/2)$. The Chebyshev identity gives $U_{k-1}(\cos\theta) = \sin(k\theta)/\sin\theta$, and the factorization $\sin\theta = 2\sin(\theta/2)\cos(\theta/2)$ yields
+To verify $(9)$, substitute $\cos\theta = 1 - 2\lambda/\beta$ for $\theta \in [0,\pi]$, so that $\lambda = \beta\sin^2(\theta/2)$ and $1 - \lambda/\beta = \cos^2(\theta/2)$. The Chebyshev identity gives $U_{k-1}(\cos\theta) = \sin(k\theta)/\sin\theta$, and the factorization $\sin\theta = 2\sin(\theta/2)\cos(\theta/2)$ yields
 
 $$
 \begin{aligned}
@@ -779,7 +782,7 @@ $$
 \end{aligned}
 $$
 
-Since $\cos^2(\theta/2) \leq 1$ and $\sin^2(k\theta) \leq 1$ for all $\theta$, the claim $(8)$ follows. The error bound from Section 2 then gives
+Since $\cos^2(\theta/2) \leq 1$ and $\sin^2(k\theta) \leq 1$ for all $\theta$, the claim $(9)$ follows. The error bound from Section 2 then gives
 
 $$f(x_k) - f(x^\star) = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|e_0\|^2 = \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2.$$
 
@@ -799,7 +802,7 @@ The same Krylov-minimization logic used in Theorem 4 extends to the PSD case und
 
 **Theorem 7 (CG convergence, PSD case).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. Let $\mu_1 < \mu_2 < \cdots < \mu_m$ denote the distinct nonzero eigenvalues of $A$. The CG iterates satisfy*
 
-$$f(x_k) - f(x^\star) \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2, \tag{9}$$
+$$f(x_k) - f(x^\star) \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2, \tag{10}$$
 
 *and CG terminates in at most $m$ iterations.*
 
@@ -811,13 +814,13 @@ $$
 \|e_k\|_A^2 = \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}} \|p(A)\,e_0\|_A^2 \leq \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}}\; \max_{\lambda \in (0,\beta]}\, \lambda\,p(\lambda)^2 \cdot \|e_0\|^2.
 $$
 
-The polynomial $\phi_k$ from the proof of Theorem 6 is a feasible choice. Applying the estimate $(8)$ yields
+The polynomial $\phi_k$ from the proof of Theorem 6 is a feasible choice. Applying the estimate $(9)$ yields
 
 $$f(x_k) - f(x^\star) = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2.$$
 
 For finite termination, the polynomial $p(\lambda) = \prod_{j=1}^{m}(1 - \lambda/\mu_j)$ has degree $m$, satisfies $p(0) = 1$, and vanishes at every nonzero eigenvalue of $A$. Since $e_0 \in \mathrm{range}(A)$, the identity $p(A)\,e_0 = 0$ follows, and therefore $\|e_m\|_A = 0$. <span style="float: right;">$\square$</span>
 
-The bound $(9)$ matches the PSD Chebyshev bound $(7)$; the gain of CG is that it attains this behavior adaptively, without requiring $\beta$ or a preset horizon.
+The bound $(10)$ matches the PSD Chebyshev bound $(8)$; the gain of CG is that it attains this behavior adaptively, without requiring $\beta$ or a preset horizon.
 
 
 
@@ -846,7 +849,7 @@ The convergence bounds of the preceding sections depend on the extreme eigenvalu
 Recall the exact error formula from Section 2 (combining the eigenbasis expansion with $\eta=1/\beta$):
 
 $$
-f(x_k) - f(x^\star) = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1 - \lambda_i/\beta)^{2k}\,c_i^2. \tag{10}
+f(x_k) - f(x^\star) = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1 - \lambda_i/\beta)^{2k}\,c_i^2. \tag{11}
 $$
 
 The worst-case analysis bounds this sum by pulling out the maximum: $\max_i (1 - \lambda_i/\beta)^{2k}$ in the positive definite case, or $\max_i \lambda_i(1-\lambda_i/\beta)^{2k}$ in the positive semidefinite case. This upper bound ignores two sources of structure:
@@ -865,23 +868,23 @@ $$e_0 = A^s\,w \qquad \text{for some } w \in \mathbb{R}^d.$$
 
 In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_i = v_i^\top w$. The factor $\lambda_i^s$ suppresses the components of the initial error at small eigenvalues: the larger $s$, the smoother the initial error relative to $A$. The case $s = 0$ imposes no constraint (beyond $e_0 \in \mathrm{range}(A)$ when $\alpha = 0$). The case $s = 1$ says $e_0 \in \mathrm{range}(A)$ with the explicit factorization $e_0 = Aw$.
 
-Substituting into $(10)$:
+Substituting into $(11)$:
 
 $$
-f(x_k) - f(x^\star) = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2 \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{11}
+f(x_k) - f(x^\star) = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2 \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{12}
 $$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 8 (Source condition).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. If the initial error satisfies $e_0 = A^s w$ for some $s \geq 0$, then GD with $\eta = 1/\beta$ satisfies*
 
-$$f(x_k) - f(x^\star) \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{12}$$
+$$f(x_k) - f(x^\star) \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{13}$$
 
 *In particular, $f(x_k) - f(x^\star) = O\!\left(\beta^{1+2s}\,k^{-(1+2s)}\,\|w\|^2\right)$ as $k \to \infty$.*
 
 </div>
 
-*Proof.* By $(11)$, it suffices to maximize $g(t) = t^{1+2s}(1-t)^{2k}$ over $t \in [0,1]$, with the identification $\lambda = \beta t$. Differentiating:
+*Proof.* By $(12)$, it suffices to maximize $g(t) = t^{1+2s}(1-t)^{2k}$ over $t \in [0,1]$, with the identification $\lambda = \beta t$. Differentiating:
 
 $$
 g'(t) = t^{2s}(1-t)^{2k-1}\bigl[(1+2s)(1-t) - 2k\,t\bigr].
@@ -893,7 +896,7 @@ $$
 g(t^\star) = \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\left(\frac{2k}{2k+1+2s}\right)^{2k} \leq \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s},
 $$
 
-where the inequality uses $(1-x)^{n} \leq 1$ for $x \in [0,1]$ and $n \geq 0$. Multiplying by $\beta^{1+2s}/2$ and $\|w\|^2$ gives the bound $(12)$. The asymptotic rate follows from $(1+2s)/(2k+1+2s) = O(1/k)$. <span style="float: right;">$\square$</span>
+where the inequality uses $(1-x)^{n} \leq 1$ for $x \in [0,1]$ and $n \geq 0$. Multiplying by $\beta^{1+2s}/2$ and $\|w\|^2$ gives the bound $(13)$. The asymptotic rate follows from $(1+2s)/(2k+1+2s) = O(1/k)$. <span style="float: right;">$\square$</span>
 
 For $s = 0$, the bound reduces to $\frac{\beta}{2(2k+1)}\|e_0\|^2$, recovering Theorem 5. Each unit increase in $s$ accelerates the rate by an additional factor of $1/k^2$:
 
@@ -930,7 +933,7 @@ Therefore:
 - if $\lambda_k^\star < \alpha$ (equivalently $k > \frac{1+2s}{2}(\kappa-1)$), the constrained maximizer is the endpoint $\lambda=\alpha$, giving
 
 $$
-f(x_k)-f(x^\star)\leq \frac{\alpha^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2. \tag{13}
+f(x_k)-f(x^\star)\leq \frac{\alpha^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2. \tag{14}
 $$
 
 Hence, for $\alpha>0$, the source-condition bound is sublinear in an initial regime and then transitions to linear convergence with the same exponential factor as Corollary 2 but a smaller prefactor. Relative to the crude estimate
@@ -939,7 +942,7 @@ $$
 f(x_k)-f(x^\star)\leq \frac{\beta^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2,
 $$
 
-the late-phase bound $(13)$ improves the constant by a factor $\kappa^{-(1+2s)}$.
+the late-phase bound $(14)$ improves the constant by a factor $\kappa^{-(1+2s)}$.
 
 The next figure shows this two-phase effect directly: an initial sublinear envelope transitions to an endpoint-driven linear regime near $k_{\mathrm{trans}}$.
 
@@ -951,15 +954,15 @@ Source conditions improve rates by constraining the *initial error*. A complemen
 
 $$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
 
-so that $\|e_0\|^2 = \mu([0,\beta])$ and $(10)$ reads
+so that $\|e_0\|^2 = \mu([0,\beta])$ and $(11)$ reads
 
 $$
-f(x_k) - f(x^\star) = \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,d\mu(\lambda). \tag{14}
+f(x_k) - f(x^\star) = \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,d\mu(\lambda). \tag{15}
 $$
 
 When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \|e_0\|^2/d$), then $\phi(\lambda) \approx \|e_0\|^2\rho_A(\lambda)$.
 
-Under this approximation, $(14)$ becomes
+Under this approximation, $(15)$ becomes
 
 $$
 f(x_k) - f(x^\star) \approx \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,\phi(\lambda)\,d\lambda.
@@ -985,7 +988,7 @@ $$f(x_k) - f(x^\star) = \frac{M\,\beta^{a+2s+1}}{2}\cdot\frac{\Gamma(a+2s+1)\,\G
 
 *In particular, as $k \to \infty$,*
 
-$$f(x_k) - f(x^\star) \sim \frac{M\,\Gamma(a+2s+1)\,\beta^{a+2s+1}}{2\,(2k)^{a+2s+1}}. \tag{15}$$
+$$f(x_k) - f(x^\star) \sim \frac{M\,\Gamma(a+2s+1)\,\beta^{a+2s+1}}{2\,(2k)^{a+2s+1}}. \tag{16}$$
 
 </div>
 
@@ -1016,7 +1019,7 @@ The figure below illustrates both dimensions of Theorem 9: varying the spectral 
 
 When $A \succ 0$, the eigenvalues lie in $[\alpha, \beta]$ with $\alpha > 0$, and the base rate of convergence is exponential: $O((1-\alpha/\beta)^{2k})$. The spectral integral can still yield improvements, but they take the form of a *polynomial correction* to the exponential rate rather than a change in the polynomial exponent.
 
-The key tool is the **Laplace method** for integrals. In $(14)$, the factor $(1-\lambda/\beta)^{2k}$ is largest at $\lambda = \alpha$ and decays exponentially as $\lambda$ moves away from $\alpha$. For large $k$, the integral is dominated by a neighborhood of $\lambda = \alpha$ whose width shrinks as $O(1/k)$. The behavior of the spectral error density $\phi$ near $\lambda = \alpha$ therefore determines the polynomial correction (a standard edge-asymptotic viewpoint in spectral analysis; see [BS10]).
+The key tool is the **Laplace method** for integrals. In $(15)$, the factor $(1-\lambda/\beta)^{2k}$ is largest at $\lambda = \alpha$ and decays exponentially as $\lambda$ moves away from $\alpha$. For large $k$, the integral is dominated by a neighborhood of $\lambda = \alpha$ whose width shrinks as $O(1/k)$. The behavior of the spectral error density $\phi$ near $\lambda = \alpha$ therefore determines the polynomial correction (a standard edge-asymptotic viewpoint in spectral analysis; see [BS10]).
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -1026,11 +1029,11 @@ $$\phi(\lambda) = C\,(\lambda - \alpha)^p\bigl(1 + O(\lambda - \alpha)\bigr) \qu
 
 *for constants $C > 0$ and $p > -1$. Then GD with $\eta = 1/\beta$ satisfies*
 
-$$f(x_k) - f(x^\star) \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{16}$$
+$$f(x_k) - f(x^\star) \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{17}$$
 
 </div>
 
-*Proof.* Substitute $u = \lambda - \alpha$ in the spectral integral $(14)$:
+*Proof.* Substitute $u = \lambda - \alpha$ in the spectral integral $(15)$:
 
 $$
 f(x_k) - f(x^\star) = \frac{1}{2}\int_0^{\beta-\alpha} (\alpha + u)\,\bigl(1 - \alpha/\beta - u/\beta\bigr)^{2k}\,\phi(\alpha + u)\,du.
@@ -1054,7 +1057,7 @@ $$
 \alpha\,C\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\int_0^{2k} v^p\left(1-\frac{v}{2k}\right)^{2k}dv.
 $$
 
-As $k \to \infty$, the integrand converges pointwise to $v^p\,e^{-v}$ and is bounded by $v^p\,e^{-v}$ (since $(1-v/n)^n \leq e^{-v}$ for $v \in [0,n]$). By the dominated convergence theorem, the integral converges to $\Gamma(p+1)$. Combining and noting that $(\beta-\alpha)/\beta = 1-\alpha/\beta$ yields the formula $(16)$. <span style="float: right;">$\square$</span>
+As $k \to \infty$, the integrand converges pointwise to $v^p\,e^{-v}$ and is bounded by $v^p\,e^{-v}$ (since $(1-v/n)^n \leq e^{-v}$ for $v \in [0,n]$). By the dominated convergence theorem, the integral converges to $\Gamma(p+1)$. Combining and noting that $(\beta-\alpha)/\beta = 1-\alpha/\beta$ yields the formula $(17)$. <span style="float: right;">$\square$</span>
 
 Compared with the worst-case bound $f(x_k) - f(x^\star) \leq (1-\alpha/\beta)^{2k}(f(x_0)-f(x^\star))$, the Laplace estimate reveals a polynomial improvement of order $k^{-(p+1)}$ that depends on how the spectral density vanishes at the left edge of the spectrum. A flat density ($p = 0$) gives a $1/k$ improvement; a square-root vanishing ($p = 1/2$) gives $k^{-3/2}$; higher-order vanishing gives even larger gains.
 
@@ -1082,7 +1085,7 @@ $$
 \rho_{MP}(\lambda) \sim \frac{\sqrt{(\lambda_+ - \lambda_-)(\lambda - \lambda_-)}}{2\pi\gamma\,\lambda_-} = \frac{2\gamma^{1/4}\sqrt{\lambda - \lambda_-}}{2\pi\gamma\,(1-\sqrt\gamma)^2} \quad \text{as } \lambda \to \lambda_-^+.
 $$
 
-With isotropic initialization ($\phi = \|e_0\|^2\rho_{MP}$), Theorem 10 applies with $\alpha = \lambda_-$, $\beta = \lambda_+$, and $p = 1/2$. Since $\Gamma(3/2) = \sqrt\pi/2$, the estimate $(16)$ gives
+With isotropic initialization ($\phi = \|e_0\|^2\rho_{MP}$), Theorem 10 applies with $\alpha = \lambda_-$, $\beta = \lambda_+$, and $p = 1/2$. Since $\Gamma(3/2) = \sqrt\pi/2$, the estimate $(17)$ gives
 
 $$
 f(x_k) - f(x^\star) \sim \frac{\tilde{C}(\gamma)}{k^{3/2}}\left(1 - \frac{1}{\kappa}\right)^{2k}\|e_0\|^2 \quad \text{as } k \to \infty,
@@ -1102,7 +1105,7 @@ $$
 f(x_k)-f(x^\star)=O(k^{-3/2}).
 $$
 
-3. **$\gamma > 1$ (rank deficient).** The empirical spectrum has an atom at $0$ of asymptotic mass $1-1/\gamma$, so globally $\alpha=0$. However, the nonzero spectrum still lies in $[(\sqrt{\gamma}-1)^2,\ (\sqrt{\gamma}+1)^2]$. Since the objective gap carries the factor $\lambda$ in $(14)$, the nullspace part does not contribute to $f(x_k)-f(x^\star)$. Therefore the nonzero spectral component behaves as in the positive definite case, with
+3. **$\gamma > 1$ (rank deficient).** The empirical spectrum has an atom at $0$ of asymptotic mass $1-1/\gamma$, so globally $\alpha=0$. However, the nonzero spectrum still lies in $[(\sqrt{\gamma}-1)^2,\ (\sqrt{\gamma}+1)^2]$. Since the objective gap carries the factor $\lambda$ in $(15)$, the nullspace part does not contribute to $f(x_k)-f(x^\star)$. Therefore the nonzero spectral component behaves as in the positive definite case, with
 
 $$
 \alpha_{\mathrm{eff}} = (\sqrt{\gamma}-1)^2,\qquad \beta=(\sqrt{\gamma}+1)^2,
@@ -1149,7 +1152,7 @@ For the Krylov subspace method and CG, $p_k$ is chosen optimally over $\mathcal{
 **Theorem 11 (CG spectral variational form).** *Let $A \succeq 0$, assume $b \in \mathrm{range}(A)$, and let $x^\star=\mathrm{proj}_S(x_0)$. For each CG iterate before termination,*
 
 $$
-f(x_k^{\mathrm{CG}})-f(x^\star) = \frac{1}{2}\min_{\substack{p \in \mathcal{P}_k\\ p(0)=1}} \int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda). \tag{17}
+f(x_k^{\mathrm{CG}})-f(x^\star) = \frac{1}{2}\min_{\substack{p \in \mathcal{P}_k\\ p(0)=1}} \int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda). \tag{18}
 $$
 
 *Consequently, for every admissible polynomial $q_k$ with $q_k(0)=1$,*
