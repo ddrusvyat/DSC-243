@@ -13,8 +13,15 @@ math:
 
 ## Overview
 
-These notes study one central question: how does an iterative method reduce error on a convex quadratic when its action is filtered through the spectrum of $A$? We begin with fixed-step gradient descent, whose behavior is governed by a scalar contraction on each eigendirection. We then enlarge the design space by allowing time-varying stepsizes, which leads to a polynomial viewpoint and Chebyshev acceleration. The same viewpoint then leads to Krylov subspaces and Conjugate gradient (CG), which realizes near-optimal behavior adaptively. After the positive definite case is understood, we revisit the same ideas in the singular positive semidefinite regime, where rates become sublinear. Finally, we refine worst-case bounds by incorporating spectral structure of the initialization and of the eigenvalue distribution.
-
+This week we study optimization algorithms for the **convex quadratic 
+problems**. This is the most basic and fundamental problem in numerical 
+optimization. Surprisingly, many of the phonemona that hold for 
+minimizng convex quadratics have direct analogues for highly nonlinear 
+and complex models (e.g. deep learning). Since the objective function 
+is a convex quadratic, this setting allows us to develop sharp 
+intuition for convergence behavior using only basic linear algebraic 
+tools. Moving beyond linear least squares will require combining linear 
+algebra with analytic techniques---more on this later.
 We cover three algorithms of increasing sophistication:
 
 1. **Gradient descent** with a fixed stepsize
@@ -29,14 +36,12 @@ We consider the quadratic minimization problem
 
 $$\min_{x \in \mathbb{R}^d} \; f(x) = \tfrac{1}{2} x^\top A x - b^\top x,$$
 
-where $A \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matrix, meaning $A = A^\top$ and $v^\top A v \geq 0$ for all $v \in \mathbb{R}^d$. The gradient is
+where $A \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matrix, meaning $A = A^\top$ and $v^\top A v \geq 0$ for all $v \in \mathbb{R}^d$. The gradient of $f$ is
 
 $$\nabla f(x) = Ax - b.$$
 
-In particular, minimizing $f$ is equivalent to solving the linear system $Ax=b$.
-When $A \succ 0$, the minimizer is unique and classical linear-rate results apply.
-When $A \succeq 0$ with a nontrivial nullspace, uniqueness can fail and the convergence behavior changes qualitatively (Sections 6--7).
-Although we state the model in full PSD generality, we begin with the positive definite case ($\alpha>0$): the $A$-norm is nondegenerate there and the core contraction mechanism is easiest to see before extending to the singular regime.
+In particular, minimizing $f$ is equivalent to solving the linear system $Ax=b$. Note that this linear system is special in  that $A$ is a positive semidefinite matrix---a property with important consequences for numerical methods.
+
 
 We denote the eigenvalues of $A$ by
 
@@ -55,11 +60,11 @@ $$
 under the correspondence $A = D^\top D$ and $b = D^\top y$. In applications, $D \in \mathbb{R}^{m \times d}$ is usually a data matrix and $y \in \mathbb{R}^m$ is a vector of observations. 
 
 
-**Why convex quadratic minimization?** The linear system $Ax = b$ arises everywhere: in linear regression for inference, as a subroutine in Newton's method and interior-point algorithms, and as a building block for preconditioning. Understanding how to solve it iteratively is fundamental.
+**Why convex quadratic minimization?** The linear system $Ax = b$ arises everywhere: in linear regression for inference, as a subroutine in Newton's method and interior-point algorithms, and as a building block for preconditioning. Understanding how to solve the linear system iteratively is fundamental.
 
 ---
 
-## 2. Gradient Descent
+## 2. Gradient Descent: linear convergence with constant stepsize
 
 We will be interested in algorithms that access the matrix $A$ only by evaluating matrix-vector products $v\mapsto Av$ for any query vector $v$. This **matrix-free** abstraction is powerful for several reasons:
 
@@ -104,7 +109,7 @@ f(x_k) - f(x^\star)
 \end{aligned}
 $$
 
-where $\lVert v\rVert_A = \sqrt{v^\top A v}$ is the **$A$-norm** (or energy norm). This is the natural norm for measuring progress on quadratic problems.
+where $\lVert v\rVert_A = \sqrt{v^\top A v}$ is the **$A$-norm**---a measure of length that is adapted to the spectrum of $A$. This is the natural norm for measuring progress on quadratic problems.
 
 ### Convergence for a general stepsize
 
@@ -181,25 +186,21 @@ $$\rho(1/\beta) = \max\!\big(\lvert 1 - \alpha/\beta\rvert,\; \lvert 1 - 1\rvert
 
 which completes the proof. <span style="float: right;">$\square$</span>
 
-**Comparison of the two stepsizes.** For large $\kappa$, the two rates behave as
 
-$$\rho^\star = \frac{\kappa - 1}{\kappa + 1} = 1 - \frac{2}{\kappa} + O(\kappa^{-2}), \qquad \rho(1/\beta) = 1 - \frac{1}{\kappa}.$$
-
-Thus the optimal stepsize is roughly twice as fast per step as $\eta = 1/\beta$---a modest price to pay for not knowing $\alpha$.
 
 ### Iteration complexity
 
-So far we have described how the suboptimality $f(x_k)-f(x^{\star})$ decays with the iteration count. An equivalent and often more informative viewpoint is to ask: *how many iterations are needed to reach a target accuracy $\varepsilon$?* This is the **iteration complexity** of the algorithm.
+So far we have described how the suboptimality $f(x_k)-f(x^{\star})$ decays with the iteration count. In order to compare performance of different algorithms, such as GD with different stepsizes, it is instructive to shift focus to iteration complexity. Namely, the **iteration complexity** of the algorithm is *how many iterations suffice for it to reach a target accuracy $\varepsilon$?*
 
-From Theorem 1 with stepsize $\eta = 1/\beta$, we may use the elementary inequality $1 - x \leq e^{-x}$ to deduce that
 
-$$
-k \geq \frac{\kappa}{2}\cdot\ln\left(\frac{1}{\varepsilon}\right)
-$$
 
-iterations suffice to achieve $\varepsilon$-accuracy $f(x_k)-f(x^\star)\leq \varepsilon$. This is the **iteration complexity** of gradient descent on quadratics.
 
-This change of perspective---from contraction rate to iteration count---is valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$, which measures the intrinsic difficulty of the problem, and the **logarithmic accuracy** $\ln(1/\varepsilon)$, which measures how precisely we need to solve it.
+ A simple way to estimate iteration complexity of linearly convergent algorithms is as follows.  Given an inequality $s\leq  (1-q)^{k}c$ with q\in $(0,1)$, we may upper bound the right side by an exponential
+$$s\leq c(1-q)^{k}\leq c\exp(-qk)$$and then set the right side to $\varepsilon$. We may then be sure that the inequality $s\leq \varepsilon$ holds after $k\geq \lceil q^{-1}\log\left(\frac{c}{\varepsilon}\right) \rceil$ iterations. Using this strategy with Theorem 1 and Corollary 2 shows that GD with either choice of stepsize $\frac{2}{\beta+\alpha}$ or $\frac{1}{\beta}$ enjoys iteration complexity $\kappa\cdot\log(\frac{f(x_0)-f(x^*)}{\varepsilon})$ up to a multiplication by a numerical constant.
+
+
+
+The change of perspective---from the rate of convergence to iteration complexity---is also valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$ and the **logarithmic dependence on accuracy and initialization scale** $\log(\frac{f(x_0)-f(x^*)}{\varepsilon})$.
 
 ### Visualizing the effect of condition number
 
@@ -207,9 +208,17 @@ The following animation shows gradient descent on two quadratics with the same s
 
 ![Gradient descent: well-conditioned vs ill-conditioned](figures/gd_condition.gif)
 
-At this point we have extracted essentially the best guarantee available from one fixed stepsize: the rate is controlled by the worst eigenvalue under repeated application of the scalar map $(1-\eta\lambda)$. The natural next question is whether coordinating multiple steps can outperform optimizing each step in isolation. That question forces a shift from stepwise updates to the polynomial $p_k(A)$ produced after $k$ iterations.
+As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\!\bigl(f(x_k)-\min f\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
+
+![GD with stepsize 1/beta for varying condition numbers](figures/gd_condition_number_performance.png)
+
+
+At this point we have extracted essentially the best guarantee available from one fixed stepsize by ensuring a contraction in every step, and then iterating the bound. The natural next question is whether coordinating multiple steps can outperform optimizing each step in isolation. The answer turns out to be yes, and leads to a dramatic improvement in iteration complexity wherein the linear dependence on $\kappa$ is replaced by a linear dependence on $\sqrt{\kappa}$.
 
 ---
+
+
+
 
 ## 3. Acceleration by Chebyshev Stepsizes
 

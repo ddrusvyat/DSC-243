@@ -158,6 +158,47 @@ def make_gif_condition():
     print("  ✓ gd_condition.gif")
 
 
+def make_gd_condition_number_performance_plot():
+    """Plot GD(1/beta) objective-gap decay for varying condition numbers."""
+    dim = 200
+    beta = 1.0
+    kappas = [2, 5, 10, 20, 50, 100]
+    n_iters = 220
+    x_star = np.ones(dim)
+    x0 = np.zeros(dim)
+
+    fig, ax = plt.subplots(figsize=(8.4, 5.2))
+    for kappa in kappas:
+        alpha = beta / kappa
+        # Log-spaced spectrum in [alpha, beta] to avoid a too-artificial two-point spectrum.
+        eigs = np.geomspace(alpha, beta, dim)
+        A = np.diag(eigs)
+        step = 1.0 / beta
+
+        x = x0.copy()
+        gaps = []
+        for _ in range(n_iters + 1):
+            e = x - x_star
+            gap = 0.5 * float(e @ (A @ e))
+            gaps.append(max(gap, 1e-20))
+            x = x - step * (A @ (x - x_star))
+
+        ax.plot(np.arange(n_iters + 1), gaps, linewidth=2.0, label=fr"$\kappa={kappa}$")
+
+    ax.set_yscale("log")
+    ax.set_xlim(0, n_iters)
+    ax.set_ylim(1e-16, None)
+    ax.set_xlabel(r"Iteration $k$", fontsize=12)
+    ax.set_ylabel(r"$f(x_k)-\min\, f$", fontsize=12)
+    ax.set_title(r"Gradient descent with stepsize $1/\beta$: varying $\kappa$", fontsize=13)
+    ax.grid(True, alpha=0.25)
+    ax.legend(fontsize=10, ncol=2, loc="upper right")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "gd_condition_number_performance.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print("  ✓ gd_condition_number_performance.png")
+
+
 # ── GIF 2: GD vs Chebyshev ────────────────────────────────────────
 
 def make_gif_chebyshev():
@@ -982,6 +1023,7 @@ def make_cg_vs_gd_mp_gif():
 if __name__ == "__main__":
     print("Generating Week 1 figures...")
     make_gif_condition()
+    make_gd_condition_number_performance_plot()
     make_gif_chebyshev()
     make_gif_convergence()
     make_gif_cg()
