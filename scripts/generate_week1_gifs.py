@@ -530,26 +530,83 @@ def make_chebyshev2_plot():
 
 def make_chebyshev_stepsizes_pd_plot():
     alpha, beta = 1.0, 50.0
-    ks = [8, 16, 32]
+    k_max = 20
 
-    fig, ax = plt.subplots(figsize=(8.2, 5.2))
-    colors = ["#2980b9", "#e67e22", "#27ae60"]
+    fig, ax = plt.subplots(figsize=(8, 6))
+    cmap = plt.cm.viridis
 
-    for k, c in zip(ks, colors):
+    for k in range(1, k_max + 1):
         j = np.arange(1, k + 1)
         lam_j = 0.5 * (beta + alpha) - 0.5 * (beta - alpha) * np.cos((2 * j - 1) * np.pi / (2 * k))
         eta_j = 1.0 / lam_j
-        ax.plot(j, eta_j, "o-", color=c, linewidth=1.8, markersize=3.5, label=fr"$k={k}$")
+        color = cmap(k / k_max)
+        ax.scatter(eta_j, np.full_like(eta_j, k), color=color, s=18, zorder=3)
 
-    ax.set_xlabel("Index $j$")
-    ax.set_ylabel(r"Stepsize $\eta_j$")
-    ax.set_title(r"Chebyshev Stepsizes (PD): $\eta_j = 1/\lambda_j$")
-    ax.grid(True, alpha=0.25)
-    ax.legend(fontsize=11, loc="upper right")
+    ax.set_xlabel(r"Stepsize $\eta_j$", fontsize=12)
+    ax.set_ylabel(r"Number of steps $k$", fontsize=12)
+    ax.set_title(r"Chebyshev stepsizes: $\alpha=1,\;\beta=50$", fontsize=13)
+    ax.set_yticks(range(1, k_max + 1))
+    ax.tick_params(axis="y", labelsize=8)
+    ax.invert_yaxis()
+    ax.grid(True, axis="x", alpha=0.2)
     fig.tight_layout()
     fig.savefig(FIGURES_DIR / "chebyshev_stepsizes_pd.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("  ✓ chebyshev_stepsizes_pd.png")
+
+
+def make_chebyshev_condition_number_performance_plot():
+    """Plot GD and Chebyshev-accelerated GD objective-gap decay for varying kappa."""
+    dim = 200
+    beta = 1.0
+    kappas = [2, 5, 10, 20, 50, 100]
+    n_iters = 220
+    x_star = np.ones(dim)
+    x0 = np.zeros(dim)
+
+    fig, ax = plt.subplots(figsize=(8.4, 5.2))
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+    for idx, kappa in enumerate(kappas):
+        alpha = beta / kappa
+        eigs = np.geomspace(alpha, beta, dim)
+        A = np.diag(eigs)
+        c = colors[idx % len(colors)]
+
+        # GD with stepsize 1/beta (solid)
+        x = x0.copy()
+        gd_gaps = []
+        for _ in range(n_iters + 1):
+            e = x - x_star
+            gd_gaps.append(max(0.5 * float(e @ (A @ e)), 1e-20))
+            x = x - (1.0 / beta) * (A @ x - A @ x_star)
+        ax.plot(np.arange(n_iters + 1), gd_gaps, color=c, linewidth=1.8,
+                label=fr"$\kappa={kappa}$")
+
+        # Chebyshev (dashed)
+        steps = chebyshev_stepsizes(beta, alpha, n_iters)
+        x = x0.copy()
+        cheb_gaps = [0.5 * float((x - x_star) @ (A @ (x - x_star)))]
+        for s in steps:
+            x = x - s * (A @ x - A @ x_star)
+            e = x - x_star
+            cheb_gaps.append(max(0.5 * float(e @ (A @ e)), 1e-20))
+        ax.plot(np.arange(n_iters + 1), cheb_gaps, color=c, linewidth=1.8,
+                linestyle="--")
+
+    ax.set_yscale("log")
+    ax.set_xlim(0, n_iters)
+    ax.set_ylim(1e-16, None)
+    ax.set_xlabel(r"Iteration $k$", fontsize=12)
+    ax.set_ylabel(r"$f(x_k)-f^\star$", fontsize=12)
+    ax.set_title(r"GD (solid) vs Chebyshev (dashed): varying $\kappa$", fontsize=13)
+    ax.grid(True, alpha=0.25)
+    ax.legend(fontsize=10, ncol=2, loc="upper right")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "chebyshev_condition_number_performance.png",
+                dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print("  ✓ chebyshev_condition_number_performance.png")
 
 
 def make_chebyshev_stepsizes_psd_plot():
