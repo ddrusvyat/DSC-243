@@ -472,7 +472,7 @@ The key idea is to iteratively build a basis of the Krylov subspaces that is ort
 
 
 <p>
-Concretely, suppose that for each $i=1,\ldots, k$ we have available $x_i$ which is a minimizer of $f$ on $x_0 + \mathcal{K}_i$ and suppose that we have constructed an $A$-orthogonal basis $\{p_i\}_{i=0}^{k-1}$ for $\mathcal{K}_{k-1}$. Let us see how we can efficiently construct $x_{k+1}$&mdash;the minimizer of $f$ on $x_0 + \mathcal{K}_{k+1}$&mdash;and how to extend the $A$-orthogonal basis to $\mathcal{K}_{k}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
+Concretely, suppose that we have constructed an $A$-orthogonal basis $\{p_i\}_{i=0}^{k-1}$ for $\mathcal{K}_{k-1}$ and that for each $i=1,\ldots, k$ we have available a minimizer  $x_i$ of $f$ on $x_0 + \mathcal{K}_i$. Let us see how we can efficiently extend the $A$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $x_{k+1}$ of $f$ on $x_0 + \mathcal{K}_{k+1}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
 </p>
 <p>
 If $r_k$ is orthogonal to $\mathcal{K}_{k+1}$ then $x_k$ is a minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$ and we can simply declare $x_{k+1}=x_k$. Otherwise, set 
