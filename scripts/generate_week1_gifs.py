@@ -140,8 +140,8 @@ def make_gif_condition():
         ax.set_ylabel("$x_2$")
         ax.set_aspect("equal")
 
-    fig.suptitle("Gradient Descent: Effect of Condition Number", fontsize=14, y=1.02)
-    fig.tight_layout()
+    fig.suptitle("Gradient Descent: Effect of Condition Number", fontsize=14)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
 
     def update(i):
         k = min(i, len(xs_good) - 1)
@@ -534,19 +534,20 @@ def make_gd_vs_cg_gif():
 # ── Plot 5: Chebyshev polynomials of various degrees ──────────────
 
 def make_chebyshev_plot():
-    x = np.linspace(-1, 1, 500)
+    x = np.linspace(-2, 2, 800)
     fig, ax = plt.subplots(figsize=(8, 5))
 
     colors = ["#2980b9", "#e74c3c", "#27ae60", "#8e44ad", "#e67e22"]
     for k, c in zip(range(1, 6), colors):
-        y = np.cos(k * np.arccos(x))
+        coeffs = np.zeros(k + 1); coeffs[k] = 1
+        y = np.polynomial.chebyshev.chebval(x, coeffs)
         ax.plot(x, y, color=c, linewidth=2, label=f"$T_{k}$")
 
     ax.axhline(1, color="grey", linewidth=0.8, linestyle="--", alpha=0.5)
     ax.axhline(-1, color="grey", linewidth=0.8, linestyle="--", alpha=0.5)
     ax.axhline(0, color="grey", linewidth=0.5, alpha=0.4)
-    ax.set_xlim(-1, 1)
-    ax.set_ylim(-1.3, 1.3)
+    ax.set_xlim(-2, 2)
+    ax.set_ylim(-5, 5)
     ax.set_xlabel("$x$", fontsize=13)
     ax.set_ylabel("$T_k(x)$", fontsize=13)
     ax.set_title("Chebyshev Polynomials of the First Kind", fontsize=14)
@@ -556,6 +557,76 @@ def make_chebyshev_plot():
     fig.savefig(FIGURES_DIR / "chebyshev_polynomials.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("  ✓ chebyshev_polynomials.png")
+
+
+# ── Plot: Side-by-side p_k^* and q_k^* ────────────────────────────
+
+def make_optimal_poly_pair_plot():
+    k = 5
+    alpha, beta = 1.0, 10.0
+    kappa = beta / alpha
+    sigma = (kappa + 1) / (kappa - 1)
+
+    Tk_sigma = np.cosh(k * np.arccosh(sigma))
+
+    def cheb_k(x):
+        coeffs = np.zeros(k + 1); coeffs[k] = 1
+        return np.polynomial.chebyshev.chebval(x, coeffs)
+
+    # Left panel: p_k^*(lambda) on an interval including 0 and [alpha, beta]
+    lam = np.linspace(-0.5, beta + 1, 800)
+    phi_lam = (beta + alpha - 2 * lam) / (beta - alpha)
+    pk = cheb_k(phi_lam) / Tk_sigma
+
+    # Right panel: q_k^*(t) on interval including [-1,1] and sigma
+    t = np.linspace(-1.3, sigma + 0.3, 800)
+    qk = cheb_k(t) / Tk_sigma
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    # ── Left: p_k^* ──
+    ax1.plot(lam, pk, color="#2980b9", linewidth=2)
+    ax1.axhspan(-1 / Tk_sigma, 1 / Tk_sigma, color="#2980b9", alpha=0.08)
+    ax1.axhline(0, color="grey", linewidth=0.5, alpha=0.5)
+    ax1.axvline(alpha, color="grey", linewidth=0.8, linestyle="--", alpha=0.5)
+    ax1.axvline(beta, color="grey", linewidth=0.8, linestyle="--", alpha=0.5)
+    ax1.plot(0, 1, "o", color="#e74c3c", markersize=9, zorder=5)
+    ax1.annotate("$p_k^*(0)=1$", xy=(0, 1), xytext=(1.5, 1.15),
+                 fontsize=13, color="#e74c3c",
+                 arrowprops=dict(arrowstyle="->", color="#e74c3c", lw=1.5))
+    ax1.set_xlim(-0.5, beta + 1)
+    ax1.set_ylim(-1.5, 1.5)
+    ax1.set_xlabel("$\\lambda$", fontsize=14)
+    ax1.set_ylabel("$p_k^*(\\lambda)$", fontsize=14)
+    ax1.set_title(f"$p_{{{k}}}^*$ on $[\\alpha, \\beta]$", fontsize=14)
+    ax1.text(alpha, -1.4, "$\\alpha$", ha="center", fontsize=12, color="grey")
+    ax1.text(beta, -1.4, "$\\beta$", ha="center", fontsize=12, color="grey")
+    ax1.grid(True, alpha=0.2)
+
+    # ── Right: q_k^* ──
+    ax2.plot(t, qk, color="#27ae60", linewidth=2)
+    ax2.axhspan(-1 / Tk_sigma, 1 / Tk_sigma, color="#27ae60", alpha=0.08)
+    ax2.axhline(0, color="grey", linewidth=0.5, alpha=0.5)
+    ax2.axvline(-1, color="grey", linewidth=0.8, linestyle="--", alpha=0.5)
+    ax2.axvline(1, color="grey", linewidth=0.8, linestyle="--", alpha=0.5)
+    ax2.plot(sigma, 1, "o", color="#e74c3c", markersize=9, zorder=5)
+    ax2.annotate("$q_k^*(\\sigma)=1$", xy=(sigma, 1), xytext=(sigma - 0.6, 1.3),
+                 fontsize=13, color="#e74c3c",
+                 arrowprops=dict(arrowstyle="->", color="#e74c3c", lw=1.5))
+    ax2.set_xlim(-1.3, sigma + 0.3)
+    ax2.set_ylim(-1.5, 1.5)
+    ax2.set_xlabel("$t$", fontsize=14)
+    ax2.set_ylabel("$q_k^*(t)$", fontsize=14)
+    ax2.set_title(f"$q_{{{k}}}^*$ on $[-1,1]$", fontsize=14)
+    ax2.text(-1, -1.4, "$-1$", ha="center", fontsize=12, color="grey")
+    ax2.text(1, -1.4, "$1$", ha="center", fontsize=12, color="grey")
+    ax2.text(sigma, -1.4, "$\\sigma$", ha="center", fontsize=12, color="grey")
+    ax2.grid(True, alpha=0.2)
+
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "optimal_poly_pair.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print("  ✓ optimal_poly_pair.png")
 
 
 # ── GIF 6: Optimal polynomials p_k^* on [alpha, beta] ─────────────

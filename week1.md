@@ -40,7 +40,7 @@ where $A \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matri
 
 $$\nabla f(x) = Ax - b.$$
 
-In particular, minimizing $f$ is equivalent to solving the linear system $Ax=b$. Note that this linear system is special in  that $A$ is a positive semidefinite matrix---a property with important consequences for numerical methods. Throughout, we let $x^\ast$ be any minimizer of $f$ and set $f^\ast:=f^\star$.
+In particular, minimizing $f$ is equivalent to solving the linear system $Ax=b$. Note that this linear system is special in  that $A$ is a positive semidefinite matrix---a property with important consequences for numerical methods. Throughout, we let $x^\ast$ be any minimizer of $f$ and set $f^\ast:=f(x^\ast)$.
 
 
 We denote the eigenvalues of $A$ by
@@ -83,16 +83,16 @@ Starting from $x_0 \in \mathbb{R}^d$, gradient descent with stepsize $\eta > 0$ 
 $$
 \begin{aligned}
 x_{k+1} = x_k - \eta \nabla f(x_k) &= x_k - \eta(Ax_k - b) \\
-         &= x_k - \eta A(x_k - x^\star),
+         &= x_k - \eta A(x_k - x^\ast),
 \end{aligned}
 \tag{1}
 $$
 
-where $x^\star$ is any minimizer of $f$, i.e. one satisfying $Ax^\star=b$.
+where $x^\ast$ is any minimizer of $f$, i.e. one satisfying $Ax^\ast=b$.
 
 ### Error recurrence
 
-To analyze gradient descent, we introduce the **error vector** $e_k = x_k - x^\star$. Subtracting $x^\star$ from both sides of $(1)$ yields
+To analyze gradient descent, we introduce the **error vector** $e_k = x_k - x^\ast$. Subtracting $x^\ast$ from both sides of $(1)$ yields
 
 $$e_{k+1} = (I - \eta A)\, e_k.$$
 
@@ -100,10 +100,10 @@ Unrolling the recurrence gives $e_k = (I - \eta A)^k e_0$. Next, observe that th
 
 $$
 \begin{aligned}
-f(x_k) - f^\star
-&= \tfrac{1}{2} x_k^\top A x_k - b^\top x_k - \tfrac{1}{2} (x^\star)^\top A x^\star + b^\top x^\star \\
-&= \tfrac{1}{2} x_k^\top A x_k - (Ax^\star)^\top x_k - \tfrac{1}{2} (x^\star)^\top A x^\star + (Ax^\star)^\top x^\star \\
-&= \tfrac{1}{2} (x_k - x^\star)^\top A\, (x_k - x^\star) \\
+f(x_k) - f^\ast
+&= \tfrac{1}{2} x_k^\top A x_k - b^\top x_k - \tfrac{1}{2} (x^\ast)^\top A x^\ast + b^\top x^\ast \\
+&= \tfrac{1}{2} x_k^\top A x_k - (Ax^\ast)^\top x_k - \tfrac{1}{2} (x^\ast)^\top A x^\ast + (Ax^\ast)^\top x^\ast \\
+&= \tfrac{1}{2} (x_k - x^\ast)^\top A\, (x_k - x^\ast) \\
 &= \tfrac{1}{2}\, e_k^\top A\, e_k \\
 &=: \tfrac{1}{2}\|e_k\|_A^2,
 \end{aligned}
@@ -139,7 +139,7 @@ We have thus proved the following.
 
 **Theorem 2.1 (Gradient descent).** *For any $\eta \in (0, \tfrac{2}{\beta})$ the inclusion $\rho(\eta)\in (0,1)$ holds and the gradient descent iterates enjoy the linear rate of convergence:*
 
-$$f(x_k) - f^\star \leq \rho(\eta)^{2k}\,\bigl(f(x_0) - f^\star\bigr)\qquad \forall k\geq 0.$$
+$$f(x_k) - f^\ast \leq \rho(\eta)^{2k}\,\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
@@ -150,19 +150,19 @@ $$f(x_k) - f^\star \leq \rho(\eta)^{2k}\,\bigl(f(x_0) - f^\star\bigr)\qquad \for
 
 The rate $\rho(\eta)$ depends on the stepsize $\eta$. To find the ``optimal'' fixed stepsize, we minimize $\rho(\eta) = \max(\lvert 1 - \eta\alpha\rvert,\; \lvert 1 - \eta \beta\rvert)$ over $\eta$. Observe that $1 - \eta\alpha$ is decreasing in $\eta$ while $\eta \beta - 1$ is increasing. These two expressions balance when $1 - \eta\alpha = \eta \beta - 1$, which gives
 
-$$\eta^\star = \frac{2}{\beta + \alpha}.$$
+$$\eta^\ast = \frac{2}{\beta + \alpha}.$$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Corollary 2.1 (Optimal fixed stepsize).** *Suppose $\alpha>0$ and set $\eta = \eta^\star = \frac{2}{\beta+\alpha}$. Then gradient descent satisfies*
+**Corollary 2.1 (Optimal fixed stepsize).** *Suppose $\alpha>0$ and set $\eta = \eta^\ast = \frac{2}{\beta+\alpha}$. Then gradient descent satisfies*
 
-$$f(x_k) - f^\star \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^{2k}\bigl(f(x_0) - f^\star\bigr)\qquad \forall k\geq 0.$$
+$$f(x_k) - f^\ast \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
-*Proof.* Substituting $\eta^\star$ into the expression for $\rho$ yields
+*Proof.* Substituting $\eta^\ast$ into the expression for $\rho$ yields
 
-$$\rho(\eta^\star) = \left\lvert 1 - \frac{2\alpha}{\beta+\alpha}\right\rvert = \frac{\beta - \alpha}{\beta + \alpha} = \frac{\kappa - 1}{\kappa + 1}.$$
+$$\rho(\eta^\ast) = \left\lvert 1 - \frac{2\alpha}{\beta+\alpha}\right\rvert = \frac{\beta - \alpha}{\beta + \alpha} = \frac{\kappa - 1}{\kappa + 1}.$$
 
 The result follows from Theorem 2.1. <span style="float: right;">$\square$</span>
 
@@ -170,13 +170,13 @@ The result follows from Theorem 2.1. <span style="float: right;">$\square$</span
 
 ### The practical stepsize $\eta = 1/\beta$
 
-The optimal stepsize $\eta^\star = 2/(\beta+\alpha)$ requires knowledge of both the largest and smallest eigenvalues of $A$. In practice, the smallest eigenvalue $\alpha$ is often unknown or expensive to estimate. A natural and widely used alternative is the stepsize $\eta = 1/\beta$, which requires only an upper bound on the spectrum.
+The optimal stepsize $\eta^\ast = 2/(\beta+\alpha)$ requires knowledge of both the largest and smallest eigenvalues of $A$. In practice, the smallest eigenvalue $\alpha$ is often unknown or expensive to estimate. A natural and widely used alternative is the stepsize $\eta = 1/\beta$, which requires only an upper bound on the spectrum.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Corollary 2.2 (Stepsize $1/\beta$).** *Suppose $\alpha>0$ and set $\eta = 1/\beta$. Then gradient descent satisfies*
 
-$$f(x_k) - f^\star \leq \left(1 - \frac{1}{\kappa}\right)^{2k}\bigl(f(x_0) - f^\star\bigr)\qquad \forall k\geq 0.$$
+$$f(x_k) - f^\ast \leq \left(1 - \frac{1}{\kappa}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
@@ -190,17 +190,17 @@ which completes the proof. <span style="float: right;">$\square$</span>
 
 ### Iteration complexity
 
-So far we have described how the suboptimality $f(x_k)-f^\star$ decays with the iteration count. In order to compare performance of different algorithms, such as GD with different stepsizes, it is instructive to shift focus to iteration complexity. Namely, the **iteration complexity** of the algorithm is *how many iterations suffice for it to reach a target accuracy $\varepsilon$?*
+So far we have described how the suboptimality $f(x_k)-f^\ast$ decays with the iteration count. In order to compare performance of different algorithms, such as GD with different stepsizes, it is instructive to shift focus to iteration complexity. Namely, the **iteration complexity** of the algorithm is *how many iterations suffice for it to reach a target accuracy $\varepsilon$?*
 
 
 
 
  A simple way to estimate iteration complexity of linearly convergent algorithms is as follows.  Given an inequality $s\leq  (1-q)^{k}c$ with q\in $(0,1)$, we may upper bound the right side by an exponential
-$$s\leq c(1-q)^{k}\leq c\exp(-qk)$$and then set the right side to $\varepsilon$. We may then be sure that the inequality $s\leq \varepsilon$ holds after $k\geq \lceil q^{-1}\log\left(\frac{c}{\varepsilon}\right) \rceil$ iterations. Using this strategy with Theorem 2.1 and Corollary 2.2 shows that GD with either choice of stepsize $\frac{2}{\beta+\alpha}$ or $\frac{1}{\beta}$ enjoys iteration complexity $\kappa\cdot\log(\frac{f(x_0)-f^\star}{\varepsilon})$ up to a multiplication by a numerical constant.
+$$s\leq c(1-q)^{k}\leq c\exp(-qk)$$and then set the right side to $\varepsilon$. We may then be sure that the inequality $s\leq \varepsilon$ holds after $k\geq \lceil q^{-1}\log\left(\frac{c}{\varepsilon}\right) \rceil$ iterations. Using this strategy with Theorem 2.1 and Corollary 2.2 shows that GD with either choice of stepsize $\frac{2}{\beta+\alpha}$ or $\frac{1}{\beta}$ enjoys iteration complexity $\kappa\cdot\log(\frac{f(x_0)-f^\ast}{\varepsilon})$ up to a multiplication by a numerical constant.
 
 
 
-The change of perspective---from the rate of convergence to iteration complexity---is also valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$ and the **logarithmic dependence on accuracy and initialization scale** $\log(\frac{f(x_0)-f^\star}{\varepsilon})$.
+The change of perspective---from the rate of convergence to iteration complexity---is also valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$ and the **logarithmic dependence on accuracy and initialization scale** $\log(\frac{f(x_0)-f^\ast}{\varepsilon})$.
 
 ### Visualizing the effect of condition number
 
@@ -208,7 +208,7 @@ The following animation shows gradient descent on two quadratics with the same s
 
 ![Gradient descent: well-conditioned vs ill-conditioned](figures/gd_condition.gif)
 
-As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\!\bigl(f(x_k)-\min f\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
+As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\!\bigl(f(x_k)-f^\ast\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
 
 ![GD with stepsize 1/beta for varying condition numbers](figures/gd_condition_number_performance.png)
 
@@ -223,7 +223,7 @@ At this point we have extracted essentially the best guarantee available from on
 ## 3. Acceleration by Chebyshev Stepsizes
 
 
-The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value in a single step. We now show that by monitoring performance across a longer time horizon, it is possible to choose a time-varying stepsize that yields a much faster rate of convergence. To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = x_j - x^\star$ evolves as $e_{j+1} = (I - \eta_j A)\,e_j$. Therefore, after $k$ steps we have:
+The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value after $k$ iteration using a fixed step-size; in essense, the argument reduced to choosing a fixed step-size that guarantees the largest function value decrease in a single step and then iterating the bound. We now show that by monitoring performance across the entire time horizon, it is possible to choose a **time-varying stepsize** that yields a much faster rate of convergence. To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = x_j - x^\ast$ evolves as $e_{j+1} = (I - \eta_j A)\,e_j$. Therefore, after $k$ steps we have:
 
 $$e_k = (I - \eta_{k-1}A)(I - \eta_{k-2}A)\cdots(I - \eta_0 A)\,e_0 = p_k(A)\,e_0,$$
 
@@ -235,23 +235,23 @@ Note that we have $p_k(0) = 1$ regardless of the choice of stepsizes. Expanding 
 
 $$
 \begin{aligned}
-f(x_k) - f^\star = \tfrac{1}{2}\|e_k\|_A^2
+f(x_k) - f^\ast = \tfrac{1}{2}\|e_k\|_A^2
 &= \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, p_k(\lambda_i)^2\, c_i^2 \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2 \cdot \tfrac{1}{2}\|e_0\|_A^2.
 \end{aligned}
 $$
 
 Rearranging we deduce
 
-$$\frac{f(x_k) - f^\star}{f(x_0) - f^\star} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
+$$\frac{f(x_k) - f^\ast}{f(x_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
 
 
 
 
-Fixed-stepsize gradient descent corresponds to the special case $p_k(\lambda) = (1 - \eta\lambda)^k$, but we are now free to choose *any* stepsizes. Notice that as we vary the stepsizes $\eta_0,\ldots,\eta_{k-1}$, any degree-$k$ polynomial $p(\lambda)$ satisfying $p(0)=1$ can be realized as $p_k(\lambda)$. Thus choosing time-varying stepsizes is equivalent to choosing such a polynomial. The best possible convergence after $k$ steps is therefore determined by the **minimax polynomial problem**:
+Fixed-stepsize gradient descent corresponds to the special case $p_k(\lambda) = (1 - \eta\lambda)^k$, but we are now free to choose *any* stepsizes. Notice that as we vary the stepsizes $\eta_0,\ldots,\eta_{k-1}$, any polynomial $p(\lambda)$ of degree at most $k$, having all real roots, and satisfying $p(0)=1$ can be realized as $p_k(\lambda)$. Thus choosing time-varying stepsizes is equivalent to choosing such a polynomial. The best possible convergence after $k$ steps is therefore determined by the **minimax polynomial problem**:
 
-$$\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha, \beta]} p(\lambda)^2. \tag{2}$$
+$$\min_{\substack{p \in \mathcal{P}^{r}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha, \beta]} p(\lambda)^2. \tag{2}$$
 
-where $\mathcal{P}_k$ denotes the set of polynomials of degree at most $k$. The solution to this classical approximation problem involves Chebyshev polynomials.
+where $\mathcal{P}^r_k$ denotes the set of polynomials of degree at most $k$ with all real roots. The solution to this classical variational problem is described through so-called Chebyshev polynomials of the first kind.
 
 ### Chebyshev polynomials
 
@@ -278,7 +278,7 @@ In words, among all degree-$k$ polynomials with the same leading coefficient as 
 
 
 Chebyshev polynomials satisfy the following key properties:
-1. **Boundedness:** The inequality $\lvert T_k(t)\rvert \leq 1$ holds for all $t \in [-1,1]$ with equality at $t_j = \cos(j\pi/k)$ for $j = 0, \ldots, k$. 
+1. **Boundedness:** The inequality $\lvert T_k(t)\rvert \leq 1$ holds for all $t \in [-1,1]$. 
 
 2. **Roots:** $T_k$ has $k$ roots in $(-1,1)$ at $t_j = \cos\!\left(\frac{(2j-1)\pi}{2k}\right)$ for $j = 1, \ldots, k$.
 
@@ -299,6 +299,9 @@ $$q_k^*(t):= \frac{T_k(t)}{T_k(\sigma)}$$
 an excellent candidate: it satisfies $q_k^{\ast}(\sigma) = 1$ and $\max_{t \in [-1,1]}\lvert q_k^{\ast}(t)\rvert = 1/T_k(\sigma)$, which is small because $T_k(\sigma)$ grows exponentially in $k$. Transforming back to the $\lambda$-variable, the optimal polynomial is
 
 $$p_k^*(\lambda) :=(q_k^*\circ\varphi)(\lambda)= \frac{T_k\!\left(\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}\right)}{T_k\!\left(\frac{\kappa + 1}{\kappa - 1}\right)}.$$
+Note that $p_k^*$ has all real roots. The figure below illustrates the reparametrization for $k=5$: on the left, $p_k^{\ast}$ satisfies the constraint $p_k^{\ast}(0)=1$ and oscillates with small amplitude on $[\alpha,\beta]$; on the right, $q_k^{\ast}$ satisfies $q_k^{\ast}(\sigma)=1$ and oscillates on $[-1,1]$ with the same small amplitude $1/T_k(\sigma)$.
+
+![Side-by-side view of the optimal polynomials](figures/optimal_poly_pair.png)
 
 The animation below shows $p_k^{\ast}(\lambda)$ on $[\alpha, \beta]$ for increasing degree $k$. As $k$ grows, the polynomial oscillates more rapidly yet its maximum amplitude $1/T_k(\sigma)$ shrinks exponentially---this is the mechanism behind the accelerated convergence.
 
@@ -312,7 +315,7 @@ Summarizing, we have the following lemma. Note that the first inequality holds a
 
 **Lemma 3.1 (Chebyshev minimax).** *Suppose $\alpha>0$. Then with $\sigma = \frac{\kappa+1}{\kappa-1}$, the minimax value satisfies*
 
-$$\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha,\beta]} \lvert p(\lambda)\rvert \leq \frac{1}{T_k(\sigma)} \leq 2\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^k.$$
+$$\min_{\substack{p \in \mathcal{P}^r_k \\ p(0) = 1}} \max_{\lambda \in [\alpha,\beta]} \lvert p(\lambda)\rvert \leq \frac{1}{T_k(\sigma)} \leq 2\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^k.$$
 
 </div>
 
@@ -346,14 +349,14 @@ $$\eta_j = \tfrac{1}{\lambda_j}~~ \textrm{where}~~\lambda_j = \tfrac{\beta + \al
 
 *Then as long as $\alpha>0$ the gradient descent iterates satisfy*
 
-$$f(x_k) - f^\star \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\star\bigr). \tag{3}$$
+$$f(x_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr). \tag{3}$$
 
 </div>
 
 
 *Proof.* Combining the estimate $(2)$ and Lemma 3.1 directly yields
 $$
-\frac{f(x_k) - f^\star}{f(x_0) - f^\star} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
+\frac{f(x_k) - f^\ast}{f(x_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
 $$ This completes the proof. <span style="float: right;">$\square$</span>
 
 Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\log((f(x_0)-f^\ast)/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\log((f(x_0)-f^\ast)/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
@@ -413,7 +416,7 @@ The convergence analysis of the Krylov subspace method follows almost immediatel
 **Theorem 4.1 (Krylov method convergence).** *Assuming $\alpha > 0$, the Krylov subspace method $(4)$ satisfies*
 
 $$
-f(x_k) - f^\star \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\star\bigr)
+f(x_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)
 \qquad \forall k\geq 0.
 $$
 
@@ -424,19 +427,19 @@ $$
 *Proof.* For simplicity, let $\mathcal{K}_k$ denote $\mathcal{K}_k(A,r_0)$ throughout the proof. By definition, the iterate $x_k$ minimizes $f$ over $x_0+\mathcal{K}_k$. Recall from Section 2 that the identity
 
 $$
-f(x) - f^\star = \tfrac{1}{2}\|x - x^\star\|_A^2
+f(x) - f^\ast = \tfrac{1}{2}\|x - x^\ast\|_A^2
 $$
 
-holds for every vector $x$. Since $f^\star$ is constant, minimizing $f$ over any subset of $\mathbb{R}^d$ is equivalent to minimizing the $A$-norm distance to $x^\star$. Therefore we have
+holds for every vector $x$. Since $f^\ast$ is constant, minimizing $f$ over any subset of $\mathbb{R}^d$ is equivalent to minimizing the $A$-norm distance to $x^\ast$. Therefore we have
 
 $$
-\tfrac{1}{2}\|e_k\|_A^2 = f(x_k)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; f(x)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; \tfrac{1}{2}\|x - x^\star\|_A^2.
+\tfrac{1}{2}\|e_k\|_A^2 = f(x_k)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; f(x)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; \tfrac{1}{2}\|x - x^\ast\|_A^2.
 $$
 
 We convert this geometric minimization into a polynomial one. Observe that a vector $x$ belongs to $x_0+\mathcal{K}_k$ if and only if there exists a polynomial $q$ of degree at most $k-1$ such that $x = x_0 + q(A)\,r_0$. Using the identity $r_0 = b - Ax_0 = -Ae_0$, we obtain
 
 $$
-x - x^\star = e_0 - q(A)\,Ae_0 = p(A)\,e_0,
+x - x^\ast = e_0 - q(A)\,Ae_0 = p(A)\,e_0,
 $$
 
 where the polynomial $p(\lambda):=1-\lambda q(\lambda)$ has degree at most $k$ and satisfies $p(0)=1$. Conversely, any polynomial of degree at most $k$ with $p(0)=1$ can be written in this way. Substituting gives
@@ -544,9 +547,9 @@ where $r \geq 1$ is the dimension of $\ker(A)$, and we denote the distinct nonze
 
 A fundamental difference from the positive definite case is that the solution set $S$ is no longer a singleton---it is an affine subspace of dimension $r$. For a given starting point $x_0$, we write
 
-$$x^\star = \mathrm{proj}_S(x_0)$$
+$$x^\ast = \mathrm{proj}_S(x_0)$$
 
-for the closest solution to $x_0$. The initial error $e_0 = x_0 - x^\star$ then lies entirely in $\mathrm{range}(A)$, so its expansion in the eigenbasis has $c_i = 0$ for all $i \leq r$.
+for the closest solution to $x_0$. The initial error $e_0 = x_0 - x^\ast$ then lies entirely in $\mathrm{range}(A)$, so its expansion in the eigenbasis has $c_i = 0$ for all $i \leq r$.
 
 ### Why linear rates fail
 
@@ -554,7 +557,7 @@ The failure of linear convergence is immediate from the eigenvalue expansion. Wi
 
 $$\rho(\eta) = \max_{1 \leq i \leq d}\lvert 1 - \eta\lambda_i\rvert \geq \lvert 1 - \eta \cdot 0\rvert = 1.$$
 
-The bound $f(x_k) - f^\star \leq \rho(\eta)^{2k}(f(x_0) - f^\star)$ therefore gives only the trivial estimate $f(x_k) \leq f(x_0)$. The underlying issue is that the contraction-rate analysis treats all eigenvalues uniformly, ignoring the crucial fact that the components corresponding to zero eigenvalues do not contribute to the function value.
+The bound $f(x_k) - f^\ast \leq \rho(\eta)^{2k}(f(x_0) - f^\ast)$ therefore gives only the trivial estimate $f(x_k) \leq f(x_0)$. The underlying issue is that the contraction-rate analysis treats all eigenvalues uniformly, ignoring the crucial fact that the components corresponding to zero eigenvalues do not contribute to the function value.
 
 In the polynomial framework of Section 3, the constraint $p_k(0) = 1$ forces $\max_{\lambda \in [0,\beta]}\lvert p_k(\lambda)\rvert \geq 1$ for every polynomial $p_k$, so the minimax approach on the full interval $[0, \beta]$ yields no convergence guarantee. The path forward is to exploit the eigenvalue weighting in the $A$-norm: the factor $\lambda_i$ in the sum $\sum_i \lambda_i\,p_k(\lambda_i)^2\,c_i^2$ suppresses contributions from eigenvalues near zero. Rather than bounding $(1 - \eta\lambda_i)^{2k}$ alone and pulling it out of the sum, we instead bound the product $\lambda_i(1 - \eta\lambda_i)^{2k}$ directly.
 
@@ -566,55 +569,55 @@ The key idea is that the objective weights each eigendirection by $\lambda_i$. T
 
 **Theorem 6.1 (Sublinear convergence of gradient descent).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. With stepsize $\eta = 1/\beta$, the gradient descent iterates satisfy*
 
-$$f(x_k) - f^\star \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\star\|^2, \tag{6}$$
+$$f(x_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\ast\|^2, \tag{6}$$
 
-*where $x^\star = \mathrm{proj}_S(x_0)$ is the closest solution to $x_0$.*
+*where $x^\ast = \mathrm{proj}_S(x_0)$ is the closest solution to $x_0$.*
 
 </div>
 
-*Proof.* Since $x^\star = \mathrm{proj}_S(x_0)$, the initial error $e_0 = x_0 - x^\star$ lies in $\mathrm{range}(A)$, so $c_i = 0$ for all $i \leq r$. The function value gap therefore satisfies
+*Proof.* Since $x^\ast = \mathrm{proj}_S(x_0)$, the initial error $e_0 = x_0 - x^\ast$ lies in $\mathrm{range}(A)$, so $c_i = 0$ for all $i \leq r$. The function value gap therefore satisfies
 
 $$
-f(x_k) - f^\star = \frac{1}{2}\sum_{i=r+1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=r+1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
 $$
 
 It remains to compute the maximum. Define $h(t) = t(1-t)^{2k}$ for $t \in [0,1]$ and substitute $t = \lambda/\beta$. Differentiating gives
 
 $$h'(t) = (1-t)^{2k-1}\bigl(1 - (2k+1)t\bigr),$$
 
-so the unique maximizer on $[0,1]$ is $t^\star = 1/(2k+1)$. The maximum value is
+so the unique maximizer on $[0,1]$ is $t^\ast = 1/(2k+1)$. The maximum value is
 
 $$
-h(t^\star) = \frac{1}{2k+1}\left(\frac{2k}{2k+1}\right)^{2k} \leq \frac{1}{2k+1},
+h(t^\ast) = \frac{1}{2k+1}\left(\frac{2k}{2k+1}\right)^{2k} \leq \frac{1}{2k+1},
 $$
 
 where the inequality uses $(1-1/n)^{n-1} \leq 1$ for all integers $n \geq 2$, applied with $n = 2k+1$. Therefore
 
-$$\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k} = \beta\,h(t^\star) \leq \frac{\beta}{2k+1}.$$
+$$\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k} = \beta\,h(t^\ast) \leq \frac{\beta}{2k+1}.$$
 
 Combining the preceding two estimates yields the conclusion $(6)$. <span style="float: right;">$\square$</span>
 
 ### Iteration complexity
 
-From Theorem 6.1, the bound $f(x_k) - f^\star \leq \varepsilon$ is guaranteed whenever
+From Theorem 6.1, the bound $f(x_k) - f^\ast \leq \varepsilon$ is guaranteed whenever
 
-$$k \geq \frac{\beta\,\|x_0 - x^\star\|^2}{4\varepsilon}.$$
+$$k \geq \frac{\beta\,\|x_0 - x^\ast\|^2}{4\varepsilon}.$$
 
 The iteration complexity is therefore
 
-$$O\!\left(\frac{\beta\,\|x_0 - x^\star\|^2}{\varepsilon}\right).$$
+$$O\!\left(\frac{\beta\,\|x_0 - x^\ast\|^2}{\varepsilon}\right).$$
 
 Compared with the $O(\kappa\,\ln(1/\varepsilon))$ complexity of gradient descent in the positive definite case, the dependence on accuracy has changed from **logarithmic** to **polynomial**: achieving an additional digit of accuracy now requires a tenfold increase in iterations, rather than a fixed additive cost. This is the hallmark of sublinear convergence.
 
 ### The role of the initial condition
 
-An important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\|x_0 - x^\star\|^2$ rather than the initial function gap $f(x_0) - f^\star$.
+An important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\|x_0 - x^\ast\|^2$ rather than the initial function gap $f(x_0) - f^\ast$.
 
-This change is unavoidable. Since $f(x_0) - f^\star = \tfrac{1}{2}\sum_{i>r}\lambda_i\,c_i^2$ and $\|e_0\|^2 = \sum_{i>r}c_i^2$, the ratio $(f(x_0) - f^\star)/\|e_0\|^2$ can be arbitrarily small when the initial error concentrates along eigenvectors with small nonzero eigenvalues. Consequently, no bound of the form
+This change is unavoidable. Since $f(x_0) - f^\ast = \tfrac{1}{2}\sum_{i>r}\lambda_i\,c_i^2$ and $\|e_0\|^2 = \sum_{i>r}c_i^2$, the ratio $(f(x_0) - f^\ast)/\|e_0\|^2$ can be arbitrarily small when the initial error concentrates along eigenvectors with small nonzero eigenvalues. Consequently, no bound of the form
 
-$$f(x_k) - f^\star \leq g(k)\bigl(f(x_0) - f^\star\bigr) \tag{7}$$
+$$f(x_k) - f^\ast \leq g(k)\bigl(f(x_0) - f^\ast\bigr) \tag{7}$$
 
-with $g(k) \to 0$ can hold uniformly over all starting points when $\alpha = 0$. The Euclidean distance $\|x_0 - x^\star\|$ is the natural measure of initial error in the positive semidefinite setting.
+with $g(k) \to 0$ can hold uniformly over all starting points when $\alpha = 0$. The Euclidean distance $\|x_0 - x^\ast\|$ is the natural measure of initial error in the positive semidefinite setting.
 
 ### Acceleration by Chebyshev stepsizes
 
@@ -638,7 +641,7 @@ $$\eta_j = \frac{1}{\beta\sin^2(j\pi/(2k))} \qquad \textrm{for}~ j = 1, \ldots, 
 
 *Then the gradient descent iterates satisfy*
 
-$$f(x_k) - f^\star \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2. \tag{8}$$
+$$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2. \tag{8}$$
 
 </div>
 
@@ -673,11 +676,11 @@ $$
 
 Since $\cos^2(\theta/2) \leq 1$ and $\sin^2(k\theta) \leq 1$ for all $\theta$, the claim $(9)$ follows. The error bound from Section 2 then gives
 
-$$f(x_k) - f^\star = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|e_0\|^2 = \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2.$$
+$$f(x_k) - f^\ast = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|e_0\|^2 = \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2.$$
 
 This completes the proof. <span style="float: right;">$\square$</span>
 
-The iteration complexity is $O(\sqrt{\beta\,\|x_0 - x^\star\|^2/\varepsilon})$---a square-root improvement over the $O(\beta\,\|x_0 - x^\star\|^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. The mechanism behind this acceleration is visible in the polynomial $\phi_k$: the factor $(1 - \lambda/\beta)$ suppresses the contribution from the largest eigenvalue, while the Chebyshev factor $U_{k-1}(1 - 2\lambda/\beta)/k$ distributes the remaining approximation power efficiently across the spectrum. The combined effect is the $1/k^2$ rate. By contrast, the fixed-stepsize polynomial $(1 - \lambda/\beta)^k$ must use all $k$ degrees of freedom to suppress the largest eigenvalue, leaving none to exploit the eigenvalue weighting---this is why gradient descent is limited to a $1/k$ rate.
+The iteration complexity is $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$---a square-root improvement over the $O(\beta\,\|x_0 - x^\ast\|^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. The mechanism behind this acceleration is visible in the polynomial $\phi_k$: the factor $(1 - \lambda/\beta)$ suppresses the contribution from the largest eigenvalue, while the Chebyshev factor $U_{k-1}(1 - 2\lambda/\beta)/k$ distributes the remaining approximation power efficiently across the spectrum. The combined effect is the $1/k^2$ rate. By contrast, the fixed-stepsize polynomial $(1 - \lambda/\beta)^k$ must use all $k$ degrees of freedom to suppress the largest eigenvalue, leaving none to exploit the eigenvalue weighting---this is why gradient descent is limited to a $1/k$ rate.
 
 As in the positive definite case, the Chebyshev stepsizes require knowledge of $\beta$ and the total number of iterations $k$ must be fixed in advance.
 
@@ -691,7 +694,7 @@ The same Krylov-minimization logic used in Theorem 4.1 extends to the PSD case u
 
 **Theorem 6.3 (CG convergence, PSD case).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. Let $\mu_1 < \mu_2 < \cdots < \mu_m$ denote the distinct nonzero eigenvalues of $A$. The CG iterates satisfy*
 
-$$f(x_k) - f^\star \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2, \tag{10}$$
+$$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2, \tag{10}$$
 
 *and CG terminates in at most $m$ iterations.*
 
@@ -705,7 +708,7 @@ $$
 
 The polynomial $\phi_k$ from the proof of Theorem 6.2 is a feasible choice. Applying the estimate $(9)$ yields
 
-$$f(x_k) - f^\star = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{\beta}{8k^2}\,\|x_0 - x^\star\|^2.$$
+$$f(x_k) - f^\ast = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2.$$
 
 For finite termination, the polynomial $p(\lambda) = \prod_{j=1}^{m}(1 - \lambda/\mu_j)$ has degree $m$, satisfies $p(0) = 1$, and vanishes at every nonzero eigenvalue of $A$. Since $e_0 \in \mathrm{range}(A)$, the identity $p(A)\,e_0 = 0$ follows, and therefore $\|e_m\|_A = 0$. <span style="float: right;">$\square$</span>
 
@@ -719,9 +722,9 @@ The parallel between the positive definite and positive semidefinite cases is no
 
 | | PD case ($\alpha > 0$) | PSD case ($\alpha = 0$) |
 |---|---|---|
-| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\|x_0-x^\star\|^2/\varepsilon)$ |
-| Chebyshev GD | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\star\|^2/\varepsilon})$ |
-| Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\star\|^2/\varepsilon})$ |
+| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\|x_0-x^\ast\|^2/\varepsilon)$ |
+| Chebyshev GD | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\ast\|^2/\varepsilon})$ |
+| Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\ast\|^2/\varepsilon})$ |
 
 In every row, the Chebyshev and CG methods improve the gradient descent complexity by a square root. CG additionally terminates in at most $m$ iterations---the number of distinct nonzero eigenvalues---which may be much smaller than the ambient dimension $d$.
 
@@ -738,7 +741,7 @@ The convergence bounds of the preceding sections depend on the extreme eigenvalu
 Recall the exact error formula from Section 2 (combining the eigenbasis expansion with $\eta=1/\beta$):
 
 $$
-f(x_k) - f^\star = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1 - \lambda_i/\beta)^{2k}\,c_i^2. \tag{11}
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1 - \lambda_i/\beta)^{2k}\,c_i^2. \tag{11}
 $$
 
 The worst-case analysis bounds this sum by pulling out the maximum: $\max_i (1 - \lambda_i/\beta)^{2k}$ in the positive definite case, or $\max_i \lambda_i(1-\lambda_i/\beta)^{2k}$ in the positive semidefinite case. This upper bound ignores two sources of structure:
@@ -760,16 +763,16 @@ In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_
 Substituting into $(11)$:
 
 $$
-f(x_k) - f^\star = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2 \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{12}
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2 \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{12}
 $$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 7.1 (Source condition).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. If the initial error satisfies $e_0 = A^s w$ for some $s \geq 0$, then GD with $\eta = 1/\beta$ satisfies*
 
-$$f(x_k) - f^\star \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{13}$$
+$$f(x_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{13}$$
 
-*In particular, $f(x_k) - f^\star = O\!\left(\beta^{1+2s}\,k^{-(1+2s)}\,\|w\|^2\right)$ as $k \to \infty$.*
+*In particular, $f(x_k) - f^\ast = O\!\left(\beta^{1+2s}\,k^{-(1+2s)}\,\|w\|^2\right)$ as $k \to \infty$.*
 
 </div>
 
@@ -779,10 +782,10 @@ $$
 g'(t) = t^{2s}(1-t)^{2k-1}\bigl[(1+2s)(1-t) - 2k\,t\bigr].
 $$
 
-The unique interior maximizer is $t^\star = (1+2s)/(2k+1+2s)$, and the maximum value is
+The unique interior maximizer is $t^\ast = (1+2s)/(2k+1+2s)$, and the maximum value is
 
 $$
-g(t^\star) = \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\left(\frac{2k}{2k+1+2s}\right)^{2k} \leq \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s},
+g(t^\ast) = \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\left(\frac{2k}{2k+1+2s}\right)^{2k} \leq \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s},
 $$
 
 where the inequality uses $(1-x)^{n} \leq 1$ for $x \in [0,1]$ and $n \geq 0$. Multiplying by $\beta^{1+2s}/2$ and $\|w\|^2$ gives the bound $(13)$. The asymptotic rate follows from $(1+2s)/(2k+1+2s) = O(1/k)$. <span style="float: right;">$\square$</span>
@@ -807,28 +810,28 @@ The source condition is natural in many settings. In inverse problems, $s$ measu
 When $A \succ 0$, the same source-condition argument yields a refined two-phase estimate. Starting from
 
 $$
-f(x_k) - f^\star \leq \frac{\|w\|^2}{2}\max_{\lambda \in [\alpha,\beta]} \lambda^{1+2s}(1-\lambda/\beta)^{2k},
+f(x_k) - f^\ast \leq \frac{\|w\|^2}{2}\max_{\lambda \in [\alpha,\beta]} \lambda^{1+2s}(1-\lambda/\beta)^{2k},
 $$
 
 define $h_k(\lambda) = \lambda^{1+2s}(1-\lambda/\beta)^{2k}$. The unconstrained maximizer is
 
 $$
-\lambda_k^\star = \beta\frac{1+2s}{2k+1+2s}.
+\lambda_k^\ast = \beta\frac{1+2s}{2k+1+2s}.
 $$
 
 Therefore:
 
-- if $\lambda_k^\star \geq \alpha$ (equivalently $k \leq \frac{1+2s}{2}(\kappa-1)$), the maximizer lies in the interior and one recovers the sublinear estimate of Theorem 7.1;
-- if $\lambda_k^\star < \alpha$ (equivalently $k > \frac{1+2s}{2}(\kappa-1)$), the constrained maximizer is the endpoint $\lambda=\alpha$, giving
+- if $\lambda_k^\ast \geq \alpha$ (equivalently $k \leq \frac{1+2s}{2}(\kappa-1)$), the maximizer lies in the interior and one recovers the sublinear estimate of Theorem 7.1;
+- if $\lambda_k^\ast < \alpha$ (equivalently $k > \frac{1+2s}{2}(\kappa-1)$), the constrained maximizer is the endpoint $\lambda=\alpha$, giving
 
 $$
-f(x_k)-f^\star\leq \frac{\alpha^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2. \tag{14}
+f(x_k)-f^\ast\leq \frac{\alpha^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2. \tag{14}
 $$
 
 Hence, for $\alpha>0$, the source-condition bound is sublinear in an initial regime and then transitions to linear convergence with the same exponential factor as Corollary 2.2 but a smaller prefactor. Relative to the crude estimate
 
 $$
-f(x_k)-f^\star\leq \frac{\beta^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2,
+f(x_k)-f^\ast\leq \frac{\beta^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2,
 $$
 
 the late-phase bound $(14)$ improves the constant by a factor $\kappa^{-(1+2s)}$.
@@ -846,7 +849,7 @@ $$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
 so that $\|e_0\|^2 = \mu([0,\beta])$ and $(11)$ reads
 
 $$
-f(x_k) - f^\star = \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,d\mu(\lambda). \tag{15}
+f(x_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,d\mu(\lambda). \tag{15}
 $$
 
 When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \|e_0\|^2/d$), then $\phi(\lambda) \approx \|e_0\|^2\rho_A(\lambda)$.
@@ -854,10 +857,10 @@ When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu
 Under this approximation, $(15)$ becomes
 
 $$
-f(x_k) - f^\star \approx \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,\phi(\lambda)\,d\lambda.
+f(x_k) - f^\ast \approx \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,\phi(\lambda)\,d\lambda.
 $$
 
-The integrand $\lambda(1-\lambda/\beta)^{2k}$ is sharply peaked near $\lambda^\star = \beta/(2k+1)$ for large $k$ and decays rapidly away from this point. The integral is therefore controlled by the behavior of $\phi$ near $\lambda^\star$---which shifts toward zero as $k$ grows. The next two subsections exploit this concentration to obtain convergence rates that depend on the spectral density.
+The integrand $\lambda(1-\lambda/\beta)^{2k}$ is sharply peaked near $\lambda^\ast = \beta/(2k+1)$ for large $k$ and decays rapidly away from this point. The integral is therefore controlled by the behavior of $\phi$ near $\lambda^\ast$---which shifts toward zero as $k$ grows. The next two subsections exploit this concentration to obtain convergence rates that depend on the spectral density.
 
 ### Power-law spectral density
 
@@ -873,11 +876,11 @@ Combining with a source condition of order $s$ replaces $\phi(\lambda)$ by $M\la
 
 **Theorem 7.2 (Power-law spectral density).** *Assume the spectral error measure is absolutely continuous on $(0,\beta]$ with density $\phi(\lambda)=M\lambda^{a-1+2s}$ for some $M>0$, $a>0$, and $s\ge 0$. Then the gradient descent iterates with $\eta = 1/\beta$ satisfy*
 
-$$f(x_k) - f^\star = \frac{M\,\beta^{a+2s+1}}{2}\cdot\frac{\Gamma(a+2s+1)\,\Gamma(2k+1)}{\Gamma(2k+a+2s+2)}.$$
+$$f(x_k) - f^\ast = \frac{M\,\beta^{a+2s+1}}{2}\cdot\frac{\Gamma(a+2s+1)\,\Gamma(2k+1)}{\Gamma(2k+a+2s+2)}.$$
 
 *In particular, as $k \to \infty$,*
 
-$$f(x_k) - f^\star \sim \frac{M\,\Gamma(a+2s+1)\,\beta^{a+2s+1}}{2\,(2k)^{a+2s+1}}. \tag{16}$$
+$$f(x_k) - f^\ast \sim \frac{M\,\Gamma(a+2s+1)\,\beta^{a+2s+1}}{2\,(2k)^{a+2s+1}}. \tag{16}$$
 
 </div>
 
@@ -898,7 +901,7 @@ The rate $O(k^{-(a+2s+1)})$ improves with both the spectral exponent $a$ (fewer 
 | $1$ | Uniform | $O(1/k^2)$ | $O(k^{-(2+2s)})$ |
 | $2$ | Linear vanishing | $O(1/k^3)$ | $O(k^{-(3+2s)})$ |
 
-*Example (uniform spectrum).* If $A$ has eigenvalues uniformly spread in $(0, \beta]$ and the initial error is isotropic ($c_i^2 \approx \|e_0\|^2/d$), then $a = 1$ and $s = 0$, giving $f(x_k) - f^\star = O(1/k^2)$. This is a quadratic improvement over the worst-case $O(1/k)$ bound of Theorem 6.1, obtained solely from the uniform distribution of eigenvalues.
+*Example (uniform spectrum).* If $A$ has eigenvalues uniformly spread in $(0, \beta]$ and the initial error is isotropic ($c_i^2 \approx \|e_0\|^2/d$), then $a = 1$ and $s = 0$, giving $f(x_k) - f^\ast = O(1/k^2)$. This is a quadratic improvement over the worst-case $O(1/k)$ bound of Theorem 6.1, obtained solely from the uniform distribution of eigenvalues.
 
 The figure below illustrates both dimensions of Theorem 7.2: varying the spectral exponent $a$ and varying the source order $s$.
 
@@ -918,14 +921,14 @@ $$\phi(\lambda) = C\,(\lambda - \alpha)^p\bigl(1 + O(\lambda - \alpha)\bigr) \qu
 
 *for constants $C > 0$ and $p > -1$. Then GD with $\eta = 1/\beta$ satisfies*
 
-$$f(x_k) - f^\star \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{17}$$
+$$f(x_k) - f^\ast \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{17}$$
 
 </div>
 
 *Proof.* Substitute $u = \lambda - \alpha$ in the spectral integral $(15)$:
 
 $$
-f(x_k) - f^\star = \frac{1}{2}\int_0^{\beta-\alpha} (\alpha + u)\,\bigl(1 - \alpha/\beta - u/\beta\bigr)^{2k}\,\phi(\alpha + u)\,du.
+f(x_k) - f^\ast = \frac{1}{2}\int_0^{\beta-\alpha} (\alpha + u)\,\bigl(1 - \alpha/\beta - u/\beta\bigr)^{2k}\,\phi(\alpha + u)\,du.
 $$
 
 Factor out the dominant exponential using the identity $1-\alpha/\beta - u/\beta = (1-\alpha/\beta)(1 - u/(\beta - \alpha))$:
@@ -948,7 +951,7 @@ $$
 
 As $k \to \infty$, the integrand converges pointwise to $v^p\,e^{-v}$ and is bounded by $v^p\,e^{-v}$ (since $(1-v/n)^n \leq e^{-v}$ for $v \in [0,n]$). By the dominated convergence theorem, the integral converges to $\Gamma(p+1)$. Combining and noting that $(\beta-\alpha)/\beta = 1-\alpha/\beta$ yields the formula $(17)$. <span style="float: right;">$\square$</span>
 
-Compared with the worst-case bound $f(x_k) - f^\star \leq (1-\alpha/\beta)^{2k}(f(x_0)-f^\star)$, the Laplace estimate reveals a polynomial improvement of order $k^{-(p+1)}$ that depends on how the spectral density vanishes at the left edge of the spectrum. A flat density ($p = 0$) gives a $1/k$ improvement; a square-root vanishing ($p = 1/2$) gives $k^{-3/2}$; higher-order vanishing gives even larger gains.
+Compared with the worst-case bound $f(x_k) - f^\ast \leq (1-\alpha/\beta)^{2k}(f(x_0)-f^\ast)$, the Laplace estimate reveals a polynomial improvement of order $k^{-(p+1)}$ that depends on how the spectral density vanishes at the left edge of the spectrum. A flat density ($p = 0$) gives a $1/k$ improvement; a square-root vanishing ($p = 1/2$) gives $k^{-3/2}$; higher-order vanishing gives even larger gains.
 
 The figure below compares several edge exponents $p$ against the same exponential backbone, showing the progressive polynomial correction predicted by Theorem 7.3.
 
@@ -977,7 +980,7 @@ $$
 With isotropic initialization ($\phi = \|e_0\|^2\rho_{MP}$), Theorem 7.3 applies with $\alpha = \lambda_-$, $\beta = \lambda_+$, and $p = 1/2$. Since $\Gamma(3/2) = \sqrt\pi/2$, the estimate $(17)$ gives
 
 $$
-f(x_k) - f^\star \sim \frac{\tilde{C}(\gamma)}{k^{3/2}}\left(1 - \frac{1}{\kappa}\right)^{2k}\|e_0\|^2 \quad \text{as } k \to \infty,
+f(x_k) - f^\ast \sim \frac{\tilde{C}(\gamma)}{k^{3/2}}\left(1 - \frac{1}{\kappa}\right)^{2k}\|e_0\|^2 \quad \text{as } k \to \infty,
 $$
 
 where $\tilde{C}(\gamma)$ is an explicit constant depending on the aspect ratio $\gamma$.
@@ -991,10 +994,10 @@ $$
 Thus $\phi(\lambda) \propto \lambda^{-1/2}$ (power-law exponent $a=1/2$ in Theorem 7.2 with $s=0$), and
 
 $$
-f(x_k)-f^\star=O(k^{-3/2}).
+f(x_k)-f^\ast=O(k^{-3/2}).
 $$
 
-3. **$\gamma > 1$ (rank deficient).** The empirical spectrum has an atom at $0$ of asymptotic mass $1-1/\gamma$, so globally $\alpha=0$. However, the nonzero spectrum still lies in $[(\sqrt{\gamma}-1)^2,\ (\sqrt{\gamma}+1)^2]$. Since the objective gap carries the factor $\lambda$ in $(15)$, the nullspace part does not contribute to $f(x_k)-f^\star$. Therefore the nonzero spectral component behaves as in the positive definite case, with
+3. **$\gamma > 1$ (rank deficient).** The empirical spectrum has an atom at $0$ of asymptotic mass $1-1/\gamma$, so globally $\alpha=0$. However, the nonzero spectrum still lies in $[(\sqrt{\gamma}-1)^2,\ (\sqrt{\gamma}+1)^2]$. Since the objective gap carries the factor $\lambda$ in $(15)$, the nullspace part does not contribute to $f(x_k)-f^\ast$. Therefore the nonzero spectral component behaves as in the positive definite case, with
 
 $$
 \alpha_{\mathrm{eff}} = (\sqrt{\gamma}-1)^2,\qquad \beta=(\sqrt{\gamma}+1)^2,
@@ -1003,7 +1006,7 @@ $$
 and the same asymptotic form
 
 $$
-f(x_k)-f^\star\sim \frac{\hat{C}(\gamma)}{k^{3/2}}\left(1-\frac{\alpha_{\mathrm{eff}}}{\beta}\right)^{2k}\|e_0\|^2.
+f(x_k)-f^\ast\sim \frac{\hat{C}(\gamma)}{k^{3/2}}\left(1-\frac{\alpha_{\mathrm{eff}}}{\beta}\right)^{2k}\|e_0\|^2.
 $$
 
 In all three regimes, the square-root edge behavior of Marchenko--Pastur yields the same $k^{-3/2}$ polynomial factor; what changes is whether it multiplies an exponential term (gap $>0$) or appears alone (gap $=0$).
@@ -1031,23 +1034,23 @@ before this scale, the source-condition estimate behaves sublinearly as $k^{-(1+
 The spectral integral approach also extends beyond gradient descent. In the polynomial framework of Section 3, any polynomial method with polynomial $p_k$ satisfying $p_k(0) = 1$ yields
 
 $$
-f(x_k) - f^\star = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^2\,d\mu(\lambda).
+f(x_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^2\,d\mu(\lambda).
 $$
 
 For the Krylov subspace method and CG, $p_k$ is chosen optimally over $\mathcal{P}_k$. This gives a direct generalization of all Section 7 results.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 7.4 (CG spectral variational form).** *Let $A \succeq 0$, assume $b \in \mathrm{range}(A)$, and let $x^\star=\mathrm{proj}_S(x_0)$. For each CG iterate before termination,*
+**Theorem 7.4 (CG spectral variational form).** *Let $A \succeq 0$, assume $b \in \mathrm{range}(A)$, and let $x^\ast=\mathrm{proj}_S(x_0)$. For each CG iterate before termination,*
 
 $$
-f(x_k^{\mathrm{CG}})-f^\star = \frac{1}{2}\min_{\substack{p \in \mathcal{P}_k\\ p(0)=1}} \int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda). \tag{18}
+f(x_k^{\mathrm{CG}})-f^\ast = \frac{1}{2}\min_{\substack{p \in \mathcal{P}_k\\ p(0)=1}} \int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda). \tag{18}
 $$
 
 *Consequently, for every admissible polynomial $q_k$ with $q_k(0)=1$,*
 
 $$
-f(x_k^{\mathrm{CG}})-f^\star \leq \frac{1}{2}\int_0^\beta \lambda\,q_k(\lambda)^2\,d\mu(\lambda).
+f(x_k^{\mathrm{CG}})-f^\ast \leq \frac{1}{2}\int_0^\beta \lambda\,q_k(\lambda)^2\,d\mu(\lambda).
 $$
 
 </div>
@@ -1055,7 +1058,7 @@ $$
 Choosing $q_k(\lambda)=(1-\lambda/\beta)^k$ recovers gradient descent with stepsize $1/\beta$, hence
 
 $$
-f(x_k^{\mathrm{CG}})-f^\star\le f(x_k^{\mathrm{GD}})-f^\star.
+f(x_k^{\mathrm{CG}})-f^\ast\le f(x_k^{\mathrm{GD}})-f^\ast.
 $$
 
 Therefore every spectral bound proved in Section 7 for GD transfers immediately to CG (with the same assumptions and constants): source-condition rates from Theorem 7.1, power-law rates from Theorem 7.2, Laplace edge asymptotics from Theorem 7.3, and the three Marchenko--Pastur regimes. In each case, CG is never worse and can be strictly better because it optimizes over all degree-$k$ polynomials rather than using the single fixed polynomial $(1-\lambda/\beta)^k$ (see [Saa03, Gre97]).
@@ -1136,9 +1139,9 @@ In particular, the novelty of these notes is mostly **synthesis and alignment of
 
 | Method | Per-step cost | Iteration complexity | Rate type |
 |--------|--------------|---------------------|-----------|
-| Gradient descent | One matvec | $O(\beta\,\|x_0 - x^\star\|^2/\varepsilon)$ | Sublinear $O(1/k)$ |
-| Chebyshev GD | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\star\|^2/\varepsilon})$ | Sublinear $O(1/k^2)$ |
-| Conjugate Gradient | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\star\|^2/\varepsilon})$, at most $m$ steps | Sublinear $O(1/k^2)$ |
+| Gradient descent | One matvec | $O(\beta\,\|x_0 - x^\ast\|^2/\varepsilon)$ | Sublinear $O(1/k)$ |
+| Chebyshev GD | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$ | Sublinear $O(1/k^2)$ |
+| Conjugate Gradient | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$, at most $m$ steps | Sublinear $O(1/k^2)$ |
 
 The key takeaway: one spectral idea runs through the entire development. On quadratics, the Chebyshev and CG methods achieve a square-root improvement over gradient descent in *every* regime---whether measured by the condition number $\kappa$ in the positive definite case or by the iteration complexity in the positive semidefinite case. CG accomplishes this *adaptively*, without needing to know the eigenvalues or fixing the iteration count in advance, and terminates (in exact arithmetic) in a number of steps bounded by the number of distinct nonzero eigenvalues of $A$. In practice CG does not exactly terminate after finitely many steps due to compounding of numerical errors.
 
