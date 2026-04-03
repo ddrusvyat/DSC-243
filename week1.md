@@ -16,7 +16,7 @@ math:
 This week we study optimization algorithms for the **convex quadratic 
 problems**. This is the most basic and fundamental problem in numerical 
 optimization. Surprisingly, many of the phonemona that hold for 
-minimizng convex quadratics have direct analogues for highly nonlinear 
+minimizing convex quadratics have direct analogues for highly nonlinear 
 and complex models (e.g. deep learning). Since the objective function 
 is a convex quadratic, this setting allows us to develop sharp 
 intuition for convergence behavior using only basic linear algebraic 
@@ -195,7 +195,7 @@ So far we have described how the suboptimality $f(x_k)-f^\ast$ decays with the i
 
 
 
- A simple way to estimate iteration complexity of linearly convergent algorithms is as follows.  Given an inequality $s\leq  (1-q)^{k}c$ with q\in $(0,1)$, we may upper bound the right side by an exponential
+ A simple way to estimate iteration complexity of linearly convergent algorithms is as follows.  Given an inequality $s\leq  (1-q)^{k}c$ with $q\in (0,1)$, we may upper bound the right side by an exponential
 $$s\leq c(1-q)^{k}\leq c\exp(-qk)$$and then set the right side to $\varepsilon$. We may then be sure that the inequality $s\leq \varepsilon$ holds after $k\geq \lceil q^{-1}\log\left(\frac{c}{\varepsilon}\right) \rceil$ iterations. Using this strategy with Theorem 2.1 and Corollary 2.2 shows that GD with either choice of stepsize $\frac{2}{\beta+\alpha}$ or $\frac{1}{\beta}$ enjoys iteration complexity $\kappa\cdot\log(\frac{f(x_0)-f^\ast}{\varepsilon})$ up to a multiplication by a numerical constant.
 
 
@@ -208,7 +208,7 @@ The following animation shows gradient descent on two quadratics with the same s
 
 ![Gradient descent: well-conditioned vs ill-conditioned](figures/gd_condition.gif)
 
-As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\!\bigl(f(x_k)-f^\ast\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
+As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\bigl(f(x_k)-f^\ast\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
 
 ![GD with stepsize 1/beta for varying condition numbers](figures/gd_condition_number_performance.png)
 
