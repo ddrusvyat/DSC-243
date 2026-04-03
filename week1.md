@@ -296,11 +296,11 @@ We must therefore find the degree-$k$ polynomial $q$ with $q(\sigma) = 1$ that h
 
 $$q_k^*(t):= \frac{T_k(t)}{T_k(\sigma)}$$
 
-an excellent candidate: it satisfies $q\_k^{\ast}(\sigma) = 1$ and $\max\_{t \in [-1,1]}\lvert q\_k^{\ast}(t)\rvert = 1/T\_k(\sigma)$, which is small because $T\_k(\sigma)$ grows exponentially in $k$. Transforming back to the $\lambda$-variable, the optimal polynomial is
+an excellent candidate: it satisfies $q_k^{\ast}(\sigma) = 1$ and $\max_{t \in [-1,1]}\lvert q_k^{\ast}(t)\rvert = 1/T_k(\sigma)$, which is small because $T_k(\sigma)$ grows exponentially in $k$. Transforming back to the $\lambda$-variable, the optimal polynomial is
 
 $$p_k^*(\lambda) :=(q_k^*\circ\varphi)(\lambda)= \frac{T_k\!\left(\frac{\beta + \alpha - 2\lambda}{\beta - \alpha}\right)}{T_k\!\left(\frac{\kappa + 1}{\kappa - 1}\right)}.$$
 
-The animation below shows $p\_k^{\ast}(\lambda)$ on $[\alpha, \beta]$ for increasing degree $k$. As $k$ grows, the polynomial oscillates more rapidly yet its maximum amplitude $1/T\_k(\sigma)$ shrinks exponentially---this is the mechanism behind the accelerated convergence.
+The animation below shows $p_k^{\ast}(\lambda)$ on $[\alpha, \beta]$ for increasing degree $k$. As $k$ grows, the polynomial oscillates more rapidly yet its maximum amplitude $1/T_k(\sigma)$ shrinks exponentially---this is the mechanism behind the accelerated convergence.
 
 ![Optimal polynomials on the eigenvalue interval](figures/optimal_polynomials.gif)
 
@@ -336,7 +336,7 @@ $$
 holds. Taking reciprocals gives the second claim. This completes the proof. <span style="float: right;">$\square$</span>
 
 
-Returning to choosing stepsizes for gradient descent, the roots of $p^{\ast}\_k(\lambda)$ on $[\alpha, \beta]$ are the images of the Chebyshev roots $t\_j$ under the inverse map $\varphi^{-1}(t) = \frac{\beta+\alpha}{2} - \frac{\beta-\alpha}{2}\,t$, yielding the stepsizes $\eta\_j = 1/\lambda\_j$. We thus have arrived at the main theorem of this section.
+Returning to choosing stepsizes for gradient descent, the roots of $p^{\ast}_k(\lambda)$ on $[\alpha, \beta]$ are the images of the Chebyshev roots $t_j$ under the inverse map $\varphi^{-1}(t) = \frac{\beta+\alpha}{2} - \frac{\beta-\alpha}{2}\,t$, yielding the stepsizes $\eta_j = 1/\lambda_j$. We thus have arrived at the main theorem of this section.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -352,12 +352,11 @@ $$f(x_k) - f^\star \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right
 
 
 *Proof.* Combining the estimate $(2)$ and Lemma 3.1 directly yields
-
 $$
 \frac{f(x_k) - f^\star}{f(x_0) - f^\star} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
 $$ This completes the proof. <span style="float: right;">$\square$</span>
 
-Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\log((f(x\_0)-f^\ast)/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\log((f(x\_0)-f^\ast)/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
+Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\log((f(x_0)-f^\ast)/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\log((f(x_0)-f^\ast)/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
 
 
 
@@ -383,7 +382,7 @@ As a final illustration, the plot below overlays GD with stepsize $1/\beta$ (sol
 
 ### From polynomials to Krylov subspaces
 
-The Chebyshev method discussed in Section 3 achieves the iteration complexity $O(\sqrt{\kappa}\,\ln((f(x\_0)-f^\ast)/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
+The Chebyshev method discussed in Section 3 achieves the iteration complexity $O(\sqrt{\kappa}\,\ln((f(x_0)-f^\ast)/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
 
 > Can we design an adaptive algorithm that matches this rate adaptively, without knowing the spectrum nor setting the time horizon?
 
@@ -428,7 +427,7 @@ $$
 f(x) - f^\star = \tfrac{1}{2}\|x - x^\star\|_A^2
 $$
 
-holds for every vector $x$. Since $f^\star$ is constant, minimizing $f$ over any subset of $\R^d$ is equivalent to minimizing the $A$-norm distance to $x^\star$. Therefore we have
+holds for every vector $x$. Since $f^\star$ is constant, minimizing $f$ over any subset of $\mathbb{R}^d$ is equivalent to minimizing the $A$-norm distance to $x^\star$. Therefore we have
 
 $$
 \tfrac{1}{2}\|e_k\|_A^2 = f(x_k)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; f(x)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; \tfrac{1}{2}\|x - x^\star\|_A^2.
@@ -462,7 +461,7 @@ $$
 
 This polynomial has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $A$. Hence we deduce $p(A)=0$ and $\lVert e_m\rVert_A=0$. <span style="float: right;">$\square$</span>
 
-The convergence bound in Theorem 4.1 is identical to the Chebyshev bound in Theorem 3.1, and the iteration complexity has the same order $O(\sqrt{\kappa}\,\ln((f(x\_0)-f^\ast)/\varepsilon))$. Importantly, the Krylov method achieves this complexity *without knowing $\alpha$ or $\beta$ and without requiring to specify the time horizon $k$*; moreover, finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
+The convergence bound in Theorem 4.1 is identical to the Chebyshev bound in Theorem 3.1, and the iteration complexity has the same order $O(\sqrt{\kappa}\,\ln((f(x_0)-f^\ast)/\varepsilon))$. Importantly, the Krylov method achieves this complexity *without knowing $\alpha$ or $\beta$ and without requiring to specify the time horizon $k$*; moreover, finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
 
 ### The Conjugate Gradient algorithm implements the Krylov method 
 
@@ -472,17 +471,19 @@ The key idea is to iteratively build a basis of the Krylov subspaces that is ort
 
 
 
-Concretely, suppose that for each $i=1,\ldots, k$ we have available $x\_i$ which is a minimizer of $f$ on $x\_0 + \mathcal{K}\_i$ and suppose that we have constructed an $A$-orthogonal basis $\lbrace p\_i\rbrace\_{i=0}^{k-1}$ for $\mathcal{K}\_{k-1}$. Let us see how we can efficiently construct $x\_{k+1}$---the minimizer of $f$ on $x\_0 + \mathcal{K}\_{k+1}$---and how to extend the $A$-orthogonal basis to $\mathcal{K}\_{k}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
-
-
-If $r\_k$ is orthogonal to $\mathcal{K}\_{k+1}$ then $x\_k$ is a minimizer of $f$ on $x\_0+\mathcal{K}\_{k+1}$ and we can simply declare $x\_{k+1}=x\_k$. Otherwise, set 
-$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta\_{k-1}$ to be chosen. We would like to ensure that $p\_{k}$ is $A$-orthogonal to $\lbrace p\_i\rbrace\_{i=0}^{k-1}$ . To this end, setting $p\_{k}^\top Ap\_{k-1}=0$ yields the unique choice of $\beta\_{k-1}=-\frac{r\_k^\top Ap\_{k-1}}{p\_{k-1}^\top Ap\_{k-1}}$. Now for any $i<k-1$ we compute
-$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$ Observe that $p\_{k-1}^{\top}Ap\_i=0$ by assumed A-orthogonality of $\lbrace p\_i\rbrace\_{i=0}^{k-1}$ and $r\_k^\top A p\_{i}=0$ because $A p\_{i}$ lies in $\mathcal{K}\_{i+1}$ and the optimality conditions for $x\_k$ imply  $r\_k\perp K\_{k}$. Thus $\lbrace p\_i\rbrace\_{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}\_{k}$.
+<p>
+Concretely, suppose that for each $i=1,\ldots, k$ we have available $x_i$ which is a minimizer of $f$ on $x_0 + \mathcal{K}_i$ and suppose that we have constructed an $A$-orthogonal basis $\{p_i\}_{i=0}^{k-1}$ for $\mathcal{K}_{k-1}$. Let us see how we can efficiently construct $x_{k+1}$&mdash;the minimizer of $f$ on $x_0 + \mathcal{K}_{k+1}$&mdash;and how to extend the $A$-orthogonal basis to $\mathcal{K}_{k}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
+</p>
+<p>
+If $r_k$ is orthogonal to $\mathcal{K}_{k+1}$ then $x_k$ is a minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$ and we can simply declare $x_{k+1}=x_k$. Otherwise, set 
+$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $A$-orthogonal to $\{p_i\}_{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Ap_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Ap_{k-1}}{p_{k-1}^\top Ap_{k-1}}$. Now for any $i<k-1$ we compute
+$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$ Observe that $p_{k-1}^{\top}Ap_i=0$ by assumed A-orthogonality of $\{p_i\}_{i=0}^{k-1}$ and $r_k^\top A p_{i}=0$ because $A p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $x_k$ imply  $r_k\perp K_{k}$. Thus $\{p_i\}_{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
 It remains to declare 
-$$x_{k+1}=\argmin_{\eta} f(x_k+\eta p_{k}). \tag{5}$$Indeed, taking the derivative in $\eta$ implies $r\_{k+1}\perp p\_{k}$ and for any $i<k$ we have orthogonality
+$$x_{k+1}=\argmin_{\eta} f(x_k+\eta p_{k}). \tag{5}$$Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
 $$r_{k+1}^\top p_{i}=(r_k-\eta_k Ap_k)^{\top}p_i=r_k^\top p_i-\eta_k p_k^\top Ap_i=0,$$
-where $\eta\_k$ is the minimizer of $(5)$. Thus $x\_{k+1}$ is indeed the minimizer of $f$ on $x\_0+\mathcal{K}\_{k+1}$.
-The algorithm we just constracuted is called the conjugate gradient method and is summarized in the following.
+where $\eta_k$ is the minimizer of $(5)$. Thus $x_{k+1}$ is indeed the minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$.
+The algorithm we just constructed is called the conjugate gradient method and is summarized in the following.
+</p>
 
 <div style="background-color: #f8f8f8; border: 1px solid #ccc; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px; font-size: 0.97em;" markdown="1">
 
