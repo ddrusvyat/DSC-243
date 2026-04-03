@@ -399,6 +399,138 @@ def make_gif_cg():
     print("  ✓ conjugate_gradient.gif")
 
 
+def make_gd_vs_cg_plot():
+    """Static figure: GD zig-zags while CG reaches the minimum in 2 steps."""
+    eigs = [0.5, 6.0]
+    A, f, grad = make_quadratic(eigs)
+
+    x0 = np.array([5.0, 4.0])
+
+    # GD with optimal fixed stepsize
+    eta = 2.0 / (eigs[0] + eigs[1])
+    n_gd = 20
+    gd_xs = [x0.copy()]
+    x = x0.copy()
+    for _ in range(n_gd):
+        x = x - eta * grad(x)
+        gd_xs.append(x.copy())
+    gd_xs = np.array(gd_xs)
+
+    # CG (converges in 2 steps on 2D)
+    cg_xs = cg_iterates(A, x0, 3)
+
+    fig, ax = plt.subplots(figsize=(7, 5.5))
+    xx, yy, zz = contour_grid(A, [gd_xs, cg_xs], pad=1.5)
+    levels = np.linspace(0, zz.max() * 0.55, 30)
+    ax.contour(xx, yy, zz, levels=levels, cmap="Greys", alpha=0.45)
+
+    ax.plot(gd_xs[:, 0], gd_xs[:, 1], "o-", color="#2980b9", markersize=3.5,
+            linewidth=1.4, label="GD", zorder=3)
+    ax.plot(cg_xs[:, 0], cg_xs[:, 1], "s-", color="#e74c3c", markersize=7,
+            linewidth=2.2, label="CG", zorder=4)
+
+    ax.plot(x0[0], x0[1], "o", color="black", markersize=8, zorder=5)
+    ax.annotate("$x_0$", x0, textcoords="offset points", xytext=(8, 5),
+                fontsize=12, zorder=5)
+    ax.plot(0, 0, "*", color="gold", markersize=15, zorder=5)
+    ax.annotate("$x^\\star$", (0, 0), textcoords="offset points",
+                xytext=(8, -10), fontsize=12, zorder=5)
+
+    ax.set_xlabel("$x_1$", fontsize=12)
+    ax.set_ylabel("$x_2$", fontsize=12)
+    ax.set_title(f"GD vs CG on a 2D quadratic ($\\kappa={eigs[1]/eigs[0]:.0f}$)",
+                 fontsize=13)
+    ax.set_aspect("equal")
+    ax.legend(fontsize=11, loc="upper left")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "gd_vs_cg_2d.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print("  ✓ gd_vs_cg_2d.png")
+
+
+def make_gd_vs_cg_gif():
+    """Animated GIF: GD zig-zags while CG reaches the minimum in 2 steps."""
+    eigs = [0.5, 6.0]
+    A, f, grad = make_quadratic(eigs)
+    kappa = eigs[1] / eigs[0]
+
+    x0 = np.array([5.0, 4.0])
+
+    eta = 2.0 / (eigs[0] + eigs[1])
+    n_gd = 20
+    gd_xs = [x0.copy()]
+    x = x0.copy()
+    for _ in range(n_gd):
+        x = x - eta * grad(x)
+        gd_xs.append(x.copy())
+    gd_xs = np.array(gd_xs)
+
+    cg_xs = cg_iterates(A, x0, 3)
+
+    fig, ax = plt.subplots(figsize=(7, 5.5))
+    xx, yy, zz = contour_grid(A, [gd_xs, cg_xs], pad=1.5)
+    levels = np.linspace(0, zz.max() * 0.55, 30)
+    ax.contour(xx, yy, zz, levels=levels, cmap="Greys", alpha=0.45)
+    ax.plot(0, 0, "*", color="gold", markersize=15, zorder=5)
+    ax.annotate("$x^\\star$", (0, 0), textcoords="offset points",
+                xytext=(8, -10), fontsize=12, zorder=5)
+    ax.plot(x0[0], x0[1], "o", color="black", markersize=8, zorder=5)
+    ax.annotate("$x_0$", x0, textcoords="offset points", xytext=(8, 5),
+                fontsize=12, zorder=5)
+    ax.set_xlabel("$x_1$", fontsize=12)
+    ax.set_ylabel("$x_2$", fontsize=12)
+    ax.set_title(f"GD vs CG on a 2D quadratic ($\\kappa={kappa:.0f}$)",
+                 fontsize=13)
+    ax.set_aspect("equal")
+    ax.legend(["GD", "CG"], fontsize=11, loc="upper left")
+    fig.tight_layout()
+
+    gd_line, = ax.plot([], [], "o-", color="#2980b9", markersize=3.5,
+                       linewidth=1.4, label="GD", zorder=3)
+    cg_line, = ax.plot([], [], "s-", color="#e74c3c", markersize=7,
+                       linewidth=2.2, label="CG", zorder=4)
+    ax.legend(fontsize=11, loc="upper left")
+
+    n_cg = len(cg_xs) - 1
+    # Pace: show CG steps spread across GD steps so both finish together
+    # CG step i lands at GD frame: round(i * n_gd / n_cg)
+    frames_per_step = 8
+    pause_end = 20
+    total_frames = n_gd * frames_per_step + pause_end
+
+    def update(frame):
+        step_f = frame / frames_per_step
+        # GD: interpolate
+        gd_step = min(int(step_f), n_gd)
+        gd_t = min(step_f - int(step_f), 1.0) if gd_step < n_gd else 1.0
+        gd_pts = list(gd_xs[:gd_step])
+        if gd_step < n_gd:
+            gd_pts.append(gd_xs[gd_step] + gd_t * (gd_xs[gd_step + 1] - gd_xs[gd_step]))
+        else:
+            gd_pts.append(gd_xs[-1])
+        gd_pts = np.array(gd_pts)
+        gd_line.set_data(gd_pts[:, 0], gd_pts[:, 1])
+
+        # CG: paced to land steps at proportional GD frames
+        cg_progress = min(step_f / n_gd * n_cg, n_cg)
+        cg_step = min(int(cg_progress), n_cg)
+        cg_t = min(cg_progress - cg_step, 1.0) if cg_step < n_cg else 1.0
+        cg_pts = list(cg_xs[:cg_step])
+        if cg_step < n_cg:
+            cg_pts.append(cg_xs[cg_step] + cg_t * (cg_xs[cg_step + 1] - cg_xs[cg_step]))
+        else:
+            cg_pts.append(cg_xs[-1])
+        cg_pts = np.array(cg_pts)
+        cg_line.set_data(cg_pts[:, 0], cg_pts[:, 1])
+
+        return gd_line, cg_line
+
+    anim = FuncAnimation(fig, update, frames=total_frames, interval=80, blit=False)
+    anim.save(FIGURES_DIR / "gd_vs_cg_2d.gif", writer=PillowWriter(fps=15))
+    plt.close(fig)
+    print("  ✓ gd_vs_cg_2d.gif")
+
+
 # ── Plot 5: Chebyshev polynomials of various degrees ──────────────
 
 def make_chebyshev_plot():
@@ -607,6 +739,85 @@ def make_chebyshev_condition_number_performance_plot():
                 dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("  ✓ chebyshev_condition_number_performance.png")
+
+
+def make_gd_cheb_cg_condition_number_plot():
+    """Plot GD, Chebyshev, and CG objective-gap decay for varying kappa."""
+    dim = 200
+    beta = 1.0
+    kappas = [20, 50, 100]
+    n_iters = 220
+    x_star = np.ones(dim)
+    x0 = np.zeros(dim)
+    b = np.zeros(dim)  # b = A x_star, computed per kappa
+
+    fig, ax = plt.subplots(figsize=(8.4, 5.2))
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+    for idx, kappa in enumerate(kappas):
+        alpha = beta / kappa
+        eigs = np.geomspace(alpha, beta, dim)
+        A = np.diag(eigs)
+        b = A @ x_star
+        c = colors[idx % len(colors)]
+
+        # GD with stepsize 1/beta (solid)
+        x = x0.copy()
+        gd_gaps = []
+        for _ in range(n_iters + 1):
+            e = x - x_star
+            gd_gaps.append(max(0.5 * float(e @ (A @ e)), 1e-20))
+            x = x - (1.0 / beta) * (A @ x - b)
+        ax.plot(np.arange(n_iters + 1), gd_gaps, color=c, linewidth=1.6,
+                label=fr"$\kappa={kappa}$")
+
+        # Chebyshev (dashed)
+        steps = chebyshev_stepsizes(beta, alpha, n_iters)
+        x = x0.copy()
+        cheb_gaps = [0.5 * float((x - x_star) @ (A @ (x - x_star)))]
+        for s in steps:
+            x = x - s * (A @ x - b)
+            e = x - x_star
+            cheb_gaps.append(max(0.5 * float(e @ (A @ e)), 1e-20))
+        ax.plot(np.arange(n_iters + 1), cheb_gaps, color=c, linewidth=1.6,
+                linestyle="--")
+
+        # CG (dotted)
+        x = x0.copy()
+        r = b - A @ x
+        p = r.copy()
+        cg_gaps = [0.5 * float((x - x_star) @ (A @ (x - x_star)))]
+        for _ in range(n_iters):
+            Ap = A @ p
+            rr = float(r @ r)
+            if rr < 1e-30:
+                cg_gaps.extend([1e-20] * (n_iters - len(cg_gaps) + 1))
+                break
+            eta = rr / float(p @ Ap)
+            x = x + eta * p
+            r_new = r - eta * Ap
+            beta_cg = float(r_new @ r_new) / rr
+            p = r_new + beta_cg * p
+            r = r_new
+            e = x - x_star
+            cg_gaps.append(max(0.5 * float(e @ (A @ e)), 1e-20))
+        ax.plot(np.arange(len(cg_gaps)), cg_gaps, color=c, linewidth=1.6,
+                linestyle=":")
+
+    ax.set_yscale("log")
+    ax.set_xlim(0, n_iters)
+    ax.set_ylim(1e-16, None)
+    ax.set_xlabel(r"Iteration $k$", fontsize=12)
+    ax.set_ylabel(r"$f(x_k)-f^\star$", fontsize=12)
+    ax.set_title(r"GD (solid) vs Chebyshev (dashed) vs CG (dotted): varying $\kappa$",
+                 fontsize=13)
+    ax.grid(True, alpha=0.25)
+    ax.legend(fontsize=10, ncol=2, loc="upper right")
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "gd_cheb_cg_condition_number.png",
+                dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print("  ✓ gd_cheb_cg_condition_number.png")
 
 
 def make_chebyshev_stepsizes_psd_plot():

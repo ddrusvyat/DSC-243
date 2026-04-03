@@ -20,7 +20,7 @@ minimizng convex quadratics have direct analogues for highly nonlinear
 and complex models (e.g. deep learning). Since the objective function 
 is a convex quadratic, this setting allows us to develop sharp 
 intuition for convergence behavior using only basic linear algebraic 
-tools. Moving beyond linear least squares will require combining linear 
+tools. Moving beyond quadratics will require combining linear 
 algebra with analytic techniques---more on this later.
 We cover three algorithms of increasing sophistication:
 
@@ -351,7 +351,7 @@ $$f(x_k) - f^\star \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right
 </div>
 
 
-*Proof of Theorem 3.1.* Combining the estimate $(2)$ and Lemma 3.1 directly yields
+*Proof.* Combining the estimate $(2)$ and Lemma 3.1 directly yields
 
 $$
 \frac{f(x_k) - f^\star}{f(x_0) - f^\star} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
@@ -383,11 +383,9 @@ As a final illustration, the plot below overlays GD with stepsize $1/\beta$ (sol
 
 ### From polynomials to Krylov subspaces
 
-Section 3 showed that acceleration is fundamentally a polynomial-design problem. Section 4 asks a stronger question: can we choose the best polynomial adaptively from iteration data, rather than prescribing it in advance? Krylov subspaces are exactly the right language for this question.
+The Chebyshev method discussed in Section 3 achieves the iteration complexity $O(\sqrt{\kappa}\,\ln((f(x_0)-f^*)/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
 
-The Chebyshev method achieves the iteration complexity $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
-
-> can we match this rate adaptively, without knowing the spectrum nor setting the time horizon?
+> Can we design an adaptive algorithm that matches this rate adaptively, without knowing the spectrum nor setting the time horizon?
 
 The key observation is that gradient descent with *any* sequence of stepsizes produces iterates that lie in a specific linear subspace. Due to the recursion $x_{j+1} = x_j - \eta_j(Ax_j - b)$, one readily verifies the inclusion
 
@@ -409,15 +407,15 @@ The **Krylov subspace method** is the idealized algorithm that, at each step $k$
 
 $$x_k = \argmin_{x \,\in\, x_0 + \mathcal{K}_k(A,\,r_0)} f(x). \tag{4}$$
 
-Since $f$ is strictly convex (when $\alpha > 0$), the minimizer in $(4)$ is unique. The convergence analysis follows immediately from the polynomial framework developed in Section 3.
+The convergence analysis of the Krylov subspace method follows almost immediately from the polynomial framework developed in Section 3.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 4.1 (Krylov method convergence).** *Assuming $\alpha > 0$, the Krylov subspace method $(4)$ satisfies*
 
 $$
-f(x_k) - f^\star \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\star\bigr).
-\tag{5}
+f(x_k) - f^\star \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\star\bigr)
+\qquad \forall k\geq 0.
 $$
 
 *Moreover, the method converges in at most $m$ iterations, where $m$ is the number of distinct eigenvalues of $A$.*
@@ -430,19 +428,19 @@ $$
 f(x) - f^\star = \tfrac{1}{2}\|x - x^\star\|_A^2
 $$
 
-holds for every vector $x$. Since $f^\star$ is constant, minimizing $f$ over a subset is equivalent to minimizing the $A$-norm distance to $x^\star$. Therefore
+holds for every vector $x$. Since $f^\star$ is constant, minimizing $f$ over any subset of $\R^d$ is equivalent to minimizing the $A$-norm distance to $x^\star$. Therefore we have
 
 $$
-\tfrac{1}{2}\|e_k\|_A^2 = \min_{x\,\in\, x_0 + \mathcal{K}_k}\; \tfrac{1}{2}\|x - x^\star\|_A^2.
+\tfrac{1}{2}\|e_k\|_A^2 = f(x_k)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; f(x)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; \tfrac{1}{2}\|x - x^\star\|_A^2.
 $$
 
-We convert this geometric minimization into a polynomial one. A vector $x$ belongs to $x_0+\mathcal{K}_k$ if and only if there exists a polynomial $q$ of degree at most $k-1$ such that $x = x_0 + q(A)\,r_0$. Using the identity $r_0 = b - Ax_0 = -Ae_0$, we obtain
+We convert this geometric minimization into a polynomial one. Observe that a vector $x$ belongs to $x_0+\mathcal{K}_k$ if and only if there exists a polynomial $q$ of degree at most $k-1$ such that $x = x_0 + q(A)\,r_0$. Using the identity $r_0 = b - Ax_0 = -Ae_0$, we obtain
 
 $$
 x - x^\star = e_0 - q(A)\,Ae_0 = p(A)\,e_0,
 $$
 
-where the polynomial $p(\lambda):=1-\lambda q(\lambda)$ has degree at most $k$ and satisfies $p(0)=1$. The correspondence between $p$ and $q$ is one-to-one. Substituting gives
+where the polynomial $p(\lambda):=1-\lambda q(\lambda)$ has degree at most $k$ and satisfies $p(0)=1$. Conversely, any polynomial of degree at most $k$ with $p(0)=1$ can be written in this way. Substituting gives
 
 $$
 \|e_k\|_A^2 = \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \|p(A)\,e_0\|_A^2 \leq \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \max_{\lambda \in [\alpha,\beta]} p(\lambda)^2 \cdot \|e_0\|_A^2.
@@ -454,7 +452,7 @@ $$
 \|e_k\|_A^2 \leq \frac{\|e_0\|_A^2}{T_k(\sigma)^2} \leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}\|e_0\|_A^2.
 $$
 
-This proves the estimate $(5)$.
+This proves the claimed estimate.
 
 For finite termination, let $\mu_1,\ldots,\mu_m$ denote the distinct eigenvalues of $A$, and consider the polynomial
 
@@ -462,17 +460,29 @@ $$
 p(\lambda) = \prod_{i=1}^{m}\left(1 - \lambda/\mu_i\right).
 $$
 
-This polynomial has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $A$. Hence $p(A)=0$, and the polynomial representation gives $\lVert e_m\rVert_A=0$. <span style="float: right;">$\square$</span>
+This polynomial has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $A$. Hence we deduce $p(A)=0$ and $\lVert e_m\rVert_A=0$. <span style="float: right;">$\square$</span>
 
-The convergence bound $(5)$ is identical to the Chebyshev bound $(3)$ of Theorem 3.1, and the iteration complexity is the same $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$. The Krylov method achieves this rate *without knowing $\alpha$ or $\beta$*, and finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues (hence $m \le d$). In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
+The convergence bound in Theorem 5.1 is identical to the Chebyshev bound in Theorem 3.1, and the iteration complexity has the same order $O(\sqrt{\kappa}\,\ln((f(x_0)-f^*)/\varepsilon))$. Importantly, the Krylov method achieves this complexity *without knowing $\alpha$ or $\beta$ and without requiring to specify the time horizon $k$*; moreover, finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
 
-### The Conjugate Gradient algorithm
+### The Conjugate Gradient algorithm implements the Krylov method 
 
-The Krylov subspace method $(4)$ is conceptual: a direct implementation would solve a $k$-dimensional optimization at each step, with cost growing as $k$ increases. The **Conjugate Gradient (CG)** algorithm is a remarkable implementation of the Krylov method that uses only **one matrix-vector product per iteration** and $O(d)$ additional work.
+The Krylov subspace method $(4)$ is conceptual: a direct implementation would solve a $k$-dimensional linear optimization problem at each step, with cost growing as $k$ increases. The **Conjugate Gradient (CG)** algorithm is an implementation of the Krylov method that uses only **one matrix-vector product per iteration**.
 
-The key idea is to iteratively build a basis of the Krylov subspaces that is orthogonal with respect to the inner product $\langle x,y\rangle_A=x^\top Ay$, so that each successive minimization reduces to a single line search. Conceptually, this basis is formed by a Gram--Schmidt process. The special structure of Krylov subspaces ensures that each Gram--Schmidt update requires only the immediately preceding direction---a **short recurrence**---rather than all previous directions. This is why each CG iteration costs $O(d)$ work beyond the single matrix-vector product.
+The key idea is to iteratively build a basis of the Krylov subspaces that is orthogonal with respect to the inner product $\langle x,y\rangle_A=x^\top Ay$, so that each successive minimization reduces to a single line search. Conceptually, this basis is formed by a Gram--Schmidt process. The special structure of Krylov subspaces ensures that each Gram--Schmidt update requires only the immediately preceding direction---a **short recurrence**---rather than all previous directions. 
 
-Concretely, the conjugate gradient method takes the form:
+
+
+Concretely, suppose that for each $i=1,\ldots, k$ we have available $x_i$ which is a minimizer of $f$ on $x_0 + \mathcal{K}_i$ and suppose that we have constructed an $A$-orthogonal basis $\{p_i\}_{i=0}^{k-1}$ for $\mathcal{K}_{k-1}$. Let us see how we can efficiently construct $x_{k+1}$---the minimizer of $f$ on $x_0 + \mathcal{K}_{k+1}$---and how to extend the $A$-orthogonal basis to $\mathcal{K}_{k}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
+
+
+If $r_k$ is orthogonal to $\mathcal{K}_{k+1}$ then $x_k$ is a minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$ and we can simply declare $x_{k+1}=x_k$. Otherwise, set 
+$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $A$-orthogonal to $\{p_i\}_{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Ap_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Ap_{k-1}}{p_{k-1}^\top Ap_{k-1}}$. Now for any $i<k-1$ we compute
+$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$ Observe that $p_{k-1}^{\top}Ap_i=0$ by assumed A-orthogonality of $\{p_i\}_{i=0}^{k-1}$ and $r_k^\top A p_{i}=0$ because $A p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $x_k$ imply  $r_k\perp K_{k}$. Thus $\{p_i\}_{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
+It remains to declare 
+$$x_{k+1}=\argmin_{\eta} f(x_k+\eta p_{k}). \tag{5}$$Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
+$$r_{k+1}^\top p_{i}=(r_k-\eta_k Ap_k)^{\top}p_i=r_k^\top p_i-\eta_k p_k^\top Ap_i=0,$$
+where $\eta_k$ is the minimizer of $(5)$. Thus $x_{k+1}$ is indeed the minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$.
+The algorithm we just constracuted is called the conjugate gradient method and is summarized in the following.
 
 <div style="background-color: #f8f8f8; border: 1px solid #ccc; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px; font-size: 0.97em;" markdown="1">
 
@@ -485,118 +495,27 @@ Concretely, the conjugate gradient method takes the form:
 3. $\qquad \eta_k = \dfrac{r_k^\top r_k}{p_k^\top A p_k}$
 4. $\qquad x_{k+1} = x_k + \eta_k\, p_k$
 5. $\qquad r_{k+1} = r_k - \eta_k\, A p_k$
-6. $\qquad \beta_k = \dfrac{\lVert r_{k+1}\rVert^2}{\lVert r_k\rVert^2}$
+6. $\qquad \beta_k = -\dfrac{r_{k+1}^\top A p_k}{p_k^\top A p_k}$
 7. $\qquad p_{k+1} = r_{k+1} + \beta_k\, p_k$
 
 </div>
 
-Here $p_k$ denotes a **search direction vector**. In Sections 3 and 7, polynomial filters are written as $p_k(\lambda)$ to distinguish them from these vectors.
 
-Each iteration requires one matrix-vector product $Ap_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Ax_k$ are the **residuals** satisfying $r_k = -\nabla f(x_k)$, while the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $x_k + \eta\, p_k$, while $\beta_k$ ensures $A$-conjugacy of consecutive search directions.
+Each iteration of the conjugate gradient method requires one matrix-vector product $Ap_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Ax_k$ are the **residuals** satisfying $r_k = -\nabla f(x_k)$, while the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $x_k + \eta\, p_k$, while $\beta_k$ ensures $A$-orthogonality of consecutive search directions.
 
-### CG implements the Krylov method
+*Remark.* In the literature, the update for $\beta_k$ is usually written in the equivalent form $\beta_k = \|r_{k+1}\|^2/\|r_k\|^2$. The equivalence is straightforward to establish from the residual recursion $Ap_k = (r_k - r_{k+1})/\eta_k$; we omit the argument for brevity. 
 
-We now verify that the CG algorithm produces exactly the iterates of the Krylov subspace method $(4)$. The key is to show that the search directions span the Krylov subspace and that the residuals are mutually orthogonal---two properties that together force each CG iterate to minimize $f$ over the correct affine subspace.
 
-<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
-
-**Theorem 4.2 (CG correctness).** *Suppose $\alpha > 0$. The CG residuals and search directions satisfy, for all valid indices:*
-
-1. *$r_i^\top r_j = 0$ for $i \neq j$ (mutual orthogonality of residuals),*
-2. *$p_i^\top A p_j = 0$ for $i \neq j$ ($A$-conjugacy of search directions),*
-3. *$\mathrm{span}\lbrace p_0, \ldots, p_{k-1}\rbrace = \mathrm{span}\lbrace r_0, \ldots, r_{k-1}\rbrace = \mathcal{K}_k(A, r_0)$.*
-
-*Consequently, $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$, and the convergence guarantee $(5)$ of Theorem 4.1 applies to the CG iterates.*
-
-</div>
-
-*Proof.* We prove properties 1--3 by induction on the index $k$. The base case $k=0$ is immediate, since the identity $p_0=r_0$ holds and the equality $\mathcal{K}_1(A,r_0)=\mathrm{span}\lbrace r_0\rbrace$ is valid. For the inductive step, assume that properties 1--3 hold through step $k$. The CG updates give the relations
-
-$$
-r_{k+1}=r_k-\eta_kAp_k, \qquad p_{k+1}=r_{k+1}+\beta_kp_k.
-$$
-
-We first verify property 1. Fix an index $j<k$. The inductive hypothesis gives the orthogonality relation $r_k^\top r_j=0$. In addition, property 3 implies that the vector $r_j$ belongs to the span $\mathrm{span}\lbrace p_0,\ldots,p_j\rbrace$. Since the vector $p_k$ is $A$-conjugate to every earlier search direction, the relation $p_k^\top Ar_j=0$ follows. Substituting these two relations into the residual update gives the identity
-
-$$
-r_{k+1}^\top r_j = r_k^\top r_j - \eta_k\,p_k^\top Ar_j = 0.
-$$
-
-For the remaining index $j=k$, the relation $r_k=p_k-\beta_{k-1}p_{k-1}$ and the $A$-conjugacy relation $p_k^\top Ap_{k-1}=0$ imply the identity $p_k^\top Ar_k=p_k^\top Ap_k$. Using the definition of the stepsize $\eta_k$ therefore yields the relation
-
-$$
-r_{k+1}^\top r_k = r_k^\top r_k - \eta_k\,p_k^\top Ap_k = \|r_k\|^2-\|r_k\|^2=0.
-$$
-
-Thus the residuals remain mutually orthogonal.
-
-We next verify property 3. The inductive hypothesis implies that the vector $p_k$ belongs to the Krylov subspace $\mathcal{K}_{k+1}(A,r_0)$. Hence the vector $Ap_k$ belongs to the larger Krylov subspace $\mathcal{K}_{k+2}(A,r_0)$. Since the vector $r_k$ also belongs to $\mathcal{K}_{k+1}(A,r_0)$, the residual update yields the inclusion
-
-$$
-r_{k+1}=r_k-\eta_kAp_k \in \mathcal{K}_{k+2}(A,r_0).
-$$
-
-The search-direction update then gives the inclusion $p_{k+1}\in \mathcal{K}_{k+2}(A,r_0)$ as well. Moreover, the relations $p_{k+1}=r_{k+1}+\beta_kp_k$ and $r_{k+1}=p_{k+1}-\beta_kp_k$ show that adjoining the vector $r_{k+1}$ or adjoining the vector $p_{k+1}$ produces the same span. Consequently, the identity
-
-$$
-\mathrm{span}\{r_0,\ldots,r_{k+1}\}=\mathrm{span}\{p_0,\ldots,p_{k+1}\}
-$$
-
-holds.
-
-If the residual $r_{k+1}$ is nonzero, then property 1 shows that the vectors $r_0,\ldots,r_{k+1}$ are mutually orthogonal and therefore linearly independent. Their span therefore has dimension $k+2$. Since this span is contained in $\mathcal{K}_{k+2}(A,r_0)$, and since the Krylov subspace $\mathcal{K}_{k+2}(A,r_0)$ is generated by the $k+2$ vectors $r_0, Ar_0,\ldots,A^{k+1}r_0$, the dimension of $\mathcal{K}_{k+2}(A,r_0)$ is at most $k+2$. Hence the inclusion above is in fact an equality, and property 3 follows. If instead the residual $r_{k+1}$ vanishes, then the iterate $x_{k+1}$ already equals the minimizer and all later statements are trivial. Therefore property 3 holds in every valid case.
-
-We now verify property 2. The residual recursion implies the identity
-
-$$
-Ap_j=\frac{r_j-r_{j+1}}{\eta_j}.
-$$
-
-For every index $j<k$, property 1 gives the orthogonality relations $r_{k+1}^\top r_j=0$ and $r_{k+1}^\top r_{j+1}=0$. Substituting these relations into the identity above yields the relation
-
-$$
-r_{k+1}^\top Ap_j = \frac{r_{k+1}^\top r_j-r_{k+1}^\top r_{j+1}}{\eta_j}=0.
-$$
-
-Combining the preceding relation with the inductive hypothesis $p_k^\top Ap_j=0$ yields the identity
-
-$$
-p_{k+1}^\top Ap_j = r_{k+1}^\top Ap_j + \beta_k\,p_k^\top Ap_j = 0.
-$$
-
-For the remaining index $j=k$, the same identity with index $k$ gives the relation
-
-$$
-r_{k+1}^\top Ap_k = \frac{r_{k+1}^\top r_k-\|r_{k+1}\|^2}{\eta_k} = -\frac{\|r_{k+1}\|^2}{\eta_k},
-$$
-
-where the orthogonality relation $r_{k+1}^\top r_k=0$ comes from property 1. Using again the definitions of $\beta_k$ and $\eta_k$, we obtain the calculation
-
-$$
-\beta_k\,p_k^\top Ap_k = \frac{\|r_{k+1}\|^2}{\|r_k\|^2}\cdot \frac{\|r_k\|^2}{\eta_k}=\frac{\|r_{k+1}\|^2}{\eta_k}.
-$$
-
-Combining the preceding two identities yields the relation
-
-$$
-p_{k+1}^\top Ap_k = r_{k+1}^\top Ap_k + \beta_k\,p_k^\top Ap_k = 0.
-$$
-
-Therefore, the search directions remain $A$-conjugate.
-
-It remains to prove optimality. Recall that a point $x_k$ minimizes the strictly convex quadratic $f$ over an affine subspace $x_0+V$ if and only if the gradient $\nabla f(x_k)$ is orthogonal to the subspace $V$. Since the negative gradient equals the residual $r_k = -\nabla f(x_k)$, the optimality condition reads
-
-$$
-r_k \perp \mathcal{K}_k(A,r_0).
-$$
-
-By property 3, the Krylov subspace $\mathcal{K}_k(A,r_0)$ coincides with $\mathrm{span}\lbrace r_0,\ldots,r_{k-1}\rbrace$. Property 1 states that $r_k$ is orthogonal to every earlier residual $r_j$ with $j<k$. Combining these two facts shows that the optimality condition above holds, and therefore $x_k$ minimizes $f$ over $x_0+\mathcal{K}_k(A,r_0)$. This completes the proof. <span style="float: right;">$\square$</span>
 
 ### Visualizing CG
 
-The animation below shows CG on a 2D quadratic. In this particular 2D instance (and in exact arithmetic), CG converges in exactly 2 steps. The red arrows indicate the search directions, which are $A$-conjugate: they are orthogonal with respect to the inner product $\langle u, v \rangle_A = u^\top A v$, not with respect to the standard dot product.
+The figure below compares GD and CG on the same ill-conditioned 2D quadratic ($\kappa = 12$). Gradient descent (blue) zig-zags along the narrow valley, requiring many iterations to approach the minimum. CG (red) reaches the minimum in exactly 2 steps---the dimension of the problem---by choosing $A$-orthogonal search directions that span the full space.
 
-![CG trajectory on a 2D quadratic with A-conjugate search directions shown by red arrows](figures/conjugate_gradient.gif)
+![GD vs CG on a 2D quadratic](figures/gd_vs_cg_2d.png)
+
+The next figure repeats the varying-$\kappa$ experiment from Section 3, now with CG (dotted) added alongside GD (solid) and Chebyshev (dashed). For each condition number, CG converges at least as fast as the Chebyshev method---without requiring knowledge of $\alpha$ or $\beta$, and without presetting the number of iterations.
+
+![GD (solid) vs Chebyshev (dashed) vs CG (dotted) for varying condition numbers](figures/gd_cheb_cg_condition_number.png)
 
 ---
 
