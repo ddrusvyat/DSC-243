@@ -280,7 +280,7 @@ In words, among all degree-$k$ polynomials with the same leading coefficient as 
 Chebyshev polynomials satisfy the following key properties:
 1. **Boundedness:** The inequality $\lvert T_k(t)\rvert \leq 1$ holds for all $t \in [-1,1]$. 
 
-2. **Roots:** $T_k$ has $k$ roots in $(-1,1)$ at $t_j = \cos\!\left(\frac{(2j-1)\pi}{2k}\right)$ for $j = 1, \ldots, k$.
+2. **Roots:** $T_k$ has $k$ roots in $(-1,1)$ at $t_j = \cos\left(\frac{(2j-1)\pi}{2k}\right)$ for $j = 1, \ldots, k$.
 
 3. **Explosion:** For $t > 1$, we have $T_k(t) = \cosh(k\,\operatorname{arccosh}(t))$.
 
@@ -366,7 +366,7 @@ Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\
 
 ### Visualizing the stepsizes and performance of the accelerated algorithm
 
-Note that the convergence guarantees are not ``'anytime''. The stepsize must be determined with the number of total iterations $k$ in mind. The next figure shows the Chebyshev stepsizes for each choice of total iteration count $k$ from 1 to 20. Each row displays the $k$ stepsizes as points along the horizontal axis. As $k$ grows, the stepsizes fill out the interval $[1/\beta,\,1/\alpha]$ with increasing density near the endpoints---reflecting the characteristic clustering of Chebyshev roots.
+Note that the convergence guarantees are not ``anytime''. The stepsize must be determined with the number of total iterations $k$ in mind. The next figure shows the Chebyshev stepsizes for each choice of total iteration count $k$ from 1 to 20. Each row displays the $k$ stepsizes as points along the horizontal axis. As $k$ grows, the stepsizes fill out the interval $[1/\beta,\,1/\alpha]$ with increasing density near the endpoints---reflecting the characteristic clustering of Chebyshev roots.
 
 ![Chebyshev stepsizes in the positive definite case](figures/chebyshev_stepsizes_pd.png)
 
@@ -431,7 +431,7 @@ $$
 f(x) - f^\ast = \tfrac{1}{2}\|x - x^\ast\|_A^2
 $$
 
-holds for every vector $x$. Since $f^\ast$ is constant, minimizing $f$ over any subset of $\mathbb{R}^d$ is equivalent to minimizing the $A$-norm distance to $x^\ast$. Therefore we have
+holds for every vector $x$. Therefore we have
 
 $$
 \tfrac{1}{2}\|e_k\|_A^2 = f(x_k)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; f(x)-f^*=\min_{x\,\in\, x_0 + \mathcal{K}_k}\; \tfrac{1}{2}\|x - x^\ast\|_A^2.
