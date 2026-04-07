@@ -1,0 +1,253 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\K}{\mathcal{K}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\bstar}{f^\ast}
+\newcommand{\xstar}{x^\ast}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{DSC 243 --- Homework 1}} \\
+\vspace{0.5em}
+{\large Convex Quadratics, Chebyshev Acceleration, and Krylov Methods}
+\end{center}
+
+\textbf{Instructions.}
+Use the notation from the notes. Unless explicitly stated otherwise, assume
+\begin{align*}
+&f(x) = \frac{1}{2} x^\top A x - b^\top x,\\
+&A = A^\top \succeq 0,\\
+&b \in \mathrm{range}(A),\\
+&\alpha = \lambda_{\min}(A),\\
+&\beta = \lambda_{\max}(A),\\
+&\text{and when } \alpha > 0,\,\, \kappa = \beta/\alpha.
+\end{align*}
+You may quote results proved in class or in the notes, but every nontrivial step must be justified.
+
+\section*{Part I: Theory}
+
+\begin{enumerate}[label=\textbf{T\arabic*.}, leftmargin=0pt, itemindent=2.5em]
+
+\item \textbf{Support-dependent finite termination.}
+Let $A\succeq 0$, and let $\lambda_1,\dots,\lambda_m$ be the distinct nonzero eigenvalues of $A$ with corresponding orthonormal eigenvectors $v_1,\dots,v_m$. Suppose the initial residual satisfies
+\[
+r_0 \in \operatorname{span}\{v_{i_1},\dots,v_{i_r}\}
+\]
+for some subset of $r$ distinct eigendirections. Show that the Krylov method terminates in at most $r$ iterations.
+
+\noindent
+[\textbf{Hint:} Use that every point in $x_0+\K_k(A, r_0)$ can be written as $x_0 + q(A) r_0$ for some polynomial $q$ of degree at most $k-1$.]
+
+
+\item \textbf{Repeated Chebyshev cycles.}
+In this problem, assume $A$ is positive definite and $\sigma(A)\subset[\alpha,\beta]\subset(0,\infty)$.
+Fix an integer $s\ge 1$, and let $\eta_1,\dots,\eta_s$ be the degree-$s$ Chebyshev stepsizes from Theorem 3.1. Define the polynomial
+\[
+p_s(\lambda)=\prod_{j=1}^s(1-\eta_j\lambda).
+\]
+Repeat this same $s$-step schedule for $M$ epochs, so the total number of iterations is $N=Ms$.
+\begin{enumerate}[label=(\alph*)]
+\item Show that the error after $N$ iterations is
+\[
+e_N=p_s(A)^M e_0.
+\]
+\item Prove that
+\[
+f(x_N)-\bstar \le \left(\max_{\lambda\in[\alpha,\beta]}|p_s(\lambda)|^2\right)^M \bigl(f(x_0)-\bstar\bigr).
+\]
+\item Deduce the bound
+\[
+f(x_N)-\bstar
+\le
+\frac{1}{T_s(\sigma)^{2M}}\bigl(f(x_0)-\bstar\bigr)
+\le
+4^M\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2N}\bigl(f(x_0)-\bstar\bigr).
+\]
+\item Using the exact bound
+\[
+f(x_N)-\bstar \le \frac{1}{T_s(\sigma)^{2M}}\bigl(f(x_0)-\bstar\bigr),
+\]
+derive an iteration-complexity guarantee for the restarted scheme: how large must $N=Ms$ be in order to ensure
+\[
+f(x_N)-\bstar \le \eps?
+\]
+Express your answer in terms of $\kappa$, $s$, $\eps$, and $f(x_0)-\bstar$.
+\item The one-shot degree-$N$ Chebyshev schedule satisfies
+\[
+f(x_N)-\bstar \le \frac{1}{T_N(\sigma)^2}\bigl(f(x_0)-\bstar\bigr).
+\]
+Derive the corresponding iteration-complexity estimate for this one-shot scheme.
+\item Compare the two complexity estimates. In particular, identify explicitly where the restarted method loses efficiency relative to the one-shot degree-$N$ schedule.
+\end{enumerate}
+
+\item \textbf{(Optional) Krylov convergence under clustered eigenvalues.}
+In this problem, assume $A$ is positive definite and that its eigenvalues lie in a union of $r$ disjoint intervals
+\[
+[\ell_1,u_1],\ [\ell_2,u_2],\ \dots,\ [\ell_r,u_r]\subset[\alpha,\beta].
+\]
+Define the cluster centers and half-widths by
+\[
+c_j:=\frac{\ell_j+u_j}{2},
+\qquad
+\delta_j:=\frac{u_j-\ell_j}{2},
+\qquad j=1,\dots,r.
+\]
+Also define
+\[
+C_{\mathrm{clust}}
+:=
+\max_{1\le j\le r}
+\left(
+\frac{\delta_j}{c_j}
+\prod_{i\ne j}\left(1+\frac{u_j}{c_i}\right)
+\right).
+\]
+\begin{enumerate}[label=(\alph*)]
+\item Consider the degree-$r$ polynomial
+\[
+\pi_r(\lambda):=\prod_{j=1}^r\left(1-\frac{\lambda}{c_j}\right).
+\]
+Show that $\pi_r(0)=1$ and that, for every $\lambda\in[\ell_j,u_j]$,
+\[
+\left|\pi_r(\lambda)\right|
+\le
+\frac{\delta_j}{c_j}
+\prod_{i\ne j}\left(1+\frac{u_j}{c_i}\right).
+\]
+
+\item Deduce that
+\[
+\max_{\lambda\in \sigma(A)} |\pi_r(\lambda)| \le C_{\mathrm{clust}}.
+\]
+
+\item Let $q_t$ be any degree-$t$ polynomial with $q_t(0)=1$, and define
+\[
+p_{r+t}(\lambda):=\pi_r(\lambda)\,q_t(\lambda).
+\]
+Explain why $p_{r+t}(0)=1$ and why the Krylov method after $r+t$ iterations satisfies
+\[
+f(x_{r+t})-\bstar
+\le
+\left(\max_{\lambda\in\sigma(A)} |\pi_r(\lambda)|^2\right)
+\left(\max_{\lambda\in[\alpha,\beta]} |q_t(\lambda)|^2\right)
+\bigl(f(x_0)-\bstar\bigr).
+\]
+
+\item Now choose $q_t$ to be the degree-$t$ shifted Chebyshev polynomial from Section 3. Deduce the bound
+\[
+f(x_{r+t})-\bstar
+\le
+\frac{C_{\mathrm{clust}}^2}{T_t(\sigma)^2}\bigl(f(x_0)-\bstar\bigr)
+\le
+4C_{\mathrm{clust}}^2
+\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2t}(f(x_0)-\bstar).
+\]
+
+\item Interpret the result. What happens when the clusters collapse to points, i.e. $\delta_j\to 0$ with the centers $c_j$ fixed? How does this relate to the exact finite-termination theorem for $r$ distinct eigenvalues?
+\end{enumerate}
+
+\noindent
+[\textbf{Hints:}
+For part (a), if $\lambda\in[\ell_j,u_j]$, then
+\[
+\left|1-\frac{\lambda}{c_j}\right|=\frac{|\lambda-c_j|}{c_j}\le \frac{\delta_j}{c_j}.
+\]
+For $i\ne j$, use
+\[
+\left|1-\frac{\lambda}{c_i}\right|\le 1+\frac{\lambda}{c_i}\le 1+\frac{u_j}{c_i}.
+\]
+For part (d), combine parts (b) and (c) with the standard Chebyshev bound on $[\alpha,\beta]$.]
+
+
+
+\end{enumerate}
+
+\section*{Part II: Experiments}
+
+\begin{enumerate}[label=\textbf{E\arabic*.}, leftmargin=0pt, itemindent=2.5em]
+
+\item \textbf{CG termination and spectral support.}
+Take $d=120$ and let
+\[
+A=\operatorname{diag}(\lambda_1,\dots,\lambda_{20},0,\dots,0),
+\]
+where $\lambda_1,\dots,\lambda_{20}$ are $20$ distinct positive numbers of your choice. Let
+\[
+x^\ast=\mathbf{1}\in\R^d,\qquad b=Ax^\ast,
+\]
+so that $x^\ast$ is a minimizer.
+\begin{enumerate}[label=(\alph*)]
+\item Choose $x_0$ so that the initial residual $r_0=b-Ax_0=A(x^\ast-x_0)$ is supported on exactly $r=3$ eigendirections corresponding to nonzero eigenvalues, and run CG. Plot $\|r_k\|/\|r_0\|$.
+\item Repeat with $r_0$ supported on exactly $r=6$ nonzero eigendirections.
+\item Repeat with a generic initial point $x_0$ such that the resulting residual $r_0=b-Ax_0$ has nonzero components along all $20$ nonzero eigendirections.
+\item Compare the observed termination behavior with the prediction from Problem T1.
+\end{enumerate}
+
+\item \textbf{One-shot Chebyshev versus restarted Chebyshev.}
+Take $d=200$ and
+\[
+A=\operatorname{diag}\left(1,\,1+\frac{99}{d-1},\,1+2\frac{99}{d-1},\,\dots,\,100\right),
+\]
+so that $A$ is positive definite with $\kappa=100$. Let
+\[
+x^\ast=\mathbf{1}\in\R^d,\qquad b=Ax^\ast.
+\]
+Let $N=120$, and use the same generic random initial point $x_0$ for every method.
+\begin{enumerate}[label=(\alph*)]
+\item Run one-shot degree-$120$ Chebyshev acceleration.
+\item For each cycle length $s\in\{5,10,20,30\}$, run restarted Chebyshev with repeated $s$-step cycles until $N$ iterations are used.
+\item Plot the relative suboptimality
+\[
+\frac{f(x_k)-f^\ast}{f(x_0)-f^\ast}
+\]
+of all methods on the same graph.
+\item Report which restart length performs best empirically, and compare this with the theory from Problem T2.
+\end{enumerate}
+
+\item \textbf{CG under clustered spectra.}
+Fix $d=180$ and cluster centers
+\[
+c_1=2,\qquad c_2=20,\qquad c_3=80.
+\]
+For each $\gamma\in\{10^{-1},\,10^{-2},\,10^{-3}\}$, construct a diagonal positive definite matrix whose eigenvalues consist of $60$ points in each interval
+\[
+\bigl[c_j-\gamma c_j,\ c_j+\gamma c_j\bigr],
+\qquad j=1,2,3.
+\]
+For example, you may take the eigenvalues to be uniformly spaced within each interval. For each such matrix, set
+\[
+x^\ast=\mathbf{1}\in\R^d,\qquad b=Ax^\ast,
+\]
+and use the same generic random initial point $x_0$ for all runs.
+\begin{enumerate}[label=(\alph*)]
+\item For each choice of $\gamma$, run CG and plot
+\[
+\frac{f(x_k)-f^\ast}{f(x_0)-f^\ast}
+\]
+versus $k$ on a semilog scale.
+\item On the same plots, overlay the standard worst-case Chebyshev/Krylov bound based only on the condition number $\kappa$ of that matrix.
+\item Also overlay the clustered-spectrum bound predicted by Problem T3: for $k\ge 3$, use the constant $C_{\mathrm{clust}}$ from T3 and the estimate
+\[
+f(x_k)-f^\ast
+\le
+4C_{\mathrm{clust}}^2
+\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2(k-3)}
+\bigl(f(x_0)-f^\ast\bigr).
+\]
+\item Compare the three curves. Does the empirical CG behavior track the clustered-spectrum prediction more closely as the clusters become tighter?
+\item Briefly explain how the experiment illustrates the transition from generic $O(\sqrt{\kappa}\log(1/\eps))$ behavior toward near finite termination.
+\end{enumerate}
+
+\end{enumerate}
+
+\end{document}

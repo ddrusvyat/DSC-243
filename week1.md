@@ -430,7 +430,7 @@ $$
 To prove finite termination, define $e_0:=x_0-x^\ast$ as usual. It suffices to show that $x^\ast$ lies in $x_0+\mathcal{K}_m(A,r_0)$. Observe that a point lies in $x_0+\mathcal{K}_k(A,r_0)$ if and only if it can be written as $x_0+q(A)r_0$ for some polynomial $q$ of degree at most $k-1$. Since equality $r_0=-Ae_0$ holds, we may write
 
 $$
-x_0-x^{\ast}+q(A)r_0=e_0-q(A)Ae_0=p(A)e_0. \tag{5}
+x_0-x^{\ast}+q(A)r_0=e_0-q(A)Ae_0=p(A)e_0, \tag{5}
 $$
 
  where $p(\lambda)=1-\lambda q(\lambda)$ has degree at most $k$ and satisfies $p(0)=1$. Observe that the polynomials $p$ that have this form are exactly the polynomials of degree at most $k$ having zero as a root. With this in mind, define
@@ -1071,7 +1071,7 @@ The notes combine ideas that appear in different communities; the table below ma
 
 | Result in these notes | Where it appears in the literature | Relation |
 |---|---|---|
-| Theorem 2.1 + Corollaries 1--2 (GD linear rates on SPD quadratics) | [Pol64], [Nes04], [Nes18] | Standard spectral analysis of fixed-step gradient methods on strongly convex smooth quadratics. |
+| Theorem 2.1 + Corollaries 1--2 (GD linear rates on PD quadratics) | [Pol64], [Nes04], [Nes18] | Standard spectral analysis of fixed-step gradient methods on strongly convex smooth quadratics. |
 | Theorem 3.1 (Chebyshev stepsizes, $O(\sqrt{\kappa}\ln(1/\varepsilon))$) | [Var62], [You71], [Saa03] | Classical Chebyshev semi-iterative acceleration and minimax polynomial construction on $[\alpha,\beta]$. |
 | Theorems 3--4 (Krylov optimality and CG correctness) | [HS52], [Lan52], [Saa03], [Gre97] | Canonical Krylov-space characterization: CG realizes the polynomial/Krylov minimizer with three-term recurrences. |
 | Theorems 5--7 (PSD regime: $O(1/k)$ for GD, $O(1/k^2)$ for Chebyshev/CG) | [Saa03], [EHN96], [Han95] | Same polynomial-filter mechanism appears in semi-iterative and regularization analyses when small eigenvalues dominate. |
