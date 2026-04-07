@@ -17,7 +17,6 @@ title: Course Overview
 - [Pre-requisites](#pre-requisites)
 - [Course outline](#course-outline)
 - [Grading policy](#grading-policy)
-- [Homework](#homework)
 - [Textbooks and references](#textbooks-and-references)
 
 ## Course summary
@@ -52,10 +51,6 @@ This course develops the foundations of the modern optimization methods that for
 
 All grades will be based on homework sets, which will be due roughly every two weeks.
 
-
-## Homework
-
-Homework sets will appear here.
 
 ## Canvas
 
