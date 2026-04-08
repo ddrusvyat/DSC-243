@@ -451,29 +451,19 @@ The key idea is to iteratively build a basis of the Krylov subspaces that is ort
 
 
 
-Concretely, suppose that we have constructed an $A$-orthogonal basis $\{p_i\}_{i=0}^{k-1}$ for $\mathcal{K}_{k-1}$ and that we have available a minimizer  $x_k$ of $f$ on $x_0 + \mathcal{K}_k$. Let us see how we can efficiently extend the $A$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $x_{k+1}$ of $f$ on $x_0 + \mathcal{K}_{k+1}$. To this end, define the residuals
-
-$$r_i=-\nabla f(x_i)=b-Ax_i.$$
-
-If $r_k$ is orthogonal to $\mathcal{K}_{k+1}$ then $x_k$ is a minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$ and we can simply declare $x_{k+1}=x_k$. Otherwise, set
-
-$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$
-
-for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $A$-orthogonal to $\{p_i\}_{i=0}^{k-1}$. To this end, setting $p_{k}^\top Ap_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\dfrac{r_k^\top Ap_{k-1}}{p_{k-1}^\top Ap_{k-1}}$. Now for any $i<k-1$ we compute
-
-$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$
-
-Observe that $p_{k-1}^{\top}Ap_i=0$ by assumed $A$-orthogonality of $\{p_i\}_{i=0}^{k-1}$ and $r_k^\top A p_{i}=0$ because $A p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $x_k$ imply  $r_k\perp \mathcal{K}_{k}$. Thus $\{p_i\}_{i=0}^{k}$ is indeed an $A$-orthogonal basis for $\mathcal{K}_{k}$.
-It remains to declare
-
-$$x_{k+1}=\argmin_{\eta} f(x_k+\eta p_{k}). \tag{6}$$
-
-Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
-
+<p>
+Concretely, suppose that we have constructed an $A$-orthogonal basis $\{p_i\}_{i=0}^{k-1}$ for $\mathcal{K}_{k-1}$ and that we have available a minimizer  $x_k$ of $f$ on $x_0 + \mathcal{K}_k$. Let us see how we can efficiently extend the $A$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $x_{k+1}$ of $f$ on $x_0 + \mathcal{K}_{k+1}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
+</p>
+<p>
+If $r_k$ is orthogonal to $\mathcal{K}_{k+1}$ then $x_k$ is a minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$ and we can simply declare $x_{k+1}=x_k$. Otherwise, set 
+$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $A$-orthogonal to $\{p_i\}_{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Ap_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Ap_{k-1}}{p_{k-1}^\top Ap_{k-1}}$. Now for any $i<k-1$ we compute
+$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$ Observe that $p_{k-1}^{\top}Ap_i=0$ by assumed A-orthogonality of $\{p_i\}_{i=0}^{k-1}$ and $r_k^\top A p_{i}=0$ because $A p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $x_k$ imply  $r_k\perp K_{k}$. Thus $\{p_i\}_{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
+It remains to declare 
+$$x_{k+1}=\argmin_{\eta} f(x_k+\eta p_{k}). \tag{6}$$Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
 $$r_{k+1}^\top p_{i}=(r_k-\eta_k Ap_k)^{\top}p_i=r_k^\top p_i-\eta_k p_k^\top Ap_i=0,$$
-
 where $\eta_k$ is the minimizer of $(6)$. Thus $x_{k+1}$ is indeed the minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$.
 The algorithm we just constructed is called the conjugate gradient method and is summarized in the following.
+</p>
 
 <div style="background-color: #f8f8f8; border: 1px solid #ccc; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px; font-size: 0.97em;" markdown="1">
 
