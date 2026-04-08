@@ -38,6 +38,53 @@ You may quote results proved in class or in the notes, but every nontrivial step
 
 \begin{enumerate}[label=\textbf{T\arabic*.}, leftmargin=0pt, itemindent=2.5em]
 
+\item \textbf{Gradient descent lives in the Krylov subspace.}
+Let $A$ be positive definite and consider gradient descent with \emph{arbitrary} (possibly iteration-dependent) stepsizes $\eta_0,\eta_1,\eta_2,\dots$\,:
+\[
+x_{k+1}=x_k-\eta_k\nabla f(x_k)=x_k-\eta_k(Ax_k-b).
+\]
+\begin{enumerate}[label=(\alph*)]
+\item Show by induction that for every $k\ge 1$, we have
+\[
+x_k \in x_0+\K_k(A,\,r_0),
+\]
+where $r_0=b-Ax_0$ is the initial residual.
+\item Deduce that the Krylov method (which minimizes $f$ over $x_0+\K_k(A,r_0)$) produces iterates that are at least as good as gradient descent with \emph{any} choice of stepsizes:
+\[
+f(x_k^{\mathrm{Krylov}})\le f(x_k^{\mathrm{GD}}).
+\]
+\end{enumerate}
+
+\item \textbf{CG as coordinate descent in the $A$-orthogonal basis.}
+Let $A$ be positive definite on $\R^d$. Assume that CG does not terminate before step $d-1$, so that the search directions $p_0,\dots,p_{d-1}$ are well-defined and form an $A$-orthogonal basis of $\R^d$. Define the change of coordinates
+\[
+x = x_0 + \sum_{j=0}^{d-1} \alpha_j\, p_j,
+\]
+and consider the objective rewritten in the new coordinates:
+\[
+g(\alpha_0,\dots,\alpha_{d-1}) := f\!\Bigl(x_0+\sum_{j=0}^{d-1}\alpha_j\,p_j\Bigr).
+\]
+\begin{enumerate}[label=(\alph*)]
+\item First expand $g$ and show that
+\[
+g(\alpha_0,\dots,\alpha_{d-1})
+= f(x_0) + \sum_{j=0}^{d-1}\Bigl[\frac{1}{2}(p_j^\top A p_j)\,\alpha_j^2 - (r_0^\top p_j)\,\alpha_j\Bigr]
++\sum_{0\le i<j\le d-1}(p_j^\top A p_i)\,\alpha_i\alpha_j.
+\]
+Use $A$-orthogonality to conclude that the cross terms vanish, and hence $g$ decouples into a sum of one-dimensional quadratics.
+\item Deduce that minimizing $g$ over $\alpha_0,\dots,\alpha_{d-1}$ simultaneously is equivalent to minimizing each $\alpha_j$ independently. Write the closed-form minimizer $\alpha_j^\ast$.
+\item The CG algorithm performs a line search along $p_k$ at step $k$, obtaining
+\[
+x_{k+1}=x_k+\eta_k p_k,\qquad \eta_k=\frac{r_k^\top p_k}{p_k^\top A p_k}.
+\]
+Show that
+\[
+r_k^\top p_k=r_0^\top p_k,
+\]
+and deduce that $\eta_k = \alpha_k^\ast$ from part (b), so that CG is exactly coordinate descent in the $\{p_j\}$ basis, processing one coordinate per iteration.
+\item Explain why this viewpoint gives an alternative proof that CG terminates in at most $d$ iterations.
+\end{enumerate}
+
 \item \textbf{Support-dependent finite termination.}
 Let $A\succeq 0$, and let $\lambda_1,\dots,\lambda_m$ be the distinct nonzero eigenvalues of $A$ with corresponding orthonormal eigenvectors $v_1,\dots,v_m$. Suppose the initial residual satisfies
 \[
