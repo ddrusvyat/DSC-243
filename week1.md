@@ -558,46 +558,39 @@ The figure below illustrates this phenomenon on synthetic data. We draw $n=5000$
 
 
 
-Despite the infinite condition number, gradient descent still makes progress---the function value continues to decrease, even though the error vector $e_k$ may fail to converge in the Euclidean norm. A more refined analysis reveals two phenomena: gradient descent with a fixed stepsize converges at a **sublinear** $O(1/k)$ rate, while CG maintains structured progress by adapting automatically to the nonzero spectrum.
+We will now develop convergence guarantees for all of the methods we have seen---gradient descent, Chebyshev-accelerated gradient descent, and the Krylov method---that are insensitive to the minimal eigenvalue of $A$. The price to pay is that the logarithmic dependence on $1/\varepsilon$ in the positive definite case degrades to a polynomial dependence on $1/\varepsilon$.
 
 ### Setup
 
-We consider the same quadratic objective $f(x) = \tfrac{1}{2}x^\top Ax - b^\top x$, but now with $\alpha = 0$. We assume throughout that $b \in \mathrm{range}(A)$, ensuring that the solution set
+We consider the same quadratic objective $f(x) = \tfrac{1}{2}x^\top Ax - b^\top x$, but now we allow $\alpha = 0$. We assume throughout that $b \in \mathrm{range}(A)$, ensuring that the solution set
 
 $$S = \{x \in \mathbb{R}^d : Ax = b\}$$
 
-is nonempty. The eigenvalues of $A$ are ordered as
+is nonempty and we let $x^{\ast}\in S$ be arbitrary. 
+
+The eigenvalues of $A$ are ordered as
 
 $$0 = \lambda_1 = \cdots = \lambda_r < \lambda_{r+1} \leq \cdots \leq \lambda_d = \beta,$$
 
-where $r \geq 1$ is the dimension of $\ker(A)$, and we denote the distinct nonzero eigenvalues by $\mu_1 < \mu_2 < \cdots < \mu_m$.
-
-A fundamental difference from the positive definite case is that the solution set $S$ is no longer a singleton---it is an affine subspace of dimension $r$. For a given starting point $x_0$, we write
-
-$$x^\ast = \mathrm{proj}_S(x_0)$$
-
-for the closest solution to $x_0$. The initial error $e_0 = x_0 - x^\ast$ then lies entirely in $\mathrm{range}(A)$, so its expansion in the eigenbasis has $c_i = 0$ for all $i \leq r$.
+where $r \geq 1$ is the dimension of $\ker(A)$.
 
 
 
-### Sublinear convergence of gradient descent
 
-The key idea is that the objective weights each eigendirection by $\lambda_i$. This suppresses troublesome directions near zero that break uniform contraction bounds. Accordingly, we maximize the weighted quantity $\lambda(1-\lambda/\beta)^{2k}$, not just $(1-\lambda/\beta)^{2k}$.
-
+We begin with the convergence rate of gradient descent. The key idea is that we have previously shown the exact relation $f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2$
+where $c_i$ are the coefficients of the initial error in the eigenbasis of $A$. Previously, we pulled out $\sup_{\lambda\in [\alpha,\beta]}(1-\lambda/\beta)^{2k}$ from the sum. We now instead pull out $\sup_{\lambda\in [0,\beta]}\lambda(1-\lambda/\beta)^{2k}$.
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 6.1 (Sublinear convergence of gradient descent).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. With stepsize $\eta = 1/\beta$, the gradient descent iterates satisfy*
+**Theorem 6.1 (Sublinear convergence of gradient descent).** *With stepsize $\eta = 1/\beta$, the gradient descent iterates satisfy*
 
-$$f(x_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\ast\|^2, \tag{7}$$
-
-*where $x^\ast = \mathrm{proj}_S(x_0)$ is the closest solution to $x_0$.*
+$$f(x_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\ast\|^2 \tag{7}.$$
 
 </div>
 
-*Proof.* Since $x^\ast = \mathrm{proj}_S(x_0)$, the initial error $e_0 = x_0 - x^\ast$ lies in $\mathrm{range}(A)$, so $c_i = 0$ for all $i \leq r$. The function value gap therefore satisfies
+*Proof.* Writing out the the initial error $e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i$ in the eigen-basis of $A$ yields
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=r+1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
 $$
 
 It remains to compute the maximum. Define $h(t) = t(1-t)^{2k}$ for $t \in [0,1]$ and substitute $t = \lambda/\beta$. Differentiating gives
