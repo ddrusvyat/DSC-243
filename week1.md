@@ -576,9 +576,11 @@ where $r \geq 1$ is the dimension of $\ker(A)$.
 
 
 
+### Gradient descent
 
-We begin with the convergence rate of gradient descent. The key idea is that we have previously shown the exact relation $f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2$
-where $c_i$ are the coefficients of the initial error in the eigenbasis of $A$. Previously, we pulled out $\sup_{\lambda\in [\alpha,\beta]}(1-\lambda/\beta)^{2k}$ from the sum. We now instead pull out $\sup_{\lambda\in [0,\beta]}\lambda(1-\lambda/\beta)^{2k}$.
+We begin with the convergence rate of gradient descent. The key idea is that we have previously shown the exact relation 
+$$f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\eta\lambda_i)^{2k}\,c_i^2$$
+where $\eta$ is the stepsise and  $c_i$ are the coefficients of the initial error in the eigenbasis of $A$. Previously, we pulled out $\sup_{\lambda\in [\alpha,\beta]}(1-\eta\lambda)^{2k}$ from the sum. We now instead pull out $\sup_{\lambda\in [\alpha,\beta]}\lambda(1-\eta\lambda)^{2k}$.
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 6.1 (Sublinear convergence of gradient descent).** *With stepsize $\eta = 1/\beta$, the gradient descent iterates satisfy*
@@ -590,92 +592,73 @@ $$f(x_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\ast\|^2 \tag{7}.$$
 *Proof.* Writing out the the initial error $e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i$ in the eigen-basis of $A$ yields
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in [0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
 $$
 
-It remains to compute the maximum. Define $h(t) = t(1-t)^{2k}$ for $t \in [0,1]$ and substitute $t = \lambda/\beta$. Differentiating gives
+Elementary calculus shows $\sup_{t\in [0,1]}t(1-t)^{q}=\frac{1}{1+q}(\frac{q}{1+q})^q\leq \frac{1}{1+q}$. Therefore setting $q=2k$ yields 
 
-$$h'(t) = (1-t)^{2k-1}\bigl(1 - (2k+1)t\bigr),$$
+$$\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k} \leq \frac{\beta}{2k+1},$$
 
-so the unique maximizer on $[0,1]$ is $t^\ast = 1/(2k+1)$. The maximum value is
+which completes the proof. <span style="float: right;">$\square$</span>
 
-$$
-h(t^\ast) = \frac{1}{2k+1}\left(\frac{2k}{2k+1}\right)^{2k} \leq \frac{1}{2k+1},
-$$
 
-where the inequality uses $(1-1/n)^{n-1} \leq 1$ for all integers $n \geq 2$, applied with $n = 2k+1$. Therefore
-
-$$\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k} = \beta\,h(t^\ast) \leq \frac{\beta}{2k+1}.$$
-
-Combining the preceding two estimates yields the conclusion $(7)$. <span style="float: right;">$\square$</span>
-
-### Iteration complexity
-
-From Theorem 6.1, the bound $f(x_k) - f^\ast \leq \varepsilon$ is guaranteed whenever
+From Theorem 6.1, converting to complexity, the bound $f(x_k) - f^\ast \leq \varepsilon$ is guaranteed to hold whenever
 
 $$k \geq \frac{\beta\,\|x_0 - x^\ast\|^2}{4\varepsilon}.$$
 
-The iteration complexity is therefore
+Thus the iteration complexity is
 
 $$O\!\left(\frac{\beta\,\|x_0 - x^\ast\|^2}{\varepsilon}\right).$$
 
 Compared with the $O(\kappa\,\ln(1/\varepsilon))$ complexity of gradient descent in the positive definite case, the dependence on accuracy has changed from **logarithmic** to **polynomial**: achieving an additional digit of accuracy now requires a tenfold increase in iterations, rather than a fixed additive cost. This is the hallmark of sublinear convergence.
 
-### The role of the initial condition
 
-An important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\|x_0 - x^\ast\|^2$ rather than the initial function gap $f(x_0) - f^\ast$.
-
-This change is unavoidable. Since $f(x_0) - f^\ast = \tfrac{1}{2}\sum_{i>r}\lambda_i\,c_i^2$ and $\|e_0\|^2 = \sum_{i>r}c_i^2$, the ratio $(f(x_0) - f^\ast)/\|e_0\|^2$ can be arbitrarily small when the initial error concentrates along eigenvectors with small nonzero eigenvalues. Consequently, no bound of the form
-
-$$f(x_k) - f^\ast \leq g(k)\bigl(f(x_0) - f^\ast\bigr) \tag{8}$$
-
-with $g(k) \to 0$ can hold uniformly over all starting points when $\alpha = 0$. The Euclidean distance $\|x_0 - x^\ast\|$ is the natural measure of initial error in the positive semidefinite setting.
+Note that an important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\|x_0 - x^\ast\|^2$ rather than the initial function gap $f(x_0) - f^\ast$, and this is unavoidable.
 
 ### Acceleration by Chebyshev stepsizes
 
-As in the positive definite case, the $O(1/k)$ rate of fixed-stepsize gradient descent can be improved by varying the stepsize across iterations. The polynomial viewpoint makes this transparent: gradient descent with stepsizes $\eta_1, \ldots, \eta_k$ produces the polynomial $p_k(\lambda) = \prod_{j=1}^{k}(1-\eta_j\lambda)$, and any degree-$k$ polynomial with $p(0) = 1$ can be realized by choosing the stepsizes as the reciprocals of its roots. (Up to reindexing, this is the same length-$k$ product convention used in Section 3.) Finding the optimal time-varying stepsizes is therefore equivalent to finding the degree-$k$ polynomial $p$ with $p(0) = 1$ that minimizes $\max_{\lambda \in (0,\beta]} \lambda\,p(\lambda)^2$.
+As in the positive definite case, the $O(1/k)$ rate of fixed-stepsize gradient descent can be improved by varying the stepsize across iterations. Recall that the Chebyshev stepsizes arose in the positive definite case from the fact the the Chebychev polynomial of the first kind $T_k$ minimizes $\max_{\lambda \in [-1,1]} p(\lambda)^2$ over all degree at most $k$ polynomials with the same leading coeffient. In the positive semidefinite case, the Chebychev polynomials of the second kind will play an analogoues role.
 
-In the positive definite case, first-kind Chebyshev polynomials appear from an unweighted minimax problem. Here the additional factor $\lambda$ changes that minimax geometry, and the second-kind polynomial appears as the exact analogue. Concretely, the solution involves the **Chebyshev polynomial of the second kind** of degree $j$, denoted $U_j$, characterized by
+
+### Chebyshev polynomials of the second kind
+
+ **Chebyshev polynomials of the second kind** are defined by the same recurrence as $T_k$ but with a different initial condition: set $U_0(x) = 1$ and $U_1(x) = 2x$ and define
+
+$$U_{j+1}(x) = 2x\,U_j(x) - U_{j-1}(x) \qquad \forall j\geq 1.$$
+
+An equivalent trigonometric characterization is
 
 $$U_j(\cos\theta) = \frac{\sin\bigl((j+1)\theta\bigr)}{\sin\theta},$$
 
-with the evaluation $U_j(1) = j+1$. See the figure below.
+from which one directly sees $U_j(1) = j+1$. See the figure below.
 
 ![Chebyshev polynomials of the second kind](figures/chebyshev_polynomials_2nd.png)
 
-Just as the Chebyshev polynomial $T_k$ of the first kind solves the minimax problem on $[\alpha, \beta]$ in the positive definite case, the polynomial $U_{k-1}$ plays the analogous role in the positive semidefinite setting. Its roots on $[-1,1]$ are $\cos(j\pi/k)$ for $j = 1, \ldots, k-1$, which under the substitution $x = 1 - 2\lambda/\beta$ correspond to $\lambda_j = \beta\sin^2(j\pi/(2k))$.
+The Chebyshev polynomials of the second kind solve a weighted analogue of the extremal problem for $T_k$:
+
+> Any degree-$k$ polynomial $p(x)$ with the same leading coefficient as $U_k$ satisfies
+>
+> $$\max_{x\in [-1,1]} \sqrt{1-x^2}\,\lvert p(x)\rvert\geq \max_{x\in [-1,1]} \sqrt{1-x^2}\,\lvert U_k(x)\rvert=1.$$
+
+The equality on the right follows from the identity $\sqrt{1-x^2}\,U_k(x) = \sin((k+1)\theta)$ when $x=\cos\theta$. As we will see, the weight $\sqrt{1-x^2}$ is precisely what arises from the extra factor of $\lambda$ in the PSD minimax problem after the change of variables.
+
+The key properties, paralleling those of $T_k$, are:
+1. **Boundedness:** $\lvert U_k(\cos\theta)\rvert \leq k+1$ for all $\theta$, and moreover $\lvert \sin\theta\, U_k(\cos\theta)\rvert = \lvert\sin((k+1)\theta)\rvert \leq 1$.
+2. **Roots:** $U_{k}$ has $k$ roots in $(-1,1)$ at $\cos(j\pi/(k+1))$ for $j = 1, \ldots, k$.
+3. **Growth at edges:** $U_k(1) = k+1$, so $U_k$ grows polynomially at $x=1$, in contrast to the exponential growth of $T_k$.
+
+We now linearly reparametrize and rescale the $U_k$ and define $$\phi_k(\lambda) = \left(1 - \frac{\lambda}{\beta}\right)\frac{U_{k-1}(1 - 2\lambda/\beta)}{k}.$$
+Note that we have $\phi_k(0) = 1$ and the roots of $\phi_k$ on $[0,\beta]$ are $\lambda_j = \beta\sin^2(j\pi/(2k))$ for $j = 1, \ldots, k$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 6.2 (Chebyshev stepsizes, PSD case).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. Define the stepsizes*
+**Lemma 6.2 (Chebyshev minimax, PSD case).** *The polynomial $\phi_k$ satisfies*
 
-$$\eta_j = \frac{1}{\beta\sin^2(j\pi/(2k))} \qquad \textrm{for}~ j = 1, \ldots, k.$$
-
-*Then the gradient descent iterates satisfy*
-
-$$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2. \tag{9}$$
+$$\max_{\lambda \in [0,\beta]}\,\lambda\,\phi_k(\lambda)^2 \leq \frac{\beta}{4k^2}. \tag{10}$$
 
 </div>
 
-This is a **quadratic improvement** over the $O(1/k)$ rate of Theorem 6.1: where fixed-stepsize gradient descent requires $O(1/\varepsilon)$ iterations to reach accuracy $\varepsilon$, the Chebyshev stepsizes require only $O(1/\sqrt{\varepsilon})$.
-
-The corresponding stepsize schedule in the positive semidefinite case is shown below for several values of $k$.
-
-![Chebyshev stepsizes in the positive semidefinite case](figures/chebyshev_stepsizes_psd.jpg)
-
-*Proof.* The stepsizes $\eta_1, \ldots, \eta_k$ produce the degree-$k$ polynomial
-
-$$\phi_k(\lambda) = \prod_{j=1}^{k}\bigl(1 - \eta_j\lambda\bigr) = \prod_{j=1}^{k}\left(1 - \frac{\lambda}{\beta\sin^2(j\pi/(2k))}\right).$$
-
-Since $\sin^2(k\pi/(2k)) = 1$, the factor corresponding to $j = k$ is $(1 - \lambda/\beta)$. The remaining roots $\beta\sin^2(j\pi/(2k))$ for $j = 1, \ldots, k-1$ are precisely the images of the roots of $U_{k-1}$ under the substitution $x = 1 - 2\lambda/\beta$. Therefore
-
-$$\phi_k(\lambda) = \left(1 - \frac{\lambda}{\beta}\right)\frac{U_{k-1}(1 - 2\lambda/\beta)}{k},$$
-
-where the factor $1/k$ ensures $\phi_k(0) = 1$ (since $U_{k-1}(1) = k$). We claim that
-
-$$\max_{\lambda \in (0,\beta]}\,\lambda\,\phi_k(\lambda)^2 \leq \frac{\beta}{4k^2}. \tag{10}$$
-
-To verify $(10)$, substitute $\cos\theta = 1 - 2\lambda/\beta$ for $\theta \in [0,\pi]$, so that $\lambda = \beta\sin^2(\theta/2)$ and $1 - \lambda/\beta = \cos^2(\theta/2)$. The Chebyshev identity gives $U_{k-1}(\cos\theta) = \sin(k\theta)/\sin\theta$, and the factorization $\sin\theta = 2\sin(\theta/2)\cos(\theta/2)$ yields
+*Proof.* Substitute $\cos\theta = 1 - 2\lambda/\beta$ for $\theta \in [0,\pi]$, so that $\lambda = \beta\sin^2(\theta/2)$ and $1 - \lambda/\beta = \cos^2(\theta/2)$. The Chebyshev identity gives $U_{k-1}(\cos\theta) = \sin(k\theta)/\sin\theta$, and the factorization $\sin\theta = 2\sin(\theta/2)\cos(\theta/2)$ yields
 
 $$
 \begin{aligned}
@@ -686,59 +669,77 @@ $$
 \end{aligned}
 $$
 
-Since $\cos^2(\theta/2) \leq 1$ and $\sin^2(k\theta) \leq 1$ for all $\theta$, the claim $(10)$ follows. The error bound from Section 2 then gives
+Since $\cos^2(\theta/2) \leq 1$ and $\sin^2(k\theta) \leq 1$ for all $\theta$, the claim follows. <span style="float: right;">$\square$</span>
 
-$$f(x_k) - f^\ast = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|e_0\|^2 = \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2.$$
+We are now ready to see the accelerated rate.
 
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 6.2 (Chebyshev stepsizes, PSD case).** *Define the stepsizes*
+
+$$\eta_j = \frac{1}{\beta\sin^2(j\pi/(2k))} \qquad \textrm{for}~ j = 1, \ldots, k.$$
+
+*Then the gradient descent iterates satisfy*
+
+$$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2. \tag{9}$$
+
+</div>
+
+*Proof.* Write the initial error in the eigenbasis of $A$ as
+$
+e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i.
+$ For gradient descent with stepsizes $\eta_1,\dots,\eta_k$, define the degree-$k$ polynomial $
+p_k(\lambda):=\prod_{j=1}^k(1-\eta_j\lambda).
+$ By the choice $
+\eta_j = \frac{1}{\beta\sin^2(j\pi/(2k))}
+$ we have $
+p_k(\lambda)=\phi_k(\lambda).
+$ Therefore, the general error formula from Section 2 gives
+$$
+f(x_k) - f^\ast = \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, \phi_k(\lambda_i)^2\, c_i^2
+\leq \tfrac{1}{2}\max_{\lambda \in [0,\beta]} \lambda\,\phi_k(\lambda)^2 \sum_{i=1}^d c_i^2.
+$$
+Applying Lemma 6.2 and using $\sum_{i=1}^d c_i^2=\|e_0\|^2=\|x_0-x^\ast\|^2$, we obtain
+$$
+f(x_k) - f^\ast \leq \tfrac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|x_0-x^\ast\|^2
+= \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2.
+$$
 This completes the proof. <span style="float: right;">$\square$</span>
 
-The iteration complexity is $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$---a square-root improvement over the $O(\beta\,\|x_0 - x^\ast\|^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. The mechanism behind this acceleration is visible in the polynomial $\phi_k$: the factor $(1 - \lambda/\beta)$ suppresses the contribution from the largest eigenvalue, while the Chebyshev factor $U_{k-1}(1 - 2\lambda/\beta)/k$ distributes the remaining approximation power efficiently across the spectrum. The combined effect is the $1/k^2$ rate. By contrast, the fixed-stepsize polynomial $(1 - \lambda/\beta)^k$ must use all $k$ degrees of freedom to suppress the largest eigenvalue, leaving none to exploit the eigenvalue weighting---this is why gradient descent is limited to a $1/k$ rate.
+Thus, the iteration complexity of the Chebyshev accelerated algorithm is $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$---a **square-root improvement** over the $O(\beta\,\|x_0 - x^\ast\|^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. This is a **quadratic improvement** in the complexity.
+
+The corresponding stepsize schedule in the positive semidefinite case is shown below for several values of $k$.
+
+![Chebyshev stepsizes in the positive semidefinite case](figures/chebyshev_stepsizes_psd.png)
 
 As in the positive definite case, the Chebyshev stepsizes require knowledge of $\beta$ and the total number of iterations $k$ must be fixed in advance.
 
 ### Conjugate gradient in the positive semidefinite case
 
-The conjugate gradient method matches the $O(1/k^2)$ rate of the Chebyshev stepsizes *adaptively*, without requiring knowledge of $\beta$ or a preset iteration count. As in the positive definite case, CG achieves this by optimizing over the full Krylov subspace (see [HS52, Lan52, Saa03]).
-
-The same Krylov-minimization logic used in Theorem 4.1 extends to the PSD case under $b\in\mathrm{range}(A)$ and non-breakdown ($p_k^\top Ap_k>0$ before termination): at each step, $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$. Since $b \in \mathrm{range}(A)$ and $Ax_0 \in \mathrm{range}(A)$, the initial residual $r_0 = b - Ax_0$ lies in $\mathrm{range}(A)$. The Krylov subspace $\mathcal{K}_k(A, r_0) = \mathrm{span}\{r_0, Ar_0, \ldots, A^{k-1}r_0\}$ is therefore contained in $\mathrm{range}(A)$, and so every search direction $p_k$ lies in $\mathrm{range}(A)$. Since $A$ is positive definite on its range, the inequality $p_k^\top Ap_k > 0$ holds whenever $p_k \neq 0$.
+The **Krylov subspace method** in the PSD setting is defined exactly as before: at step $k$, it minimizes $f$ over the affine space
+$$
+x_0+\mathcal{K}_k(A,r_0).
+$$ The only new issue is that $A$ may be singular. However, since $b\in\mathrm{range}(A)$ and $Ax_0\in\mathrm{range}(A)$, the residual $
+r_0=b-Ax_0
+$ lies in $\mathrm{range}(A)$. Therefore the entire Krylov subspace $\mathcal{K}_k(A,r_0)$ is contained in $\mathrm{range}(A)$, and $A$ is positive definite on that subspace. Consequently, the same short-recurrence argument from Section 4 shows that, until termination, the conjugate gradient method is well-defined and implements the PSD Krylov method: at each step, the CG iterate $x_k$ minimizes $f$ over $x_0+\mathcal{K}_k(A,r_0)$.
+With this observation in hand, the convergence analysis is immediate from Theorem 6.2, exactly as in the positive definite case.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 6.3 (CG convergence, PSD case).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. Let $\mu_1 < \mu_2 < \cdots < \mu_m$ denote the distinct nonzero eigenvalues of $A$. The CG iterates satisfy*
+**Theorem 6.3 (CG convergence, PSD case).** *The CG iterates satisfy*
 
 $$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2, \tag{11}$$
 
-*and CG terminates in at most $m$ iterations.*
+*and CG terminates in at most $m$ iterations, where $m$ is the number of distinct nonzero eigenvalues of $A$.*
 
 </div>
 
-*Proof.* By the Krylov-minimization property stated above for the PSD case, the CG iterate $x_k$ minimizes $f$ over $x_0 + \mathcal{K}_k(A, r_0)$. Since $e_0 \in \mathrm{range}(A)$, the polynomial representation gives
-
-$$
-\|e_k\|_A^2 = \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}} \|p(A)\,e_0\|_A^2 \leq \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}}\; \max_{\lambda \in (0,\beta]}\, \lambda\,p(\lambda)^2 \cdot \|e_0\|^2.
-$$
-
-The polynomial $\phi_k$ from the proof of Theorem 6.2 is a feasible choice. Applying the estimate $(10)$ yields
-
-$$f(x_k) - f^\ast = \tfrac{1}{2}\|e_k\|_A^2 \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2.$$
-
-For finite termination, the polynomial $p(\lambda) = \prod_{j=1}^{m}(1 - \lambda/\mu_j)$ has degree $m$, satisfies $p(0) = 1$, and vanishes at every nonzero eigenvalue of $A$. Since $e_0 \in \mathrm{range}(A)$, the identity $p(A)\,e_0 = 0$ follows, and therefore $\|e_m\|_A = 0$. <span style="float: right;">$\square$</span>
+*Proof.* The rate follows directly from Theorem 6.2: the $k$th iterate produced by the PSD Chebyshev stepsizes lies in $x_0+\mathcal{K}_k(A,r_0)$, whereas CG minimizes $f$ over that entire affine space and so cannot do worse. <span style="float: right;">$\square$</span>
 
 The bound $(11)$ matches the PSD Chebyshev bound $(9)$; the gain of CG is that it attains this behavior adaptively, without requiring $\beta$ or a preset horizon.
 
 
 
-### Discussion
-
-The parallel between the positive definite and positive semidefinite cases is now complete. In both settings, the three methods exhibit the same hierarchy: gradient descent provides a baseline rate, Chebyshev stepsizes achieve a square-root acceleration, and CG matches the accelerated rate adaptively. The table below summarizes the iteration complexities.
-
-| | PD case ($\alpha > 0$) | PSD case ($\alpha = 0$) |
-|---|---|---|
-| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\|x_0-x^\ast\|^2/\varepsilon)$ |
-| Chebyshev GD | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\ast\|^2/\varepsilon})$ |
-| Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | $O(\sqrt{\beta\,\|x_0-x^\ast\|^2/\varepsilon})$ |
-
-In every row, the Chebyshev and CG methods improve the gradient descent complexity by a square root. CG additionally terminates in at most $m$ iterations---the number of distinct nonzero eigenvalues---which may be much smaller than the ambient dimension $d$.
 
 ---
 
