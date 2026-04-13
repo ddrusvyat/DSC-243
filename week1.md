@@ -538,7 +538,7 @@ where $K_\nu$ is the modified Bessel function of the second kind. The parameter 
 In the limit $\nu\to\infty$ the Matérn kernel recovers the Gaussian kernel.
 
 
-For reasonable distributions of data points (e.g., Gaussian, uniform, or with a bounded density on a compact set), the eigenvalues of the normalized kernel matrix $(1/n)K$ resemble those of an associated linear integral operator, whose spectral decay can be analyzed explicitly. More precisely suppose that the points are drawn from a distribution $\nu$ on $\R^d$. For any function $f\in L_2(\nu)$ define the n-dimensional vector 
+For reasonable distributions of data points (e.g., Gaussian, uniform, or with a bounded density on a compact set), the eigenvalues of the normalized kernel matrix $(1/n)K$ resemble those of an associated linear integral operator, whose spectral decay can be analyzed explicitly. More precisely suppose that the points $x_1,\ldots, x_n$ are drawn iid from a distribution $\nu$ on $\mathbb{R}^d$. For any function $f\in L_2(\nu)$ define the $n$-dimensional vector 
 
 $$f^{(n)}=(f(x_1),\ldots, f(x_n)).$$
 
@@ -798,7 +798,7 @@ By the celebrated Mercer's theorem this operator admits an eigendecomposition
 
 $$T\phi_i = \mu_i\,\phi_i, \qquad \mu_1 \geq \mu_2 \geq \cdots > 0,$$
 
-with eigenfunctions $\phi_i$ forming an orthonormal basis for $L^2(\nu)$. For the Laplace kernel on $[0,1]$, these eigenfunctions have increasing spatial frequency as $i$ grows: $\phi_1$ is a smooth hump, $\phi_2$ has one oscillation, and successive eigenfunctions oscillate more and more rapidly. The animation below illustrates this for the Laplace kernel on $[0,1]$ with uniform measure and bandwidth $\sigma = 0.1$. Similar oscillatory behavior can also be seen for the eigenvalue functions of other common kernels as well.
+with eigenfunctions $\phi_i$ forming an orthonormal basis for $L^2(\nu)$. For the Laplace kernel on $[0,1]$, these eigenfunctions have increasing spatial frequency as $i$ grows: $\phi_1$ is a smooth hump, $\phi_2$ has one oscillation, and successive eigenfunctions oscillate more and more rapidly. The animation below illustrates this for the Laplace kernel on $[0,1]$ with uniform measure and bandwidth $\sigma = 0.1$.
 
 ![Eigenfunctions of the Laplace kernel operator](figures/laplace_eigenfunctions.gif)
 
