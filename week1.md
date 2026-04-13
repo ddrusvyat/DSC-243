@@ -543,7 +543,9 @@ For reasonable distributions of data points (e.g., Gaussian, uniform, or with a 
 $$f^{(n)}=(f(x_1),\ldots, f(x_n)).$$
 
 Then $\frac{1}{n}K$ send $f^{(n)}$ to a vector with $j$'th coordinate given by
+
 $$\left(\tfrac{1}{n}Kf^{(n)}\right)_j = \frac{1}{n}\sum_{\ell=1}^n k(x_j,x_\ell)f(x_\ell) \approx \int k(x_j,x')f(x')\,d\nu(x').$$
+
 We can think of the right side as a another function evaluated at $x_j$. Thus we can define a linear operator on functions $T\colon L_2(\nu)\to L_2(\nu)$ given by 
 
 $$(Tf)(x)=\int k(x,x')f(x')\,d\nu(x').$$
