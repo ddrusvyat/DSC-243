@@ -1,9 +1,9 @@
 """
-Illustrate the function-level source condition on [0,1] with uniform data.
+Illustrate the matrix-level source condition on [0,1] with uniform data.
 
-We plot the coefficients |v_j^T y| of the sampled target vector in the kernel
-eigenbasis. For a smooth target, these decay like lambda_j^s; for a rough
-target they do not.
+We plot the initial-error coefficients |c_i| = lambda_i^{-1} |v_i^T y| in the
+kernel eigenbasis.  For a smooth target, these decay like lambda_i^{s'} where
+s' = s - 1 is the matrix-level source exponent; for a rough target they do not.
 """
 
 import numpy as np
@@ -51,44 +51,48 @@ def main():
     proj_s = np.abs(eigvecs.T @ y_smooth)
     proj_r = np.abs(eigvecs.T @ y_rough)
 
+    # Matrix-level coefficients: |c_i| = lambda_i^{-1} |v_i^T y|
+    c_s = proj_s / eigvals
+    c_r = proj_r / eigvals
+
     keep = eigvals > 1e-6 * eigvals[0]
     ev = eigvals[keep]
-    ps = proj_s[keep]
-    pr = proj_r[keep]
+    cs = c_s[keep]
+    cr = c_r[keep]
 
-    s_smooth, b_s = fit_power_law(ev, ps)
-    s_rough, b_r = fit_power_law(ev, pr)
-    print(f"  smooth target: slope s ≈ {s_smooth:.2f}")
-    print(f"  rough target:  slope s ≈ {s_rough:.2f}")
+    s_smooth, b_s = fit_power_law(ev, cs)
+    s_rough, b_r = fit_power_law(ev, cr)
+    print(f"  smooth target: matrix-level slope s' ≈ {s_smooth:.2f}")
+    print(f"  rough target:  matrix-level slope s' ≈ {s_rough:.2f}")
 
-    make_plot(ev, ps, pr, s_smooth, s_rough, b_s, b_r, sigma, n)
+    make_plot(ev, cs, cr, s_smooth, s_rough, b_s, b_r, sigma, n)
 
 
-def make_plot(ev, ps, pr, s_smooth, s_rough, b_s, b_r, sigma, n):
+def make_plot(ev, cs, cr, s_smooth, s_rough, b_s, b_r, sigma, n):
     fig, axes = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
 
-    for ax, proj, slope, intercept, s_val, label, color in [
-        (axes[0], ps, s_smooth, b_s, s_smooth,
+    for ax, coeffs, slope, intercept, s_val, label, color in [
+        (axes[0], cs, s_smooth, b_s, s_smooth,
          r"Smooth: $\sin(2\pi x)+\frac{1}{2}\cos(4\pi x)$", "#2c7bb6"),
-        (axes[1], pr, s_rough, b_r, s_rough, "Rough: random signs", "#d7191c"),
+        (axes[1], cr, s_rough, b_r, s_rough, "Rough: random signs", "#d7191c"),
     ]:
-        ax.scatter(ev, proj, s=10, alpha=0.35, color=color, edgecolors="none",
-                   label=r"$|v_j^\top y|$")
+        ax.scatter(ev, coeffs, s=10, alpha=0.35, color=color, edgecolors="none",
+                   label=r"$|c_i| = \lambda_i^{-1}|v_i^\top y|$")
 
         lam_range = np.array([ev[-1] * 0.5, ev[0] * 2])
         ax.loglog(lam_range, np.exp(intercept) * lam_range ** slope,
                   "k--", linewidth=1.5,
                   label=(rf"$\lambda^{{{slope:.1f}}}$ fit "
-                         rf"$\Rightarrow\; s \approx {s_val:.1f}$"))
+                         rf"$\Rightarrow\; s' \approx {s_val:.1f}$"))
 
-        ax.set_xlabel(r"Eigenvalue $\lambda_j$ of $K$", fontsize=12)
+        ax.set_xlabel(r"Eigenvalue $\hat\mu_i$ of $K/n$", fontsize=12)
         ax.set_title(label, fontsize=12)
         ax.legend(fontsize=11, framealpha=0.9, loc="lower right")
         ax.grid(True, alpha=0.25, which="both")
 
-    axes[0].set_ylabel(r"$|v_j^\top y|$", fontsize=12)
+    axes[0].set_ylabel(r"$|c_i| = \lambda_i^{-1}|v_i^\top y|$", fontsize=12)
     fig.suptitle(
-        rf"Source condition in kernel regression "
+        rf"Matrix-level source condition in kernel regression "
         rf"(Laplace kernel on $[0,1]$, $n={n}$, $\sigma={sigma}$)",
         fontsize=13, y=1.02,
     )
