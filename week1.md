@@ -798,19 +798,27 @@ This forces the coefficients of $h$ to decay at least as fast as $\mu_i^s$. For 
 
 There is also a close connection of the source condition to a quantitative measure of smoothness. This connection is cleanest in one dimension. For the Laplace kernel on $[0,1]$, the eigenvalues decay as $\mu_i \asymp i^{-2}$ and the eigenfunctions closely approximate sines and cosines (up to boundary effects), so the coefficients $\hat{h}_i = \langle h, \phi_i \rangle$ are closely related to the Fourier coefficients of $h$. The standard Fourier characterization of Sobolev spaces says that $f \in H^m$ (i.e., $f$ has $m$ square-integrable derivatives) if and only if $\sum_i i^{2m}\lvert\hat{f}_i\rvert^2 < \infty$. Since $\mu_i \asymp i^{-2}$, the source condition $\sum_i \mu_i^{-2s}\lvert\hat{h}_i\rvert^2 \leq M^2$ becomes $\sum_i i^{4s}\lvert\hat{h}_i\rvert^2 \leq M^2$, which is precisely the characterization of the Sobolev space $H^{2s}([0,1])$. Thus $s = 1/2$ corresponds to one derivative, $s = 1$ to two derivatives, and so on. (For non-integer values of $2s$, the space $H^{2s}$ is a fractional Sobolev space defined by this weighted $\ell^2$ condition on the Fourier coefficients.)
 
-**From operator to matrix.** We now connect the function-level source condition to the finite-sample linear system. Let $\hat\mu_i$ and $v_i$ denote the eigenvalues and eigenvectors of the normalized kernel matrix $K/n$. As $n \to \infty$, $K/n \to T$ in operator norm, so $\hat\mu_i \approx \mu_i$ and $v_{ij} \approx \phi_i(x_j)/\sqrt{n}$. Consequently,
+**From operator to matrix.** We now connect the function-level source condition to the finite-sample linear system. Let $\hat\mu_i$ and $v_i$ denote the eigenvalues and eigenvectors of the normalized kernel matrix $\tfrac{1}{n}K$. Given a function $f$, define its sampled vector by evaluation,
 
-$$v_i^\top y = \sum_{j=1}^n v_{ij}\,h(x_j) \;\approx\; \sqrt{n}\,\hat{h}_i.$$
+$$f^{(n)} := \bigl(f(x_1),\dots,f(x_n)\bigr)^\top \in \mathbb{R}^n.$$
 
-Now consider running gradient descent on the kernel regression system $K\alpha = y$, starting from $\alpha_0 = 0$. Since $K = n\,\mathrm{diag}(\hat\mu_i)$ in the eigenbasis, the initial error $e_0 = K^{-1}y$ has coefficients
+The reason one expects $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(x_j)/\sqrt{n}$ is that $\tfrac{1}{n}K$ is the empirical version of the integral operator $T$: plugging the vector $f^{(n)}$ into $\tfrac{1}{n}K$, its $j$-th component satisfies
 
-$$c_i \;:=\; v_i^\top e_0 \;=\; \frac{v_i^\top y}{n\hat\mu_i} \;\approx\; \frac{\hat{h}_i}{\sqrt{n}\,\mu_i}.$$
+$$\left(\tfrac{1}{n}Kf^{(n)}\right)_j = \frac{1}{n}\sum_{\ell=1}^n k(x_j,x_\ell)f(x_\ell) \approx \int k(x_j,x')f(x')\,d\nu(x') = (Tf)(x_j),$$
 
-If the function-level source condition $h = T^s g$ holds (so $\hat{h}_i = \mu_i^s\,\hat{g}_i$), this simplifies to
+where the sum is just the Monte Carlo approximation of the integral. Therefore, if $\phi_i$ is an eigenfunction of $T$ with $T\phi_i = \mu_i \phi_i$, then the sampled vector with entries $\phi_i(x_j)$ should be approximately an eigenvector of $\tfrac{1}{n}K$, after normalization by $1/\sqrt{n}$ to make its Euclidean norm $O(1)$. This leads to the heuristic correspondences $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(x_j)/\sqrt{n}$. Consequently, we have
 
-$$c_i \;\approx\; \frac{\mu_i^{s-1}}{\sqrt{n}}\,\hat{g}_i.$$
+$$v_i^\top y = \sum_{j=1}^n (v_{i})_j\,h(x_j) \;\approx\; \frac{1}{\sqrt{n}}\sum_{j=1}^n \phi_i(x_j)\,h(x_j) \;\approx\; \sqrt{n}\int \phi_i(x)\,h(x)\,d\nu(x) \;=\; \sqrt{n}\,\hat{h}_i.$$
 
-Since $c_i$ decays like $\mu_i^{s-1} \propto \hat\mu_i^{s-1}$, the matrix-level source condition $e_0 = K^{s'}w$ holds with exponent $s' = s - 1$. In other words, **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$ for the system $K\alpha = y$.** In particular, one needs $s > 1$ (i.e., $h \in H^{2+\epsilon}$ for the Laplace kernel) for the source condition to improve the convergence rate beyond the baseline $O(k^{-1})$.
+Now consider running gradient descent on the normalized system $\tfrac{1}{n}K\alpha = \tfrac{1}{n}y$, which has the same solution $\alpha^\ast = K^{-1}y$ but now $A = \tfrac{1}{n}K$ has bounded eigenvalues $\hat\mu_i \approx \mu_i$. Starting from $\alpha_0 = 0$, the initial error $e_0 = \alpha^\ast$ has coefficients
+
+$$c_i \;:=\; v_i^\top e_0 \;=\; \frac{v_i^\top(\tfrac{1}{n}y)}{\hat\mu_i} \;\approx\; \frac{\hat{h}_i}{\sqrt{n}\,\mu_i}.$$
+
+If the function-level source condition $h = T^s g$ holds (so $\hat{h}_i = \mu_i^s\,\hat{g}_i$), this becomes
+
+$$c_i \;\approx\; \frac{\mu_i^{s-1}}{\sqrt{n}}\,\hat{g}_i \;=\; \hat\mu_i^{s-1}\,w_i, \qquad \text{where}\quad w_i = \frac{\hat{g}_i}{\sqrt{n}}.$$
+
+Note $\|w\|_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \|g\|^2_{L_2(\nu)}$. Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s' = s - 1$. The exponent shift is the essential point: **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$.** In particular, one needs $s > 1$ (e.g. $h \in H^{2+\epsilon}$ for the Laplace kernel).
 
 **Numerical illustration.** The figure below demonstrates this on a Laplace kernel ($\sigma = 0.15$) with $n = 1000$ points drawn uniformly from $[0,1]$. We plot the initial-error coefficients $\lvert c_i\rvert$ versus $\hat\mu_i$ on a log-log scale; the slope of the log-log fit directly reveals the matrix-level source parameter $s'$ that enters Theorem 7.1. For a smooth target $h(x) = \sin(2\pi x) + \tfrac12\cos(4\pi x)$ (left panel), the fitted slope is $s' \approx 0.4$, so Theorem 7.1 gives rate $O(k^{-1.8})$. For a rough target of random signs (right panel), the fitted slope is $s' \approx -0.9$: the initial error is concentrated in the small-eigenvalue directions, so no source condition holds.
 
@@ -837,15 +845,19 @@ $$f(x_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{
 $$
 f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2,
 $$
+
 and therefore
+
 $$
 f(x_k) - f^\ast \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{14}
 $$
 
 It suffices to maximize $g(t) = t^{1+2s}(1-t)^{2k}$ over $t \in [0,1]$, with the identification $\lambda = \beta t$. An elementary computation shows
+
 $$
 \max_{t\in [0,1]}g(t) = \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\left(\frac{2k}{2k+1+2s}\right)^{2k} \leq \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}.
 $$
+
 Multiplying by $\beta^{1+2s}/2$ and $\|w\|^2$ gives the bound $(13)$. <span style="float: right;">$\square$</span>
 
 The source condition can also be exploited by time-varying stepsizes. The relevant polynomial problem is now
