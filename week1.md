@@ -786,7 +786,7 @@ with eigenfunctions $\phi_i$ forming an orthonormal basis for $L^2(\nu)$. For th
 
 ![Eigenfunctions of the Laplace kernel operator](figures/laplace_eigenfunctions.gif)
 
-**Source condition as smoothness/lack of oscillations.** Any function $h \in L^2(\nu)$ can be expanded in the eigenbasis as $h = \sum_i \hat{h}_i\,\phi_i$. The source condition $h = T^s g$ with $\|g\|_{L^2(\nu)} \leq M$ reads, in the eigenbasis, as
+**Source condition as smoothness/lack of oscillations.** Any function $h \in L^2(\nu)$ can be expanded in the eigenbasis as $h = \sum_i \hat{h}_i\,\phi_i$. The source condition $h = T^s g$ with $\lVert g\rVert_{L^2(\nu)} \leq M$ reads, in the eigenbasis, as
 
 $$\hat{h}_i = \mu_i^s\,\hat{g}_i, \qquad \sum_i \hat{g}_i^2 \leq M^2,$$
 
@@ -802,7 +802,7 @@ There is also a close connection of the source condition to a quantitative measu
 
 $$f^{(n)} := \bigl(f(x_1),\dots,f(x_n)\bigr)^\top \in \mathbb{R}^n.$$
 
-The reason one expects $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(x_j)/\sqrt{n}$ is that $\tfrac{1}{n}K$ is the empirical version of the integral operator $T$: plugging the vector $f^{(n)}$ into $\tfrac{1}{n}K$, its $j$-th component satisfies
+We claim that one expects $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(x_j)/\sqrt{n}$  for large $n$. The reason is that $\tfrac{1}{n}K$ is the empirical version of the integral operator $T$:  multiplying $\tfrac{1}{n}K$ by the vector $f^{(n)}$, the $j$-th component satisfies
 
 $$\left(\tfrac{1}{n}Kf^{(n)}\right)_j = \frac{1}{n}\sum_{\ell=1}^n k(x_j,x_\ell)f(x_\ell) \approx \int k(x_j,x')f(x')\,d\nu(x') = (Tf)(x_j),$$
 
@@ -818,7 +818,7 @@ If the function-level source condition $h = T^s g$ holds (so $\hat{h}_i = \mu_i^
 
 $$c_i \;\approx\; \frac{\mu_i^{s-1}}{\sqrt{n}}\,\hat{g}_i \;=\; \hat\mu_i^{s-1}\,w_i, \qquad \text{where}\quad w_i = \frac{\hat{g}_i}{\sqrt{n}}.$$
 
-Note $\|w\|_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \|g\|^2_{L_2(\nu)}$. Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s' = s - 1$. The exponent shift is the essential point: **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$.** In particular, one needs $s > 1$ (e.g. $h \in H^{2+\epsilon}$ for the Laplace kernel).
+Note $\lVert w\rVert_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \lVert g\rVert^2_{L_2(\nu)}$. Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s' = s - 1$. The exponent shift is the essential point: **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$.** In particular, one needs $s > 1$ (e.g. $h \in H^{2+\epsilon}$ for the Laplace kernel).
 
 **Numerical illustration.** The figure below demonstrates this on a Laplace kernel ($\sigma = 0.15$) with $n = 1000$ points drawn uniformly from $[0,1]$. We plot the initial-error coefficients $\lvert c_i\rvert$ versus $\hat\mu_i$ on a log-log scale; the slope of the log-log fit directly reveals the matrix-level source parameter $s'$ that enters Theorem 7.1. For a smooth target $h(x) = \sin(2\pi x) + \tfrac12\cos(4\pi x)$ (left panel), the fitted slope is $s' \approx 0.4$, so Theorem 7.1 gives rate $O(k^{-1.8})$. For a rough target of random signs (right panel), the fitted slope is $s' \approx -0.9$: the initial error is concentrated in the small-eigenvalue directions, so no source condition holds.
 
