@@ -550,7 +550,7 @@ We can think of the right side as a another function evaluated at $x_j$. Thus we
 
 $$(Tf)(x)=\int k(x,x')f(x')\,d\nu(x').$$
 
-Indeed, under mild conditions the eigenvalues of $\tfrac{1}{n}Kf^{(n)}$ become close to the eigenvalues of the integral operator $T$. Let $\mu_1\geq\mu_2\geq\cdots$ denote the eigenvalues of $T$, and let $p$ denote the intrinsic dimension of the data support. The end result is the following asymptotic estimate that holds for all sufficiently large eigenvalue indices $i$:
+Indeed, under mild conditions the eigenvalues of $\tfrac{1}{n}K$ become close to the eigenvalues of the integral operator $T$. Let $\mu_1\geq\mu_2\geq\cdots$ denote the eigenvalues of $T$, and let $p$ denote the intrinsic dimension of the data support. The end result is the following asymptotic estimate that holds for all sufficiently large eigenvalue indices $i$:
 
 | Kernel | Eigenvalue decay | Rate for $\mu_i$ |
 |---|---|---|
