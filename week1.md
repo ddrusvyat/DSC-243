@@ -848,9 +848,13 @@ $$\|w\|_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \|g\|^2_{L_2(\nu)}.$$
 
 Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s' = s - 1$. The exponent shift is the essential point: **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$.** In particular, one needs $s > 1$ (e.g. $h \in H^{2+\epsilon}$ for the Laplace kernel).
 
-**Numerical illustration.** The figure below demonstrates this on a Laplace kernel ($\sigma = 0.15$) with $n = 1000$ points drawn uniformly from $[0,1]$. We plot the initial-error coefficients $\lvert c_i\rvert$ versus $\hat\mu_i$ on a log-log scale; the slope of the log-log fit directly reveals the matrix-level source parameter $s'$ that enters Theorem 7.1. For a smooth target $h(x) = \sin(2\pi x) + \tfrac12\cos(4\pi x)$ (left panel), the fitted slope is $s' \approx 0.4$, so Theorem 7.1 gives rate $O(k^{-1.8})$. For a rough target of random signs (right panel), the fitted slope is $s' \approx -0.9$: the initial error is concentrated in the small-eigenvalue directions, so no source condition holds.
+**Numerical illustration.** The figures below demonstrate this on a Laplace kernel ($\sigma = 0.15$) with $n = 200$ points drawn uniformly from $[0,1]$. The first figure plots the initial-error coefficients $\lvert c_i\rvert$ versus $\hat\mu_i$ on a log-log scale; the slope of the log-log fit directly reveals the matrix-level source parameter $s'$ that enters Theorem 7.1. For a smooth target $h(x) = \sin(2\pi x) + \tfrac12\cos(4\pi x)$ (left panel), the fitted slope is $s' \approx 0.4$, so Theorem 7.1 predicts rate $O(k^{-1.8})$. For a rough target of random signs (right panel), the fitted slope is $s' \approx -0.9$: the initial error is concentrated in the small-eigenvalue directions, so no source condition holds.
 
 ![Source condition in kernel regression](figures/source_condition_kernel.png)
+
+The second figure shows the actual convergence of gradient descent (with stepsize $\eta = 1/\beta$) and conjugate gradient on the smooth target over 5000 iterations. The dashed lines show the predicted rates: $O(k^{-1.8})$ for GD (Theorem 7.1) and $O(k^{-3.6})$ for CG (Corollary 7.1). Both methods track their predicted rates well.
+
+![Convergence of GD and CG on kernel regression](figures/convergence_kernel.png)
 
 </div>
 

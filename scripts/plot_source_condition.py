@@ -32,7 +32,7 @@ def fit_power_law(eigvals, coeffs):
 
 def main():
     np.random.seed(0)
-    n = 1000
+    n = 200
     x = np.sort(np.random.rand(n))
     sigma = 0.15
 
@@ -51,7 +51,6 @@ def main():
     proj_s = np.abs(eigvecs.T @ y_smooth)
     proj_r = np.abs(eigvecs.T @ y_rough)
 
-    # Matrix-level coefficients: |c_i| = lambda_i^{-1} |v_i^T y|
     c_s = proj_s / eigvals
     c_r = proj_r / eigvals
 
@@ -65,10 +64,6 @@ def main():
     print(f"  smooth target: matrix-level slope s' ≈ {s_smooth:.2f}")
     print(f"  rough target:  matrix-level slope s' ≈ {s_rough:.2f}")
 
-    make_plot(ev, cs, cr, s_smooth, s_rough, b_s, b_r, sigma, n)
-
-
-def make_plot(ev, cs, cr, s_smooth, s_rough, b_s, b_r, sigma, n):
     fig, axes = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
 
     for ax, coeffs, slope, intercept, s_val, label, color in [
