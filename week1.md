@@ -109,7 +109,7 @@ f(x_k) - f^\ast
 \end{aligned}
 $$
 
-where $\lVert v\rVert_A = \sqrt{v^\top A v}$ is the **$A$-norm**---a measure of length that is adapted to the spectrum of $A$. This is the natural norm for measuring progress on quadratic problems.
+where $\|v\|_A = \sqrt{v^\top A v}$ is the **$A$-norm**---a measure of length that is adapted to the spectrum of $A$. This is the natural norm for measuring progress on quadratic problems.
 
 ### Convergence for a general stepsize
 
@@ -519,8 +519,7 @@ Two of the most widely used kernels depend only on the $\ell_2$ distance $\|x-y\
 $$k_{\mathrm{RBF}}(x,y)=\exp\!\left(-\frac{\|x-y\|^2}{2\sigma^2}\right).$$
 It is infinitely differentiable ($C^\infty$). The **Laplace kernel** is
 $$k_{\mathrm{Lap}}(x,y)=\exp\!\left(-\frac{\|x-y\|}{\sigma}\right).$$
-It is continuous but not differentiable at the origin ($C^0$).
-The Laplace kernel is the Matérn kernel with $\nu=\tfrac12$. More generally, the Matérn family interpolates between Laplace and Gaussian by introducing a smoothness parameter $\nu>0$. The general **Matérn kernel** is
+It is continuous but not differentiable at the origin ($C^0$). The Laplace kernel is the Matérn kernel with $\nu=\tfrac12$. More generally, the Matérn family interpolates between Laplace and Gaussian by introducing a smoothness parameter $\nu>0$. The general **Matérn kernel** is
 $$k_\nu(x,y)=\frac{2^{1-\nu}}{\Gamma(\nu)}\left(\frac{\sqrt{2\nu}\,\|x-y\|}{\sigma}\right)^\nu K_\nu\!\left(\frac{\sqrt{2\nu}\,\|x-y\|}{\sigma}\right),$$
 
 where $K_\nu$ is the modified Bessel function of the second kind. The parameter $\nu$ controls the smoothness: the Matérn kernel with parameter $\nu$ is $\lceil \nu\rceil -1$ times continuously differentiable. Several important finite-$\nu$ cases, together with the Gaussian limit, are summarized in the following table:
@@ -535,7 +534,17 @@ where $K_\nu$ is the modified Bessel function of the second kind. The parameter 
 In the limit $\nu\to\infty$ the Matérn kernel recovers the Gaussian kernel.
 
 
-For reasonable distributions of data points (e.g., Gaussian, uniform, or with a bounded density on a compact set), the eigenvalues of the normalized kernel matrix $(1/n)K$ resemble those of an associated linear integral operator, whose spectral decay can be analyzed explicitly. Let $\mu_1\geq\mu_2\geq\cdots$ denote the eigenvalues of that operator, and let $p$ denote the intrinsic dimension of the data support. The end result is the following asymptotic estimate that holds for all sufficiently large eigenvalue indices $i$:
+For reasonable distributions of data points (e.g., Gaussian, uniform, or with a bounded density on a compact set), the eigenvalues of the normalized kernel matrix $(1/n)K$ resemble those of an associated linear integral operator, whose spectral decay can be analyzed explicitly. More precisely suppose that the points are drawn from a distribution $\nu$ on $\R^d$. For any function $f\in L_2(\nu)$ define the n-dimensional vector 
+
+$$f^{(n)}=(f(x_1),\ldots, f(x_n)).$$
+
+Then $\frac{1}{n}K$ send $f^{(n)}$ to a vector with $j$'th coordinate given by
+$$\left(\tfrac{1}{n}Kf^{(n)}\right)_j = \frac{1}{n}\sum_{\ell=1}^n k(x_j,x_\ell)f(x_\ell) \approx \int k(x_j,x')f(x')\,d\nu(x').$$
+We can think of the right side as a another function evaluated at $x_j$. Thus we can define a linear operator on functions $T\colon L_2(\nu)\to L_2(\nu)$ given by 
+
+$$(Tf)(x)=\int k(x,x')f(x')\,d\nu(x').$$
+
+Indeed, under mild conditions the eigenvalues of $\tfrac{1}{n}Kf^{(n)}$ become close to the eigenvalues of the integral operator $T$. Let $\mu_1\geq\mu_2\geq\cdots$ denote the eigenvalues of $T$, and let $p$ denote the intrinsic dimension of the data support. The end result is the following asymptotic estimate that holds for all sufficiently large eigenvalue indices $i$:
 
 | Kernel | Eigenvalue decay | Rate for $\mu_i$ |
 |---|---|---|
@@ -751,7 +760,7 @@ As motivation, recall from Section 2 that for gradient descent with time varying
 $$
 f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2, \tag{12}
 $$
-where we define $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$. The worst-case analysis bounds this sum by pulling out the maximum: $\max_{\lambda\in[\alpha,\beta]} p_k(\lambda)^2$ in the positive definite case, or $\max_{\lambda\in[0,\beta]} \lambda\, p_k(\lambda)^2$ in the positive semidefinite case. This upper bound ignores two sources of structure:
+where we define $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ and $c_i$ are the coefficients of $e_0$ in the eigenbasis of $A$. The worst-case analysis bounds this sum by pulling out the maximum: $\max_{\lambda\in[\alpha,\beta]} p_k(\lambda)^2$ in the positive definite case, or $\max_{\lambda\in[0,\beta]} \lambda\, p_k(\lambda)^2$ in the positive semidefinite case. This upper bound ignores two sources of structure:
 
 1. **Initial error.** If the components $c_i$ of the initial error are small for small eigenvalues, the sum is dominated by well-conditioned directions. This is captured by *source conditions*.
 
@@ -772,39 +781,39 @@ In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_
 **Example (Source conditions in kernel regression).**
 The source condition arises naturally in kernel regression, where it is equivalent to a classical smoothness condition on the target function.
 
-**Setup.** Suppose data points $x_1,\dots,x_n$ are drawn i.i.d. from the uniform distribution on $[0,1]$, and the labels are generated by an unknown function: $y_i = h(x_i)$. As recalled in Section 5, kernel regression solves the linear system $K\alpha = y$, where $K_{ij} = k(x_i,x_j)$ is the kernel matrix and $y = (y_1,\dots,y_n)^\top$. The question is: when does the source condition hold for this problem, and what does it say about $h$? To answer this, we pass through the continuous integral operator associated with the kernel, which serves as the large-$n$ limit of the linear system.
+**Setup.** Suppose data points $x_1,\dots,x_n$ are drawn i.i.d. from a measure $\nu$ on $\R^d$, and the labels are generated by an unknown function: $y_i = h(x_i)$. As recalled in Section 5, kernel regression solves the linear system $K\alpha = y$, where $K_{ij} = k(x_i,x_j)$ is the kernel matrix and $y = (y_1,\dots,y_n)^\top$. The corresponding estimate of $h$ is then the function $x\mapsto \sum_{i=1}^n \alpha_i k(x,x_i).$  The question is: when does the source condition hold for this problem, and what does it say about $h$? To answer this, we pass through the continuous integral operator $T$ associated with the kernel, which serves as the large-$n$ limit of the linear system.
 
-**The integral operator.** The kernel $k$ and the data distribution $\nu$ define an **integral operator** $T\colon L^2(\nu) \to L^2(\nu)$ by
+**The integral operator.** As we have seen in Section 6, the kernel $k$ and the data distribution $\nu$ define an **integral operator** $T\colon L^2(\nu) \to L^2(\nu)$ by
 
 $$(Tf)(x) = \int k(x,x')\,f(x')\,d\nu(x').$$
 
-By Mercer's theorem this operator admits an eigendecomposition
+By the celebrated Mercer's theorem this operator admits an eigendecomposition
 
 $$T\phi_i = \mu_i\,\phi_i, \qquad \mu_1 \geq \mu_2 \geq \cdots > 0,$$
 
-with eigenfunctions $\phi_i$ forming an orthonormal basis for $L^2(\nu)$. For the Laplace kernel on $[0,1]$, these eigenfunctions have increasing spatial frequency as $i$ grows: $\phi_1$ is a smooth hump, $\phi_2$ has one oscillation, and successive eigenfunctions oscillate more and more rapidly. The animation below illustrates this for the Laplace kernel on $[0,1]$ with uniform measure and bandwidth $\sigma = 0.1$.
+with eigenfunctions $\phi_i$ forming an orthonormal basis for $L^2(\nu)$. For the Laplace kernel on $[0,1]$, these eigenfunctions have increasing spatial frequency as $i$ grows: $\phi_1$ is a smooth hump, $\phi_2$ has one oscillation, and successive eigenfunctions oscillate more and more rapidly. The animation below illustrates this for the Laplace kernel on $[0,1]$ with uniform measure and bandwidth $\sigma = 0.1$. Similar oscillatory behavior can also be seen for the eigenvalue functions of other common kernels as well.
 
 ![Eigenfunctions of the Laplace kernel operator](figures/laplace_eigenfunctions.gif)
 
 **Source condition as smoothness/lack of oscillations.** Any function $h \in L^2(\nu)$ can be expanded in the eigenbasis as
 
-$$h = \sum_i \hat{h}_i\,\phi_i.$$
+$$h = \sum_{i\geq 1} \hat{h}_i\,\phi_i.$$
 
-The source condition $h = T^s g$ with $\lVert g\rVert \leq M$ reads, in the eigenbasis, as
+The source condition $h = T^s g$ with $\|g\| \leq M$ reads, in the eigenbasis, as
 
-$$\hat{h}_i = \mu_i^s\,\hat{g}_i, \qquad \sum_i \hat{g}_i^2 \leq M^2,$$
+$$\hat{h}_i = \mu_i^s\,\hat{g}_i, \qquad \sum_{i\geq 1} \hat{g}_i^2 \leq M^2,$$
 
 where $\hat{h}_i$ and $\hat{g}_i$ denote the coefficients of $h$ and $g$ in the eigenbasis, i.e.,
 
 $$\hat{h}_i := \langle h, \phi_i \rangle_{L^2(\nu)}, \qquad \hat{g}_i := \langle g, \phi_i \rangle_{L^2(\nu)}.$$
 
-Equivalently,
+Equivalently, this amounts to requiring
 
-$$\sum_i \mu_i^{-2s}\,\lvert\hat{h}_i\rvert^2 \leq M^2.$$
+$$\sum_{i\geq 1} \mu_i^{-2s}\,\lvert\hat{h}_i\rvert^2 \leq M^2.$$
 
 This forces the coefficients of $h$ to decay at least as fast as $\mu_i^s$. For most interesting kernels, the higher-indexed eigenfunctions have increasing oscillations/frequency.
 
-There is also a close connection of the source condition to a quantitative measure of smoothness. This connection is cleanest in one dimension. For the Laplace kernel on $[0,1]$, the eigenvalues decay as $\mu_i \asymp i^{-2}$ and the eigenfunctions closely approximate sines and cosines (up to boundary effects), so the coefficients $\hat{h}_i = \langle h, \phi_i \rangle$ are closely related to the Fourier coefficients of $h$. The standard Fourier characterization of Sobolev spaces says that $f \in H^m$ (i.e., $f$ has $m$ square-integrable derivatives) if and only if $\sum_i i^{2m}\lvert\hat{f}_i\rvert^2 < \infty$. Since $\mu_i \asymp i^{-2}$, the source condition $\sum_i \mu_i^{-2s}\lvert\hat{h}_i\rvert^2 \leq M^2$ becomes $\sum_i i^{4s}\lvert\hat{h}_i\rvert^2 \leq M^2$, which is precisely the characterization of the Sobolev space $H^{2s}([0,1])$. Thus $s = 1/2$ corresponds to one derivative, $s = 1$ to two derivatives, and so on. (For non-integer values of $2s$, the space $H^{2s}$ is a fractional Sobolev space defined by this weighted $\ell^2$ condition on the Fourier coefficients.)
+There is also a close connection of the source condition to a quantitative measure of smoothness. This connection is cleanest in one dimension. For the Laplace kernel on $[0,1]$, the eigenvalues decay as $\mu_i \asymp i^{-2}$ and the eigenfunctions closely approximate sines and cosines (up to boundary effects), so the coefficients $\hat{h}_i = \langle h, \phi_i \rangle$ are closely related to the Fourier coefficients of $h$. The standard Fourier characterization of Sobolev spaces says that $f \in H^m$ (i.e., $f$ has $m$ square-integrable derivatives) if and only if $\sum_i i^{2m}\lvert\hat{f}_i\rvert^2 < \infty$. Since $\mu_i \asymp i^{-2}$, the source condition $\sum_i \mu_i^{-2s}\lvert\hat{h}_i\rvert^2 \leq M^2$ becomes $\sum_i i^{4s}\lvert\hat{h}_i\rvert^2 \leq M^2$, which turns out to precisely characterize the Sobolev space $H^{2s}([0,1])$. Thus $s = 1/2$ corresponds to one derivative, $s = 1$ to two derivatives, and so on. 
 
 **From operator to matrix.** We now connect the function-level source condition to the finite-sample linear system. Let $\hat\mu_i$ and $v_i$ denote the eigenvalues and eigenvectors of the normalized kernel matrix $\tfrac{1}{n}K$. Given a function $f$, define its sampled vector by evaluation,
 
@@ -814,7 +823,7 @@ We claim that one expects $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(
 
 $$\left(\tfrac{1}{n}Kf^{(n)}\right)_j = \frac{1}{n}\sum_{\ell=1}^n k(x_j,x_\ell)f(x_\ell) \approx \int k(x_j,x')f(x')\,d\nu(x') = (Tf)(x_j),$$
 
-where the sum is just the Monte Carlo approximation of the integral. Therefore, if $\phi_i$ is an eigenfunction of $T$ with $T\phi_i = \mu_i \phi_i$, then the sampled vector with entries $\phi_i(x_j)$ should be approximately an eigenvector of $\tfrac{1}{n}K$, after normalization by $1/\sqrt{n}$ to make its Euclidean norm $O(1)$. This leads to the heuristic correspondences $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(x_j)/\sqrt{n}$. Consequently, we have
+ Therefore, if $\phi_i$ is an eigenfunction of $T$ with $T\phi_i = \mu_i \phi_i$, then the sampled vector with entries $\phi_i(x_j)$ should be approximately an eigenvector of $\tfrac{1}{n}K$, after normalization by $1/\sqrt{n}$ to make its Euclidean norm $O(1)$. This leads to the heuristic correspondences $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(x_j)/\sqrt{n}$. Consequently, we have
 
 $$v_i^\top y = \sum_{j=1}^n (v_{i})_j\,h(x_j) \;\approx\; \frac{1}{\sqrt{n}}\sum_{j=1}^n \phi_i(x_j)\,h(x_j) \;\approx\; \sqrt{n}\int \phi_i(x)\,h(x)\,d\nu(x) \;=\; \sqrt{n}\,\hat{h}_i.$$
 
@@ -828,7 +837,7 @@ $$c_i \;\approx\; \frac{\mu_i^{s-1}}{\sqrt{n}}\,\hat{g}_i \;=\; \hat\mu_i^{s-1}\
 
 Note that
 
-$$\lVert w\rVert_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \lVert g\rVert^2_{L_2(\nu)}.$$
+$$\|w\|_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \|g\|^2_{L_2(\nu)}.$$
 
 Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s' = s - 1$. The exponent shift is the essential point: **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$.** In particular, one needs $s > 1$ (e.g. $h \in H^{2+\epsilon}$ for the Laplace kernel).
 
