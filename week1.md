@@ -740,7 +740,7 @@ The bound $(11)$ matches the PSD Chebyshev bound $(9)$; the gain of CG is that i
 
 ### Numerical illustration
 
-The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional quadratic whose spectrum follows the power law $\lambda_i = i^{-3}$ (condition number $\approx 8\times 10^6$). For each horizon $k$, the PSD Chebyshev point plotted is the iterate after running all $k$ stepsizes from $x_0$. The sublinear separation between GD ($O(1/k)$) and Chebyshev ($O(1/k^2)$) is clearly visible, while CG reaches high accuracy in far fewer iterations by adapting to the full spectral structure.
+The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional quadratic whose spectrum follows the power law $\lambda_i = i^{-3}$ (condition number $\approx 8\times 10^6$). For each horizon $k$, the PSD Chebyshev point plotted is the iterate after running all $k$ stepsizes from $x_0$. The sublinear separation between GD ($O(1/k)$) and Chebyshev ($O(1/k^2)$) is clearly visible, while CG reaches high accuracy in far fewer iterations.
 
 ![GD vs PSD Chebyshev vs CG for power-law spectrum](figures/gd_cheb_cg_psd.png)
 
@@ -750,21 +750,18 @@ The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional qua
 
 ### Beyond worst-case analysis
 
-Up to this point, we emphasized worst-case bounds obtained from extreme eigenvalues alone. Section 7 keeps the same exact error identities but stops discarding spectral information too early. This is a refinement of the previous theory, not a separate one: the same spectral decomposition now yields sharper rates when the initialization and eigenvalue distribution have structure.
+Up to this point, we emphasized worst-case bounds obtained from extreme eigenvalues alone. In this section, we obtain refined and improved guarantees that take into account the entire spectrum of the matrix $A$, rather than its extreme eigenvalues. These refined bounds are important in practice because in high-dimensional problems, the *distribution* of eigenvalues is often far from the worst case, and exploiting this structure leads to substantially sharper estimates.
 
-The convergence bounds of the preceding sections depend on the extreme eigenvalues of $A$ alone---the condition number $\kappa = \beta/\alpha$ in the positive definite case, or the largest eigenvalue $\beta$ in the positive semidefinite case. These bounds treat every eigenvalue configuration with the same extremes as equally hard. In high-dimensional problems, however, the *distribution* of eigenvalues is often far from the worst case, and exploiting this structure leads to substantially sharper estimates.
-
-Recall the exact error formula from Section 2 (combining the eigenbasis expansion with $\eta=1/\beta$):
+As motivation, recall from Section 2 that for gradient descent with time varying step-sizes $\eta_i$ we have the exact error formula:
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1 - \lambda_i/\beta)^{2k}\,c_i^2. \tag{12}
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2, \tag{12}
 $$
+where we define $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$. The worst-case analysis bounds this sum by pulling out the maximum: $\max_{\lambda\in[\alpha,\beta]} p_k(\lambda)^2$ in the positive definite case, or $\max_{\lambda\in[0,\beta]} \lambda\, p_k(\lambda)^2$ in the positive semidefinite case. This upper bound ignores two sources of structure:
 
-The worst-case analysis bounds this sum by pulling out the maximum: $\max_i (1 - \lambda_i/\beta)^{2k}$ in the positive definite case, or $\max_i \lambda_i(1-\lambda_i/\beta)^{2k}$ in the positive semidefinite case. This upper bound ignores two sources of structure:
+1. **Initial error.** If the components $c_i$ of the initial error are small for small eigenvalues, the sum is dominated by well-conditioned directions. This is captured by *source conditions*.
 
-1. **The initial error may be smooth relative to $A$.** If the components $c_i$ of the initial error are small for small eigenvalues, the sum is dominated by well-conditioned directions. This is captured by *source conditions*.
-
-2. **The eigenvalue density may be thin near the worst-case maximizer.** If most eigenvalues lie far from the point where $\lambda(1-\lambda/\beta)^{2k}$ is largest, replacing the sum by an integral against the spectral density gives a sharper estimate. This is the *spectral integral* approach.
+2. **Eigenvalue density.** If most eigenvalues lie far from the point where $\lambda p_k(\lambda)^{2}$ is largest, replacing the sum by an integral against the spectral density gives a sharper estimate. This is the *spectral integral* approach.
 
 We develop both ideas in turn, then combine them.
 
@@ -774,17 +771,50 @@ A **source condition** of order $s \geq 0$ is the assumption
 
 $$e_0 = A^s\,w \qquad \text{for some } w \in \mathbb{R}^d.$$
 
-In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_i = v_i^\top w$. The factor $\lambda_i^s$ suppresses the components of the initial error at small eigenvalues: the larger $s$, the smoother the initial error relative to $A$. The case $s = 0$ imposes no constraint (beyond $e_0 \in \mathrm{range}(A)$ when $\alpha = 0$). The case $s = 1$ says $e_0 \in \mathrm{range}(A)$ with the explicit factorization $e_0 = Aw$.
+In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_i = v_i^\top w$. The factor $\lambda_i^s$ suppresses the components of $e_0$ along eigenvectors with small eigenvalues, so the initial error is concentrated in the large-eigenvalue directions of $A$. 
 
-Substituting into $(12)$:
+<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
+**Example (Source conditions in kernel regression).**
+The source condition arises naturally in kernel regression, where it is equivalent to a classical smoothness condition on the target function.
+
+**Setup.** Suppose data points $x_1,\dots,x_n$ are drawn i.i.d. from the uniform distribution on $[0,1]$, and the labels are generated by an unknown function: $y_i = f^\ast(x_i)$. As recalled in Section 5, kernel regression solves the linear system $K\alpha = y$, where $K_{ij} = k(x_i,x_j)$ is the kernel matrix and $y = (y_1,\dots,y_n)^\top$. The question is: when does the source condition hold for this problem, and what does it say about $f^\ast$? To answer this, we pass through the continuous integral operator associated with the kernel, which serves as the large-$n$ limit of the linear system.
+
+**The integral operator.** The kernel $k$ and the data distribution $\nu$ define an **integral operator** $T\colon L^2(\nu) \to L^2(\nu)$ by
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2 \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{13}
+(Tf)(x) = \int k(x,x')\,f(x')\,d\nu(x').
 $$
+By Mercer's theorem this operator admits an eigendecomposition
+$$
+T\phi_i = \mu_i\,\phi_i, \qquad \mu_1 \geq \mu_2 \geq \cdots > 0,
+$$
+with eigenfunctions $\phi_i$ forming an orthonormal basis for $L^2(\nu)$. For the Laplace kernel on $[0,1]$, these eigenfunctions have increasing spatial frequency as $i$ grows: $\phi_1$ is a smooth hump, $\phi_2$ has one oscillation, and successive eigenfunctions oscillate more and more rapidly. The animation below illustrates this for the Laplace kernel on $[0,1]$ with uniform measure and bandwidth $\sigma = 0.1$.
+
+![Eigenfunctions of the Laplace kernel operator](figures/laplace_eigenfunctions.gif)
+
+**Source condition as smoothness/lack of oscillations.** Any function $f^\ast \in L^2(\nu)$ can be expanded in the eigenbasis as $f^\ast = \sum_i \hat{f}_i\,\phi_i$. The source condition $f^\ast = T^s g$ with $\|g\|_{L^2(\nu)} \leq M$ reads, in the eigenbasis, as
+$$
+\hat{f}_i = \mu_i^s\,\hat{g}_i, \qquad \sum_i \hat{g}_i^2 \leq M^2,
+$$
+where $\hat{f}_i := \langle f^\ast, \phi_i \rangle_{L^2(\nu)}$ and $\hat{g}_i := \langle g, \phi_i \rangle_{L^2(\nu)}$ are the coefficients of $f^\ast$ and $g$ in the eigenbasis. This forces the coefficients of $f^\ast$ to decay at least as fast as $\mu_i^s$, that is $
+|\hat{f}_i| \leq M\,\mu_i^s.
+$ For most interesting kernels, the higher-indexed eigenfunctions have increasing oscillations/frequency.
+
+There is also a close connection of the source condition to a quantitative measure of smoothness. This connection is cleanest in one dimension. For the Laplace kernel on $[0,1]$, the eigenvalues decay as $\mu_i \asymp i^{-2}$ and the eigenfunctions are, up to boundary effects, sines and cosines. Indeed, the coefficients $\hat{f}_i = \langle f^\ast, \phi_i \rangle$ are exactly the Fourier coefficients of $f^\ast$. The standard Fourier characterization of Sobolev spaces says that $f \in H^m$ (i.e., $f$ has $m$ square-integrable derivatives) if and only if $\sum_i i^{2m}|\hat{f}_i|^2 < \infty$. Since $\mu_i^s \asymp i^{-2s}$, the source condition $|\hat{f}_i| \leq M\,i^{-2s}$ is exactly the statement that $f^\ast \in H^{2s}$. Thus $s = 1/2$ corresponds to one derivative, $s = 1$ to two derivatives, and so on.
+
+**Numerical illustration.** The figure below demonstrates this on a Laplace kernel with $n = 1000$ points drawn uniformly from $[0,1]$. We plot $|v_i^\top y|$ versus $\lambda_i$ on a log-log scale. For function-level source conditions, the coefficients of the sampled target vector inherit the decay $|v_i^\top y| \propto \lambda_i^{s}$, so the slope of the log-log fit directly reveals $s$. For a smooth target $f(x) = \sin(2\pi x) + \tfrac12\cos(4\pi x)$ (left panel), the fitted slope is positive and the coefficients decay polynomially with $\lambda_i$, consistent with the source condition. For a rough target of random signs (right panel), the coefficients are essentially flat, showing no smoothness structure relative to the kernel.
+
+![Source condition in kernel regression](figures/source_condition_kernel.png)
+
+</div>
+
+
+We now show how the source condition improves the rate of convergence of gradient descent. The conclusion is that when the source condition holds, the GD rate automatically accelerates to $O(\tfrac{1}{k^{1+2s}})$ as $k$ tends to infinity.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 7.1 (Source condition).** *Let $A$ be positive semidefinite with largest eigenvalue $\beta > 0$, and suppose $b \in \mathrm{range}(A)$. If the initial error satisfies $e_0 = A^s w$ for some $s \geq 0$, then GD with $\eta = 1/\beta$ satisfies*
+
+**Theorem 7.1 (GD with source condition).** *If the initial error satisfies $e_0 = A^s w$ for some $s \geq 0$, then GD with $\eta = 1/\beta$ satisfies*
 
 $$f(x_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{14}$$
 
@@ -792,7 +822,17 @@ $$f(x_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{
 
 </div>
 
-*Proof.* By $(13)$, it suffices to maximize $g(t) = t^{1+2s}(1-t)^{2k}$ over $t \in [0,1]$, with the identification $\lambda = \beta t$. Differentiating:
+*Proof.* Write $c_i = \lambda_i^s \tilde{c}_i$, where $\tilde{c}_i = v_i^\top w$. Substituting into $(12)$ yields:
+
+$$
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2,
+$$
+and therefore
+$$
+f(x_k) - f^\ast \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{13}
+$$
+
+It suffices to maximize $g(t) = t^{1+2s}(1-t)^{2k}$ over $t \in [0,1]$, with the identification $\lambda = \beta t$. Differentiating:
 
 $$
 g'(t) = t^{2s}(1-t)^{2k-1}\bigl[(1+2s)(1-t) - 2k\,t\bigr].
@@ -806,55 +846,43 @@ $$
 
 where the inequality uses $(1-x)^{n} \leq 1$ for $x \in [0,1]$ and $n \geq 0$. Multiplying by $\beta^{1+2s}/2$ and $\|w\|^2$ gives the bound $(14)$. The asymptotic rate follows from $(1+2s)/(2k+1+2s) = O(1/k)$. <span style="float: right;">$\square$</span>
 
-For $s = 0$, the bound reduces to $\frac{\beta}{2(2k+1)}\|e_0\|^2$, recovering Theorem 6.1. Each unit increase in $s$ accelerates the rate by an additional factor of $1/k^2$:
+The source condition can also be exploited by time-varying stepsizes. The relevant polynomial problem is now
+$$
+\min_{\substack{p \in \mathcal P_k^r\\ p(0)=1}} \max_{\lambda \in [0,\beta]} \lambda^{1+2s}p(\lambda)^2.
+$$
+After the affine change of variables $\lambda = \frac{\beta}{2}(1-t)$, this becomes a minimax problem on $[-1,1]$ with weight $(1-t)^{1+2s}$. The solutions of this extremal problem are the **Jacobi polynomials**. You will derive this minimax construction in the next homework and will prove the following theorem.
 
-| Source order $s$ | Condition on $e_0$ | Rate |
-|---|---|---|
-| $0$ | $e_0 \in \mathrm{range}(A)$ | $O(1/k)$ |
-| $1/2$ | $e_0 = A^{1/2}w$ | $O(1/k^2)$ |
-| $1$ | $e_0 = Aw$ | $O(1/k^3)$ |
-| $s$ | $e_0 = A^s w$ | $O(k^{-(1+2s)})$ |
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-The plot below visualizes Theorem 7.1 on log-log axes: increasing the source order steepens the slope exactly as $-(1+2s)$.
-
-![Source condition rates](figures/source_condition_rates.png)
-
-The source condition is natural in many settings. In inverse problems, $s$ measures the regularity of the unknown signal relative to the forward operator. In machine learning, when $A = X^\top X/n$ is a sample covariance and $e_0$ represents the regression error, the condition $e_0 = A^s w$ says that the initial error aligns with the principal components of the data, with larger $s$ indicating stronger alignment (see [EHN96, Han95]).
-
-### Source condition when $\alpha > 0$
-
-When $A \succ 0$, the same source-condition argument yields a refined two-phase estimate. Starting from
+**Theorem 7.2 (Time-varying stepsizes with source condition).** *For every $s \geq 0$ and every horizon $k \geq 1$, there exists a sequence of stepsizes $\eta_1,\dots,\eta_k$ such that the corresponding GD iterate satisfies*
 
 $$
-f(x_k) - f^\ast \leq \frac{\|w\|^2}{2}\max_{\lambda \in [\alpha,\beta]} \lambda^{1+2s}(1-\lambda/\beta)^{2k},
+f(x_k)-f^\ast
+\leq C_s\,\beta^{1+2s}\,k^{-2(1+2s)}\,\|w\|^2. \tag{15}
 $$
 
-define $h_k(\lambda) = \lambda^{1+2s}(1-\lambda/\beta)^{2k}$. The unconstrained maximizer is
+*where $C_s>0$ depends only on $s$. In particular, the rate improves from $O(k^{-(1+2s)})$ for fixed-step GD to $O(k^{-2(1+2s)})$ for this source-aware time-varying schedule.*
+
+</div>
+
+
+In principle, the stepsizes are given by the reciprocals of the roots of the relevant Jacobi polynomial. Unlike the Chebyshev roots, these roots do not have a simple closed form. This is not a serious drawback, however, because the same convergence rate is inherited by the conjugate gradient method, which achieves it adaptively without needing the stepsizes explicitly.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Corollary 7.1 (CG with source condition).** *If the initial error satisfies $e_0 = A^s w$ for some $s \geq 0$, then the CG iterates satisfy*
 
 $$
-\lambda_k^\ast = \beta\frac{1+2s}{2k+1+2s}.
+f(x_k^{\mathrm{CG}})-f^\ast
+\leq C_s\,\beta^{1+2s}\,k^{-2(1+2s)}\,\|w\|^2,
 $$
 
-Therefore:
+*and CG terminates in at most $m$ iterations, where $m$ is the number of distinct nonzero eigenvalues of $A$.*
 
-- if $\lambda_k^\ast \geq \alpha$ (equivalently $k \leq \frac{1+2s}{2}(\kappa-1)$), the maximizer lies in the interior and one recovers the sublinear estimate of Theorem 7.1;
-- if $\lambda_k^\ast < \alpha$ (equivalently $k > \frac{1+2s}{2}(\kappa-1)$), the constrained maximizer is the endpoint $\lambda=\alpha$, giving
+</div>
 
-$$
-f(x_k)-f^\ast\leq \frac{\alpha^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2. \tag{15}
-$$
+*Proof.* For any horizon $k$, the source-aware stepsizes $\eta_1,\dots,\eta_k$ from Theorem 7.2 produce an iterate in $x_0+\mathcal{K}_k(A,r_0)$, whereas CG minimizes $f$ over that entire affine subspace. Therefore $f(x_k^{\mathrm{CG}})\leq f(x_k^{\mathrm{GD}})$, and the bound follows from Theorem 7.2. Finite termination follows exactly as in Theorem 6.3. <span style="float: right;">$\square$</span>
 
-Hence, for $\alpha>0$, the source-condition bound is sublinear in an initial regime and then transitions to linear convergence with the same exponential factor as Corollary 2.2 but a smaller prefactor. Relative to the crude estimate
-
-$$
-f(x_k)-f^\ast\leq \frac{\beta^{1+2s}}{2}\left(1-\frac{1}{\kappa}\right)^{2k}\|w\|^2,
-$$
-
-the late-phase bound $(15)$ improves the constant by a factor $\kappa^{-(1+2s)}$.
-
-The next figure shows this two-phase effect directly: an initial sublinear envelope transitions to an endpoint-driven linear regime near $k_{\mathrm{trans}}$.
-
-![Source condition phase transition](figures/source_condition_phase_transition.png)
 
 ### The spectral integral
 
