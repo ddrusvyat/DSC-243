@@ -513,13 +513,17 @@ The convergence guarantees of the previous sections all rely on the assumption $
 A **kernel function** $k\colon\mathbb{R}^d\times\mathbb{R}^d\to\mathbb{R}$ is a symmetric function such that the **kernel matrix** $K\in\mathbb{R}^{n\times n}$ defined by $K_{ij}=k(x_i,x_j)$ is positive semidefinite for every finite collection of points $x_1,\dots,x_n\in\mathbb{R}^d$. Kernel matrices are ubiquitous: they arise in Gaussian process regression, support vector machines, kernel ridge regression, and radial-basis-function interpolation. Given a target vector $y\in\mathbb{R}^n$, the core computational task reduces to solving the linear system
 
 $$K\alpha = y,$$
+
 which is exactly the quadratic minimization problem $\min_\alpha \tfrac{1}{2}\alpha^\top K\alpha - y^\top \alpha$.
 
 Two of the most widely used kernels depend only on the $\ell_2$ distance $\|x-y\|$ and a length-scale parameter $\sigma>0$, called the bandwidth. The **Gaussian (RBF) kernel** is
+
 $$k_{\mathrm{RBF}}(x,y)=\exp\!\left(-\frac{\|x-y\|^2}{2\sigma^2}\right).$$
+
 It is infinitely differentiable ($C^\infty$). The **Laplace kernel** is
 $$k_{\mathrm{Lap}}(x,y)=\exp\!\left(-\frac{\|x-y\|}{\sigma}\right).$$
 It is continuous but not differentiable at the origin ($C^0$). The Laplace kernel is the Matérn kernel with $\nu=\tfrac12$. More generally, the Matérn family interpolates between Laplace and Gaussian by introducing a smoothness parameter $\nu>0$. The general **Matérn kernel** is
+
 $$k_\nu(x,y)=\frac{2^{1-\nu}}{\Gamma(\nu)}\left(\frac{\sqrt{2\nu}\,\|x-y\|}{\sigma}\right)^\nu K_\nu\!\left(\frac{\sqrt{2\nu}\,\|x-y\|}{\sigma}\right),$$
 
 where $K_\nu$ is the modified Bessel function of the second kind. The parameter $\nu$ controls the smoothness: the Matérn kernel with parameter $\nu$ is $\lceil \nu\rceil -1$ times continuously differentiable. Several important finite-$\nu$ cases, together with the Gaussian limit, are summarized in the following table:
