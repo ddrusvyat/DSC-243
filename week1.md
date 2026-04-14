@@ -522,20 +522,20 @@ $$k_{\mathrm{RBF}}(x,y)=\exp\!\left(-\frac{\|x-y\|^2}{2\sigma^2}\right).$$
 
 It is infinitely differentiable ($C^\infty$). The **Laplace kernel** is
 $$k_{\mathrm{Lap}}(x,y)=\exp\!\left(-\frac{\|x-y\|}{\sigma}\right).$$
-It is continuous but not differentiable at the origin ($C^0$). The Laplace kernel is the Matérn kernel with $\nu=\tfrac12$. More generally, the Matérn family interpolates between Laplace and Gaussian by introducing a smoothness parameter $\nu>0$. The general **Matérn kernel** is
+It is continuous but not differentiable at the origin ($C^0$). The Laplace kernel is the Matérn kernel with $m=\tfrac12$. More generally, the Matérn family interpolates between Laplace and Gaussian by introducing a smoothness parameter $m>0$. The general **Matérn kernel** is
 
-$$k_\nu(x,y)=\frac{2^{1-\nu}}{\Gamma(\nu)}\left(\frac{\sqrt{2\nu}\,\|x-y\|}{\sigma}\right)^\nu K_\nu\!\left(\frac{\sqrt{2\nu}\,\|x-y\|}{\sigma}\right),$$
+$$k_m(x,y)=\frac{2^{1-m}}{\Gamma(m)}\left(\frac{\sqrt{2m}\,\|x-y\|}{\sigma}\right)^m K_m\!\left(\frac{\sqrt{2m}\,\|x-y\|}{\sigma}\right),$$
 
-where $K_\nu$ is the modified Bessel function of the second kind. The parameter $\nu$ controls the smoothness: the Matérn kernel with parameter $\nu$ is $\lceil \nu\rceil -1$ times continuously differentiable. Several important finite-$\nu$ cases, together with the Gaussian limit, are summarized in the following table:
+where $K_m$ is the modified Bessel function of the second kind. The parameter $m$ controls the smoothness: the Matérn kernel with parameter $m$ is $\lceil m\rceil -1$ times continuously differentiable. Several important finite-$m$ cases, together with the Gaussian limit, are summarized in the following table:
 
-| Kernel | $\nu$ | Closed form | Smoothness |
+| Kernel | $m$ | Closed form | Smoothness |
 |---|---|---|---|
 | Laplace | $\tfrac12$ | $\exp\bigl(-\tfrac{\|x-y\|}{\sigma}\bigr)$ | $C^0$ |
 | Matérn 3/2 | $\tfrac32$ | $\bigl(1+\tfrac{\sqrt{3}\|x-y\|}{\sigma}\bigr)\exp\bigl(-\tfrac{\sqrt{3}\|x-y\|}{\sigma}\bigr)$ | $C^1$ |
 | Matérn 5/2 | $\tfrac52$ | $\bigl(1+\tfrac{\sqrt{5}\|x-y\|}{\sigma}+\tfrac{5\|x-y\|^2}{3\sigma^2}\bigr)\exp\bigl(-\tfrac{\sqrt{5}\|x-y\|}{\sigma}\bigr)$ | $C^2$ |
 | Gaussian (RBF) | $\infty$ | $\exp\bigl(-\tfrac{\|x-y\|^2}{2\sigma^2}\bigr)$ | $C^\infty$ |
 
-In the limit $\nu\to\infty$ the Matérn kernel recovers the Gaussian kernel.
+In the limit $m\to\infty$ the Matérn kernel recovers the Gaussian kernel.
 
 
 For reasonable distributions of data points (e.g., Gaussian, uniform, or with a bounded density on a compact set), the eigenvalues of the normalized kernel matrix $(1/n)K$ resemble those of an associated linear integral operator, whose spectral decay can be analyzed explicitly. More precisely suppose that the points $x_1,\ldots, x_n$ are drawn iid from a distribution $\nu$ on $\mathbb{R}^d$. For any function $f\in L_2(\nu)$ define the $n$-dimensional vector 
@@ -558,8 +558,8 @@ Indeed, under mild conditions the eigenvalues of $\tfrac{1}{n}K$ become close to
 
 | Kernel | Eigenvalue decay | Rate for $\mu_i$ |
 |---|---|---|
-| Laplace ($\nu=\tfrac12$) | polynomial | $\mu_i\asymp i^{-(1+p)/p}$ |
-| Matérn (smoothness $\nu$) | polynomial | $\mu_i\asymp i^{-(2\nu+p)/p}$ |
+| Laplace ($m=\tfrac12$) | polynomial | $\mu_i\asymp i^{-(1+p)/p}$ |
+| Matérn (smoothness $m$) | polynomial | $\mu_i\asymp i^{-(2m+p)/p}$ |
 | Gaussian (RBF) | super-exponential | $\mu_i\lesssim C\exp(-c\, i^{2/p})$ |
 
 As a consequence, kernel matrices are typically extremely ill-conditioned: the effective condition number $\lambda_1/\lambda_n$ grows rapidly with $n$, and for large $n$ many eigenvalues are numerically zero. This is precisely the regime where the positive definite theory becomes vacuous.
