@@ -828,19 +828,16 @@ There is also a close connection of the source condition to a quantitative measu
 
 **From operator to matrix.** We now connect the function-level source condition to the finite-sample linear system. Let $\hat\mu_i$ and $v_i$ denote the eigenvalues and eigenvectors of the normalized kernel matrix $\tfrac{1}{n}K$. Given a function $f$, define its sampled vector by evaluation,
 
-$$f^{(n)} := \bigl(f(x_1),\dots,f(x_n)\bigr)^\top \in \mathbb{R}^n.$$
+$$f^{(n)} := \tfrac{1}{\sqrt{n}}\bigl(f(x_1),\dots,f(x_n)\bigr)^\top \in \mathbb{R}^n.$$
 
-We claim that one expects $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(x_j)/\sqrt{n}$  for large $n$. The reason is that $\tfrac{1}{n}K$ is the empirical version of the integral operator $T$:  multiplying $\tfrac{1}{n}K$ by the vector $f^{(n)}$, the $j$-th component satisfies
+We have already seen in Section 6 that we expect $\hat\mu_i \approx \mu_i$. Similarly, we expect that if $v_i$ is an eigenvector of $\tfrac{1}{n}K$ corresponding to eigenvalue $\hat\mu_i$, then for any function $f\in L_2(\nu)$ that we have 
 
-$$\left(\tfrac{1}{n}Kf^{(n)}\right)_j = \frac{1}{n}\sum_{\ell=1}^n k(x_j,x_\ell)f(x_\ell) \approx \int k(x_j,x')f(x')\,d\nu(x') = (Tf)(x_j),$$
+$$\frac{v^\top_i f^{(n)}}{\sqrt{n}}=\frac{1}{n}\sum_{i=1}^n (v_i)_j f(x_j)\approx \int \phi_i(x) f(x)~d\nu(x)=\hat f_i.$$
 
- Therefore, if $\phi_i$ is an eigenfunction of $T$ with $T\phi_i = \mu_i \phi_i$, then the sampled vector with entries $\phi_i(x_j)$ should be approximately an eigenvector of $\tfrac{1}{n}K$, after normalization by $1/\sqrt{n}$ to make its Euclidean norm $O(1)$. This leads to the heuristic correspondences $\hat\mu_i \approx \mu_i$ and $(v_i)_j \approx \phi_i(x_j)/\sqrt{n}$. Consequently, we have
-
-$$v_i^\top y = \sum_{j=1}^n (v_{i})_j\,h(x_j) \;\approx\; \frac{1}{\sqrt{n}}\sum_{j=1}^n \phi_i(x_j)\,h(x_j) \;\approx\; \sqrt{n}\int \phi_i(x)\,h(x)\,d\nu(x) \;=\; \sqrt{n}\,\hat{h}_i.$$
 
 Now consider running gradient descent on the normalized system $\tfrac{1}{n}K\alpha = \tfrac{1}{n}y$, which has the same solution $\alpha^\ast = K^{-1}y$ but now $A = \tfrac{1}{n}K$ has bounded eigenvalues $\hat\mu_i \approx \mu_i$. Starting from $\alpha_0 = 0$, the initial error $e_0 = \alpha^\ast$ has coefficients
 
-$$c_i \;:=\; v_i^\top e_0 \;=\; \frac{v_i^\top(\tfrac{1}{n}y)}{\hat\mu_i} \;\approx\; \frac{\hat{h}_i}{\sqrt{n}\,\mu_i}.$$
+$$c_i \;:=\; v_i^\top e_0 \;=\; \frac{v_i^\top(\tfrac{1}{n}y)}{\hat\mu_i}\;=\; \frac{v_i^\top h^{(n)}}{\sqrt{n}\hat\mu_i} \;\approx\; \frac{\hat{h}_i}{\sqrt{n}\,\mu_i}.$$
 
 If the function-level source condition $h = T^s g$ holds (so $\hat{h}_i = \mu_i^s\,\hat{g}_i$), this becomes
 
