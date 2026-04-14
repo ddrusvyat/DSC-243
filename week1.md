@@ -852,9 +852,6 @@ Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s'
 
 ![Source condition in kernel regression](figures/source_condition_kernel.png)
 
-The second figure shows the actual convergence of gradient descent (with stepsize $\eta = 1/\beta$) and conjugate gradient on the smooth target over 5000 iterations. The dashed lines show the predicted rates: $O(k^{-1.8})$ for GD (Theorem 7.1) and $O(k^{-3.6})$ for CG (Corollary 7.1). Both methods track their predicted rates well.
-
-![Convergence of GD and CG on kernel regression](figures/convergence_kernel.png)
 
 </div>
 
@@ -926,20 +923,28 @@ $$
 
 </div>
 
+The following figure shows the actual convergence of gradient descent (with stepsize $\eta = 1/\beta$) and conjugate gradient on the smooth  target for kernel regression. The dashed lines show the predicted rates: $O(k^{-1.8})$ for GD (Theorem 7.1) and $O(k^{-3.6})$ for CG (Corollary 7.1). Both methods track their predicted rates well.
 
+![Convergence of GD and CG on kernel regression](figures/convergence_kernel.png)
 
 
 
 ### The spectral integral
 
-Source conditions improve rates by constraining the *initial error*. A complementary improvement comes from constraining the *eigenvalue distribution*. Define the **spectral error measure**
+Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that for any polynomial $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ with $p_k(0)=1$, the error is
+
+$$
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2.
+$$
+
+Define the **spectral error measure**
 
 $$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
 
-so that $\|e_0\|^2 = \mu([0,\beta])$ and $(12)$ reads
+so that $\|e_0\|^2 = \mu([0,\beta])$ and the error can be written as a spectral integral:
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,d\mu(\lambda). \tag{16}
+f(x_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,d\mu(\lambda). \tag{16}
 $$
 
 When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \|e_0\|^2/d$), then $\phi(\lambda) \approx \|e_0\|^2\rho_A(\lambda)$.
@@ -947,10 +952,10 @@ When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu
 Under this approximation, $(16)$ becomes
 
 $$
-f(x_k) - f^\ast \approx \frac{1}{2}\int_0^\beta \lambda\,(1-\lambda/\beta)^{2k}\,\phi(\lambda)\,d\lambda.
+f(x_k) - f^\ast \approx \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,\phi(\lambda)\,d\lambda.
 $$
 
-The integrand $\lambda(1-\lambda/\beta)^{2k}$ is sharply peaked near $\lambda^\ast = \beta/(2k+1)$ for large $k$ and decays rapidly away from this point. The integral is therefore controlled by the behavior of $\phi$ near $\lambda^\ast$---which shifts toward zero as $k$ grows. The next two subsections exploit this concentration to obtain convergence rates that depend on the spectral density.
+For fixed-stepsize GD with $\eta = 1/\beta$, we have $p_k(\lambda) = (1-\lambda/\beta)^k$ and the integrand $\lambda(1-\lambda/\beta)^{2k}$ is sharply peaked near $\lambda^\ast = \beta/(2k+1)$ for large $k$, decaying rapidly away from this point. The integral is therefore controlled by the behavior of $\phi$ near $\lambda^\ast$---which shifts toward zero as $k$ grows. The next two subsections exploit this concentration to obtain convergence rates that depend on the spectral density.
 
 ### Power-law spectral density
 
