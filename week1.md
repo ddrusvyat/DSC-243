@@ -905,7 +905,7 @@ f(x_k)-f^\ast
 \leq C_s\,\beta^{1+2s}\,k^{-2(1+2s)}\,\|w\|^2. \tag{15}
 $$
 
-*where $C_s>0$ depends only on $s$. *
+where $C_s>0$ depends only on $s$. 
 
 </div>
 
