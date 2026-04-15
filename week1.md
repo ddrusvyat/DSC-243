@@ -944,8 +944,7 @@ The following figure shows the actual convergence of gradient descent (with step
 
 ### The spectral integral
 
-Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that 
- gradient descent with time varying stepsizes $\eta_1,\ldots, \eta_k$ satisfies
+Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that gradient descent with time varying stepsizes $\eta_1,\ldots, \eta_k$ satisfies
 
 $$
 f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2.
