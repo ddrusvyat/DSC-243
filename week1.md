@@ -781,11 +781,14 @@ We develop both ideas in turn, then combine them.
 
 ### Source conditions
 
-A **source condition** of order $s \geq 0$ is the assumption
+A **source condition** of order $s \in \mathbb{R}$ is the assumption
 
-$$e_0 = A^s\,w \qquad \text{for some } w \in \mathbb{R}^d.$$
+$$e_0 = A^s\,w \qquad \text{for some } w \in \mathbb{R}^d \text{ with } \lVert w\rVert^2 \leq M.$$
 
-In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_i = v_i^\top w$. The factor $\lambda_i^s$ suppresses the components of $e_0$ along eigenvectors with small eigenvalues, so the initial error is concentrated in the large-eigenvalue directions of $A$. 
+In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_i = v_i^\top w$. In the regime $s>0$, the factor $\lambda_i^s$ suppresses the components of $e_0$ along eigenvectors with small eigenvalues, so the initial error is concentrated in the large-eigenvalue directions of $A$. The regime $s\in (-\tfrac{1}{2},0)$ is also meaningful but for a different reason. Since we have $\lVert e_0\rVert^2 = \sum_i \lambda_i^{2s} w_i^2$ and $2s < 0$, the factor $\lambda_i^{2s}$ amplifies small-eigenvalue components. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $w$, the initial error $\lVert e_0\rVert^2 \asymp d^{2|s|\alpha}\lVert w\rVert^2$ grows with $d$ while $\lVert w\rVert^2$ stays of constant order. Therefore convergence guarantees that depend on $\|w\|_2$ rather than on $\|e_0\|$, which we will derive in this section, may still be meaningful. 
+
+
+
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -853,20 +856,29 @@ Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s'
 
 ![Source condition in kernel regression](figures/source_condition_kernel.png)
 
+The next figure explains *why* the source exponent changes across kernels. For translation-invariant kernels on $[0,1]$, the eigenfunctions are approximately the same (Fourier modes), so the projections $b_i = v_i^\top(y/n)$ are nearly kernel-independent (left panel: all four kernels overlap). What differs is the eigenvalue decay: $\lambda_i \asymp i^{-\alpha}$ with $\alpha = 2$ (Laplace), $4$ (Matérn 3/2), $6$ (Matérn 5/2), or super-polynomial (Gaussian). Since $c_i = b_i/\lambda_i$, dividing by faster-decaying eigenvalues inflates the high-index coefficients more, producing a less favorable slope (right panel). If $b_i \propto i^{-r}$ for some target-dependent $r$, then $c_i \propto \lambda_i^{r/\alpha - 1}$, giving $s' = r/\alpha - 1$. As $\alpha$ increases, $s'$ decreases --- not because the target projects differently, but because each eigenvalue is smaller and dividing by it inflates $c_i$ more.
+
+![Source condition across kernel families](figures/source_condition_all_kernels.png)
+
 
 </div>
 
 
-We now show how the source condition improves the rate of convergence of gradient descent. The conclusion is that when the source condition holds, the GD rate automatically accelerates to $O(\tfrac{1}{k^{1+2s}})$ as $k$ tends to infinity.
+We now show how the source condition controls the rate of convergence of gradient descent. The GD rate is $O(k^{-(1+2s)})$, with two distinct payoffs depending on the sign of $s$:
+
+1. **(faster rate when $s > 0$ ).** The rate $O(\|w\|^2\cdot k^{-(1+2s)})$ is strictly faster than $O(\|e_0\|^2\cdot k^{-1})$. The source condition concentrates the initial error on large-eigenvalue directions, which GD resolves quickly.
+
+2. **(dimension-free rate when $-\tfrac{1}{2} < s < 0$).** The rate $O(\lVert w\rVert^2/ k^{1+2s})$ is slower than $O(\lVert e_0\rVert^2/k)$ in terms of $k$, but the bound depends on $\lVert w\rVert^2$ rather than $\lVert e_0\rVert^2$. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $w$, the initial error scales as $\lVert e_0\rVert^2 \asymp n^{2|s|\alpha}\lVert w\rVert^2$, so the vanilla bound diverges up as $n \to \infty$, whereas the source-condition bound $O(\lVert w\rVert^2\cdot k^{-(1+2s)})$ is independent of $n$.
+
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 
-**Theorem 7.1 (GD with source condition).** *If the initial error satisfies $e_0 = A^s w$ for some $s \geq 0$, then GD with $\eta = 1/\beta$ satisfies*
+**Theorem 7.1 (GD with source condition).** *If the initial error satisfies $e_0 = A^s w$ for some $s > -\tfrac{1}{2}$, then GD with $\eta = 1/\beta$ satisfies*
 
 $$f(x_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{13}$$
 
-*In particular, $f(x_k) - f^\ast = O\!\left(\beta^{1+2s}\,k^{-(1+2s)}\,\|w\|^2\right)$ as $k \to \infty$.*
+*In particular, $f(x_k) - f^\ast = O\left(\beta^{1+2s}\,k^{-(1+2s)}\,\|w\|^2\right)$ as $k \to \infty$.*
 
 </div>
 
@@ -891,14 +903,16 @@ $$
 Multiplying by $\beta^{1+2s}/2$ and $\|w\|^2$ gives the bound $(13)$. <span style="float: right;">$\square$</span>
 
 The source condition can also be exploited by time-varying stepsizes. The relevant polynomial problem is now
+
 $$
 \min_{\substack{p \in \mathcal P_k^r\\ p(0)=1}} \max_{\lambda \in [0,\beta]} \lambda^{1+2s}p(\lambda)^2.
 $$
+
 After the affine change of variables $\lambda = \frac{\beta}{2}(1-t)$, this becomes a minimax problem on $[-1,1]$ with weight $(1-t)^{1+2s}$. The solutions of this extremal problem are the **Jacobi polynomials**. You will derive this minimax construction in the next homework and will prove the following theorem.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 7.2 (Time-varying stepsizes with source condition).** *For every $s \geq 0$ and every horizon $k \geq 1$, there exists a sequence of stepsizes $\eta_1,\dots,\eta_k$ such that the corresponding GD iterate satisfies*
+**Theorem 7.2 (Time-varying stepsizes with source condition).** *For every $s > -\tfrac{1}{2}$ and every horizon $k \geq 1$, there exists a sequence of stepsizes $\eta_1,\dots,\eta_k$ such that the corresponding GD iterate satisfies*
 
 $$
 f(x_k)-f^\ast
@@ -909,11 +923,11 @@ where $C_s>0$ depends only on $s$.
 
 </div>
 
-In particular, the rate improves from $O(k^{-2})$ for Chebyshev accelerated GD without the source condition to $O(k^{-2(1+2s)})$ when the source condition holds. In principle, the stepsizes in the theorem are given by the reciprocals of the roots of the relevant Jacobi polynomial. Unlike the Chebyshev roots, these roots do not have a simple closed form. This is not a serious drawback, however, because the same convergence rate is inherited by the conjugate gradient method, which achieves it adaptively without needing the stepsizes explicitly.
+In particular, the rate goes from $O(k^{-2})$ for Chebyshev accelerated GD without the source condition to $O(k^{-2(1+2s)})$ when the source condition holds. In principle, the stepsizes in the theorem are given by the reciprocals of the roots of the relevant Jacobi polynomial, and depend explicitely on $s$. This is not a serious drawback, however, because the same convergence rate is inherited by the conjugate gradient method, which achieves it adaptively without needing the stepsizes explicitly.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Corollary 7.1 (CG with source condition).** *If the initial error satisfies $e_0 = A^s w$ for some $s \geq 0$, then the CG iterates satisfy*
+**Corollary 7.1 (CG with source condition).** *If the initial error satisfies $e_0 = A^s w$ for some $s > -\tfrac{1}{2}$, then the CG iterates satisfy*
 
 $$
 f(x_k^{\mathrm{CG}})-f^\ast
@@ -973,7 +987,7 @@ Note that $\phi$ itself need not be integrable; the error integral $\mathcal{E}_
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Example (polynomial eigenvalue decay).** Kernels such as Laplace and Matérn have eigenvalues that decay polynomially: $\lambda_i \asymp i^{-\alpha}$ for some $\alpha > 0$. To find the corresponding spectral exponent $a$,  we can compute the eigenvalue density $\rho_A$. The empirical CDF of the eigenvalues is $F(\lambda) = \tfrac{1}{d}\#\{i:\lambda_i \leq \lambda\}$. Since $\lambda_i = Ci^{-\alpha}$ is decreasing, $\lambda_i \leq \lambda$ iff $i \geq (C/\lambda)^{1/\alpha}$, so
+**Example (polynomial eigenvalue decay).** Kernels such as Laplace and Matérn have eigenvalues that decay polynomially: $\lambda_i \asymp i^{-\alpha}$ for some $\alpha > 0$. To find the corresponding spectral exponent $a$,  we can compute the eigenvalue density $\rho_A$. The empirical CDF of the eigenvalues is $F(\lambda) = \tfrac{1}{d}\cdot |\{i:\lambda_i \leq \lambda\}|$. Since $\lambda_i = Ci^{-\alpha}$ is decreasing, $\lambda_i \leq \lambda$ iff $i \geq (C/\lambda)^{1/\alpha}$, so
 
 $$F(\lambda) \approx 1 - \frac{(C/\lambda)^{1/\alpha}}{d} = 1 - \frac{C^{1/\alpha}}{d}\,\lambda^{-1/\alpha}.$$
 
