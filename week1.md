@@ -928,80 +928,144 @@ The following figure shows the actual convergence of gradient descent (with step
 
 ![Convergence of GD and CG on kernel regression](figures/convergence_kernel.png)
 
-
-
 ### The spectral integral
 
-Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that for any polynomial $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ with $p_k(0)=1$, the error is
+Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that 
+ gradient descent with time varying stepsizes $\eta_1,\ldots, \eta_k$ satisfies
 
 $$
 f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2.
 $$
 
-Define the **spectral error measure**
+where we define the polynomial $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ and $c_i$ are the coordinates of $e_0$ is the eigenbasis of $A$. The idea is that if $d$ is large and the eigenvalues are well-spread out, the sum in the expression may be estimated as an integral with respect to a continous density. To make this precise define the **spectral error measure**
 
 $$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
 
-where $\delta_{\lambda_i}$ is a Dirac delta measure. Observe that $\|e_0\|^2 = \mu([0,\beta])$ and the error can be written as an integral:
+where $\delta_{\lambda_i}$ is a Dirac delta measure. Observe that $\mu([0,\beta]) = \|e_0\|^2$ and the error can be written as an integral:
 
 $$
 f(x_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,d\mu(\lambda). \tag{16}
 $$
 
-When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \|e_0\|^2/d$), then $\phi(\lambda) \approx \|e_0\|^2\rho_A(\lambda)$.
+When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \|e_0\|^2/d$), then $\phi(\lambda) \approx \|e_0\|^2\rho_A(\lambda)$. Note that $\phi$ need not be integrable; what matters is that the error integral $(16)$, which has an extra factor of $\lambda$, converges.
 
-Under this approximation, $(16)$ becomes
+Under this approximation, $f(x_k) - f^\ast \approx \mathcal{E}_k$, where
 
 $$
-f(x_k) - f^\ast \approx \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,\phi(\lambda)\,d\lambda.
+\mathcal{E}_k := \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,\phi(\lambda)\,d\lambda.
 $$
 
-For fixed-stepsize GD with $\eta = 1/\beta$, we have $p_k(\lambda) = (1-\lambda/\beta)^k$ and the integrand $\lambda(1-\lambda/\beta)^{2k}$ is sharply peaked near $\lambda^\ast = \beta/(2k+1)$ for large $k$, decaying rapidly away from this point. The integral is therefore controlled by the behavior of $\phi$ near $\lambda^\ast$---which shifts toward zero as $k$ grows. The next two subsections exploit this concentration to obtain convergence rates that depend on the spectral density.
+In particular, for fixed-stepsize GD with $\eta = 1/\beta$, we have $p_k(\lambda) = (1-\lambda/\beta)^k$ and the integrand $\lambda(1-\lambda/\beta)^{2k}$ is sharply peaked near its maximizer $\lambda^\ast = \beta/(2k+1)$ for large $k$, decaying rapidly away from this point. The animation below illustrates this concentration: as $k$ grows the peak narrows and shifts toward zero.
+
+![Spectral concentration of the GD integrand](figures/spectral_concentration.gif)
+
+The integral is therefore controlled by the behavior of $\phi$ near $\lambda^\ast$---which shifts toward zero as $k$ grows. The next two subsections exploit this concentration to obtain convergence rates that depend on the spectral density.
 
 ### Power-law spectral density
 
-When the spectral error density follows a power law near the origin,
+When the spectral error density follows a power law near the origin:
 
-$$\phi(\lambda) = M\,\lambda^{a-1} \qquad \text{on } (0, \beta],$$
+$$\phi(\lambda) = M\,\lambda^{a-1} \qquad \text{on } (0, \beta],$$ 
 
-the exponent $a > 0$ controls the spectral mass near zero. For $a > 1$, the density vanishes at zero (few eigenvalues near the origin); for $a = 1$, the density is flat; for $0 < a < 1$, the density diverges (but remains integrable). This model captures many natural eigenvalue distributions: polynomial eigenvalue decay $\lambda_i \propto i^{-\alpha}$ corresponds to spectral exponent $a = 1/\alpha$.
+the exponent $a$ controls the spectral mass near zero. For $a > 1$, the density vanishes at zero (few eigenvalues near the origin); for $a = 1$, the density is flat; for $0 < a < 1$, the density diverges but remains integrable.
 
-Combining with a source condition of order $s$ replaces $\phi(\lambda)$ by $M\lambda^{a-1+2s}$, and the integral evaluates exactly via the Beta function.
+Note that $\phi$ itself need not be integrable; the error integral $\mathcal{E}_k$ converges whenever $a > -1$ (the extra $\lambda$ factor in the integrand provides integrability). The integral then evaluates exactly via the Beta function.
 
-<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 7.2 (Power-law spectral density).** *Assume the spectral error measure is absolutely continuous on $(0,\beta]$ with density $\phi(\lambda)=M\lambda^{a-1+2s}$ for some $M>0$, $a>0$, and $s\ge 0$. Then the gradient descent iterates with $\eta = 1/\beta$ satisfy*
+**Example (polynomial eigenvalue decay).** Kernels such as Laplace and Matérn have eigenvalues that decay polynomially: $\lambda_i \asymp i^{-\alpha}$ for some $\alpha > 0$. To find the corresponding spectral exponent $a$,  we can compute the eigenvalue density $\rho_A$. The empirical CDF of the eigenvalues is $F(\lambda) = \tfrac{1}{d}\#\{i:\lambda_i \leq \lambda\}$. Since $\lambda_i = Ci^{-\alpha}$ is decreasing, $\lambda_i \leq \lambda$ iff $i \geq (C/\lambda)^{1/\alpha}$, so
 
-$$f(x_k) - f^\ast = \frac{M\,\beta^{a+2s+1}}{2}\cdot\frac{\Gamma(a+2s+1)\,\Gamma(2k+1)}{\Gamma(2k+a+2s+2)}.$$
+$$F(\lambda) \approx 1 - \frac{(C/\lambda)^{1/\alpha}}{d} = 1 - \frac{C^{1/\alpha}}{d}\,\lambda^{-1/\alpha}.$$
 
-*In particular, as $k \to \infty$,*
+Differentiating gives $\rho_A(\lambda) = F'(\lambda) \propto \lambda^{-1/\alpha - 1}$. With isotropic error ($c_i^2 \approx \lVert e_0\rVert^2/d$), the spectral error density is $\phi(\lambda)  \propto \lambda^{-1/\alpha - 1}$. Matching to $\phi = M\lambda^{a-1}$ gives $a = -1/\alpha$. 
 
-$$f(x_k) - f^\ast \sim \frac{M\,\Gamma(a+2s+1)\,\beta^{a+2s+1}}{2\,(2k)^{a+2s+1}}. \tag{17}$$
+Since $a = -1/\alpha < 0$, the total mass $\lVert e_0\rVert^2 = \int \phi\,d\lambda$ diverges---the density $\phi(\lambda) \propto \lambda^{-1/\alpha-1}$ has a non-integrable singularity at $\lambda = 0$. In kernel regression (starting from $x_0 = 0$), this has a concrete interpretation: the initial error is $e_0 = A^{-1}b$, so its spectral coefficients are $c_i = b_i/\lambda_i$. Because $\lambda_i \to 0$ polynomially, the coefficients $c_i$ grow for modes with small eigenvalues. As $n$ increases, more and more modes with tiny eigenvalues appear, each contributing a large $c_i^2$ term, and $\lVert e_0\rVert^2 = \sum c_i^2$ diverges. In the particulcar, the vanilla $O(\|e_0\|^2/k)$ becomes meaningless.
+
+Suppose more generally that $c_i$ satisfy a source condition $e_0 = A^s w$, and therefore $c_i = \lambda_i^s w_i$. If in addition, the coordinates $w_i$ are isotropic ($w_i^2 \approx \lVert w\rVert^2/d$), the spectral error density becomes $\phi(\lambda) \propto \lambda^{2s}\rho_A(\lambda) \propto \lambda^{- \tfrac{1}{\alpha} - 1+2s}$. The source condition counteracts the $1/\lambda_i$ blow-up: $c_i = \lambda_i^s w_i$ decays with the eigenvalues, and for large enough $s$ (specifically $s > 1/(2\alpha)$) the mass $\lVert e_0\rVert^2$ becomes finite. 
 
 </div>
 
-*Proof.* Substituting $t = \lambda/\beta$:
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+We are now ready to derive the rate of convergence of gradient descent under the power-law spectrum.
+
+**Theorem 7.2 (Power-law spectral density).** *Assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. Then the GD iterates with $\eta = 1/\beta$ satisfy*
+
+$$\mathcal{E}_k = \frac{M\,\beta^{a+1}}{2}\cdot\frac{\Gamma(a+1)\,\Gamma(2k+1)}{\Gamma(2k+a+2)}.$$
+
+*In particular, as $k \to \infty$, we have*
+
+$$\mathcal{E}_k \sim \frac{M\,\Gamma(a+1)\,\beta^{a+1}}{2\,(2k)^{a+1}}. \tag{17}$$
+
+</div>
+
+*Proof.* Substituting $t = \lambda/\beta$ yields
 
 $$
-\int_0^\beta \lambda^{a+2s}(1-\lambda/\beta)^{2k}\,d\lambda = \beta^{a+2s+1}\int_0^1 t^{a+2s}(1-t)^{2k}\,dt = \beta^{a+2s+1}\,B(a+2s+1,\, 2k+1),
+\int_0^\beta \lambda^{a}(1-\lambda/\beta)^{2k}\,d\lambda = \beta^{a+1}\int_0^1 t^{a}(1-t)^{2k}\,dt = \beta^{a+1}\,B(a+1,\, 2k+1),
 $$
 
-where $B(p,q) = \Gamma(p)\Gamma(q)/\Gamma(p+q)$ is the Beta function. The asymptotics follow from the standard estimate $\Gamma(n+c)/\Gamma(n) \sim n^c$ as $n \to \infty$, applied with $n = 2k+1$ and $c = a+2s+1$. <span style="float: right;">$\square$</span>
+where $B(p,q) = \Gamma(p)\Gamma(q)/\Gamma(p+q)$ is the Beta function. The asymptotics follow from the standard estimate $\Gamma(n+c)/\Gamma(n) \sim n^c$ as $n \to \infty$, applied with $n = 2k+1$ and $c = a+1$. <span style="float: right;">$\square$</span>
 
-The rate $O(k^{-(a+2s+1)})$ improves with both the spectral exponent $a$ (fewer eigenvalues near zero) and the source order $s$ (smoother initial error). Compared with the pointwise bound of Theorem 7.1, which gives $O(k^{-(1+2s)})$ regardless of the eigenvalue distribution, the spectral integral gains an extra factor of $k^{-a}$. This improvement is largest when $a$ is large---that is, when the spectral density is thin near zero.
+**Relationship to the $O(1/k)$ bound.** The vanilla $O(1/k)$ bound of Theorem 6.1 is a *max-bound*: it replaces the spectral filter $\lambda(1-\lambda/\beta)^{2k}$ by its pointwise maximum over $\lambda$, then pulls the maximum outside the integral:
 
-| Spectral exponent $a$ | Description | Rate ($s = 0$) | Rate (general $s$) |
+$$\mathcal{E}_k \leq \frac{1}{2}\max_{\lambda}\bigl[\lambda(1-\lambda/\beta)^{2k}\bigr]\int_0^\beta \phi(\lambda)\,d\lambda \leq \frac{\beta}{2(2k+1)}\lVert e_0\rVert^2.$$
+
+The price is that the entire initial error norm $\lVert e_0\rVert^2 = \int \phi\,d\lambda$ appears as a single constant, discarding all information about *where* in the spectrum the error lives. The spectral integral keeps $\phi(\lambda)$ inside the integral, so the rate reflects the spectral distribution of the error, not just its total size. Concretely, two things can happen:
+
+1. **$\lVert e_0\rVert^2$ is finite but the error concentrates on large eigenvalues** ($a > 0$). The spectral integral gives $O(k^{-(a+1)})$ with $a+1 > 1$, strictly faster than $O(1/k)$. The vanilla bound is finite but wasteful because it treats all eigenvalue directions equally.
+
+2. **$\lVert e_0\rVert^2 \approx \infty$** ($-1 < a \leq 0$, e.g. polynomial eigenvalue decay without a source condition). The vanilla bound gives $\infty$---it says nothing. But the spectral integral is still finite because the $\lambda$ factor in the integrand $\lambda(1-\lambda/\beta)^{2k}\phi(\lambda) = M\lambda^a(1-\lambda/\beta)^{2k}$ *vanishes* at $\lambda = 0$, canceling the singularity of $\phi$. The result is a finite bound $O(k^{-(a+1)})$ with $0 < a+1 \leq 1$.
+
+The following table summarizes these regimes in general.
+
+| Exponent $a$ | $\lVert e_0\rVert^2 = \int\phi$ | Rate | vs.\ $O(1/k)$ bound |
 |---|---|---|---|
-| $0^+$ | Singular at $0$ | $O(1/k)$ | $O(k^{-(1+2s)})$ |
-| $1/2$ | Square-root vanishing | $O(1/k^{3/2})$ | $O(k^{-(3/2+2s)})$ |
-| $1$ | Uniform | $O(1/k^2)$ | $O(k^{-(2+2s)})$ |
-| $2$ | Linear vanishing | $O(1/k^3)$ | $O(k^{-(3+2s)})$ |
+| $a \geq 0$ | finite ($a>0$) or $\infty$ ($a=0$) | $O(k^{-(a+1)})$, $a+1\geq 1$ | **improves** on $O(1/k)$ |
+| $-1 < a < 0$ | $\infty$ | $O(k^{-(a+1)})$, $a+1<1$ | $O(1/k)$ bound is **vacuous**; spectral integral is the only finite bound |
 
-*Example (uniform spectrum).* If $A$ has eigenvalues uniformly spread in $(0, \beta]$ and the initial error is isotropic ($c_i^2 \approx \|e_0\|^2/d$), then $a = 1$ and $s = 0$, giving $f(x_k) - f^\ast = O(1/k^2)$. This is a quadratic improvement over the worst-case $O(1/k)$ bound of Theorem 6.1, obtained solely from the uniform distribution of eigenvalues.
+The figure below illustrates the three regimes. The left panel plots the spectral error density $\phi(\lambda) = M\lambda^{a-1}$: for $a < 0$ it diverges at the origin, for $a = 0$ it is flat, and for $a > 0$ it vanishes. The right panel plots the integrand $\lambda\,\phi(\lambda) = M\lambda^a$ that appears in the spectral integral $\mathcal{E}_k$: even when $\phi$ itself is non-integrable ($a \leq 0$), the extra $\lambda$ factor makes the integrand integrable whenever $a > -1$.
 
-The figure below illustrates both dimensions of Theorem 7.2: varying the spectral exponent $a$ and varying the source order $s$.
+![Spectral error density regimes](figures/spectral_density_regimes.png)
 
-![Power-law density rates](figures/power_law_density_rates.png)
+<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+
+**Example (Matérn kernels in $\mathbb{R}^p$).** A Matérn-$m$ kernel in dimension $p$ has eigenvalue decay $\lambda_i \asymp i^{-(2m+p)/p}$, so $\alpha = (2m+p)/p$ and the base spectral exponent is $a = -p/(2m+p)$. A source condition $e_0 = A^s w$ with isotropic $w$ shifts this to $a_{\mathrm{eff}} = 2s - \tfrac{p}{2m+p}$, giving the rate $\mathcal{E}_k = O(k^{-(2s + 1 - \frac{p}{2m+p})})$. The table below lists several concrete cases in $p=1$.
+
+| Kernel | $m$ | $a$ (no source) | Rate ($s=0$) | $a_{\mathrm{eff}}$ ($s=\tfrac{1}{2}$) | Rate ($s=\tfrac{1}{2}$) |
+|---|---|---|---|---|---|
+| Laplace | $\tfrac{1}{2}$ | $-\tfrac{1}{2}$ | $O(k^{-1/2})$ | $\tfrac{1}{2}$ | $O(k^{-3/2})$ |
+| Matérn 3/2 | $\tfrac{3}{2}$ | $-\tfrac{1}{4}$ | $O(k^{-3/4})$ | $\tfrac{3}{4}$ | $O(k^{-7/4})$ |
+| Matérn 5/2 | $\tfrac{5}{2}$ | $-\tfrac{1}{6}$ | $O(k^{-5/6})$ | $\tfrac{5}{6}$ | $O(k^{-11/6})$ |
+
+Without a source condition ($s=0$), the rate is always *slower* than $O(1/k)$ and the vanilla bound is vacuous ($\lVert e_0\rVert^2 = \infty$). With even a modest source condition $s = \tfrac{1}{2}$, the effective exponent flips to $a_{\mathrm{eff}} > 0$ and the rate becomes *faster* than $O(1/k)$. Smoother kernels (larger $m$) are closer to the $O(1/k)$ threshold in both directions: the penalty without a source condition is milder, but so is the improvement with one. Increasing $p$ makes everything harder: the base exponent $a = -p/(2m+p)$ is more negative, so a stronger source condition is needed to cross the $O(1/k)$ boundary ($s > p/(2(2m+p))$).
+
+Crucially, the spectral integral bound depends on the density parameter $M$, not on the total mass $\lVert e_0\rVert^2 = \int \phi\,d\lambda$. For Matérn kernels with $a < 0$, the norm $\lVert e_0\rVert^2$ diverges as $n \to \infty$, making the vanilla $O(1/k)$ constant blow up. The spectral integral remains finite because the filter $\lambda(1-\lambda/\beta)^{2k}$ automatically suppresses the small-eigenvalue directions responsible for the divergence. The result is a **dimension-free** rate: $M$ depends on the spectral *shape*, not the problem size.
+
+</div>
+
+
+
+
+
+
+**Effect of kernel smoothness.** The figure below compares GD convergence on the *same* target function $h(x) = \sin(2\pi x) + \tfrac{1}{2}\cos(4\pi x)$ across the Matérn family: Laplace ($m=\tfrac12$), Matérn 3/2, Matérn 5/2, and Gaussian. The y-axis shows the relative gap $(f(x_k)-f^\ast)/(f(x_0)-f^\ast)$. The ordering is striking and at first glance counter-intuitive: *rougher* kernels converge faster. The Gaussian kernel makes essentially no progress in 5000 iterations, while the Laplace kernel reduces the gap by five orders of magnitude.
+
+The initial error norms illustrate the divergence phenomenon discussed above. With $n=200$ points and the same target, the initial function gaps $f(x_0)-f^\ast$ are nearly identical across the first three kernels ($\approx 0.01$), yet $\lVert e_0\rVert^2$ explodes as the kernel gets smoother:
+
+| Kernel | $\lVert e_0\rVert^2$ | $f(x_0)-f^\ast$ | $\kappa$ |
+|---|---|---|---|
+| Laplace | $\approx 1$ | $\approx 0.013$ | $1.4 \times 10^5$ |
+| Matérn 3/2 | $\approx 700$ | $\approx 0.012$ | $1.1 \times 10^{10}$ |
+| Matérn 5/2 | $\approx 3\times 10^8$ | $\approx 0.012$ | $1.8 \times 10^{14}$ |
+| Gaussian | $\approx 5\times 10^{39}$ | $\approx 2.5 \times 10^{9}$ | $3.6 \times 10^{29}$ |
+
+The function gap (which contains the stabilizing $\lambda_i$ factor) is dimension-stable, but $\lVert e_0\rVert^2$ grows by 40 orders of magnitude from Laplace to Gaussian. This is exactly why the vanilla $O(1/k)$ bound --- which uses $\lVert e_0\rVert^2$ as its constant --- becomes useless for smooth kernels, while the spectral integral remains informative.
+
+
+
+![GD convergence across the Matérn family](figures/convergence_matern.png)
 
 ### The Laplace method for positive definite spectra
 
@@ -1015,16 +1079,16 @@ The key tool is the **Laplace method** for integrals. In $(16)$, the factor $(1-
 
 $$\phi(\lambda) = C\,(\lambda - \alpha)^p\bigl(1 + O(\lambda - \alpha)\bigr) \quad \textit{as } \lambda \to \alpha^+$$
 
-*for constants $C > 0$ and $p > -1$. Then GD with $\eta = 1/\beta$ satisfies*
+*for constants $C > 0$ and $p > -1$. Then for GD with $\eta = 1/\beta$,*
 
-$$f(x_k) - f^\ast \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{18}$$
+$$\mathcal{E}_k \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{18}$$
 
 </div>
 
-*Proof.* Substitute $u = \lambda - \alpha$ in the spectral integral $(16)$:
+*Proof.* Substitute $u = \lambda - \alpha$ in $\mathcal{E}_k$:
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\int_0^{\beta-\alpha} (\alpha + u)\,\bigl(1 - \alpha/\beta - u/\beta\bigr)^{2k}\,\phi(\alpha + u)\,du.
+\mathcal{E}_k = \frac{1}{2}\int_0^{\beta-\alpha} (\alpha + u)\,\bigl(1 - \alpha/\beta - u/\beta\bigr)^{2k}\,\phi(\alpha + u)\,du.
 $$
 
 Factor out the dominant exponential using the identity $1-\alpha/\beta - u/\beta = (1-\alpha/\beta)(1 - u/(\beta - \alpha))$:
@@ -1076,7 +1140,7 @@ $$
 With isotropic initialization ($\phi = \|e_0\|^2\rho_{MP}$), Theorem 7.3 applies with $\alpha = \lambda_-$, $\beta = \lambda_+$, and $p = 1/2$. Since $\Gamma(3/2) = \sqrt\pi/2$, the estimate $(18)$ gives
 
 $$
-f(x_k) - f^\ast \sim \frac{\tilde{C}(\gamma)}{k^{3/2}}\left(1 - \frac{1}{\kappa}\right)^{2k}\|e_0\|^2 \quad \text{as } k \to \infty,
+\mathcal{E}_k \sim \frac{\tilde{C}(\gamma)}{k^{3/2}}\left(1 - \frac{1}{\kappa}\right)^{2k}\|e_0\|^2 \quad \text{as } k \to \infty,
 $$
 
 where $\tilde{C}(\gamma)$ is an explicit constant depending on the aspect ratio $\gamma$.
@@ -1117,7 +1181,7 @@ The next figure compares the corresponding convergence proxies over iterations.
 
 ### Discussion
 
-The two mechanisms---source conditions and spectral structure---are complementary and can be combined. With a source condition of order $s$ and a power-law spectral density with exponent $a$, the rate is $O(k^{-(a+2s+1)})$, improving both over the pointwise bound $O(k^{-(1+2s)})$ (Theorem 7.1) and the spectral bound without source condition $O(k^{-(a+1)})$.
+The two mechanisms---source conditions and spectral structure---are complementary and can be combined. Under the power-law density $\phi(\lambda) = M\lambda^{a-1}$ of Theorem 7.2, a source condition of order $s$ shifts the effective exponent from $a$ to $a_{\mathrm{eff}} = a + 2s$, giving rate $\mathcal{E}_k = O(k^{-(a+2s+1)})$, which improves both over the pointwise bound $O(k^{-(1+2s)})$ (Theorem 7.1) and the spectral bound without source condition $O(k^{-(a+1)})$.
 
 In the positive definite setting with source condition $e_0=A^s w$, there is a clear phase transition around
 
@@ -1195,7 +1259,7 @@ The notes combine ideas that appear in different communities; the table below ma
 | Theorems 3--4 (Krylov optimality and CG correctness) | [HS52], [Lan52], [Saa03], [Gre97] | Canonical Krylov-space characterization: CG realizes the polynomial/Krylov minimizer with three-term recurrences. |
 | Theorems 5--7 (PSD regime: $O(1/k)$ for GD, $O(1/k^2)$ for Chebyshev/CG) | [Saa03], [EHN96], [Han95] | Same polynomial-filter mechanism appears in semi-iterative and regularization analyses when small eigenvalues dominate. |
 | Theorem 7.1 (source condition exponent $1+2s$) | [EHN96], [Han95] | Matches the inverse-problem viewpoint: smoothness/source conditions convert spectral decay assumptions into algebraic convergence exponents. |
-| Theorem 7.2 (power-law spectral density asymptotics) | [EHN96], [BS10], [Ver18] | This note adapts standard spectral-density asymptotics to GD error filters; the explicit Beta-function form is a direct specialization to quadratics. |
+| Theorem 7.2 (power-law spectral density) | [EHN96], [BS10], [Ver18] | Beta-function evaluation of the spectral integral under power-law density $\phi(\lambda)=M\lambda^{a-1}$; yields precise asymptotics for GD. |
 | Theorem 7.3 (Laplace edge correction) | [BS10], [Ver18] | Uses edge asymptotics of spectral integrals; the $k^{-(p+1)}$ correction reflects local density behavior near the spectral edge. |
 | Marchenko--Pastur subsection | [MP67], [BS10], [Ver18] | Imports MP density/edge behavior into the optimization bounds, yielding regime-dependent prefactors and the $k^{-3/2}$ edge signature. |
 | Theorem 7.4 (CG variational spectral form) | [Saa03], [Gre97] | Restates the classical CG polynomial minimization property in the spectral-integral notation used in Section 7. |
@@ -1218,7 +1282,6 @@ In particular, the novelty of these notes is mostly **synthesis and alignment of
 - [Nes04] Nesterov, Y. (2004). *Introductory Lectures on Convex Optimization*. Kluwer.
 - [Nes18] Nesterov, Y. (2018). *Lectures on Convex Optimization* (2nd ed.). Springer.
 - [Ver18] Vershynin, R. (2018). *High-Dimensional Probability*. Cambridge University Press.
-
 ---
 
 ## Summary
@@ -1246,7 +1309,7 @@ The key takeaway: one spectral idea runs through the entire development. On quad
 | Setting | Assumption | GD rate | CG rate |
 |---------|-----------|---------|---------|
 | Source condition, order $s$ | $e_0 = A^s w$ | $O(k^{-(1+2s)})$ | At least $O(k^{-(1+2s)})$, typically better |
-| Power-law density, exponent $a$ | $\phi(\lambda) \sim \lambda^{a-1}$ | $O(k^{-(a+2s+1)})$ | At least $O(k^{-(a+2s+1)})$, typically better |
+| Power-law model $(\alpha,\beta)$ | $\lambda_i \sim i^{-\alpha}$, $\delta_i \sim i^{-\beta/2}$ | $\Theta(k^{-(\alpha+\beta-1)/\alpha})$ | At least same rate, typically better |
 | PD, edge exponent $p$ | $\phi(\lambda) \sim (\lambda-\alpha)^p$ | $(1-1/\kappa)^{2k} \cdot O(k^{-(p+1)})$ | At least same bound, with adaptive improvement possible |
 | Marchenko--Pastur | $d/n \to \gamma$ | $\gamma \neq 1$: $(1-\alpha_{\mathrm{eff}}/\beta)^{2k}O(k^{-3/2})$, $\gamma=1$: $O(k^{-3/2})$ | At least same regime-wise rate, often faster in practice |
 

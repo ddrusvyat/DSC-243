@@ -1054,6 +1054,46 @@ def make_power_law_density_rates_plot():
     print("  ✓ power_law_density_rates.png")
 
 
+def make_spectral_density_regimes_plot():
+    beta = 1.0
+    lam = np.linspace(1e-3, beta, 500)
+
+    a_vals = [-0.7, -0.3, 0.0, 0.5, 1.0, 2.0]
+    colors = ["#c0392b", "#e67e22", "#8e44ad", "#2980b9", "#27ae60", "#16a085"]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
+
+    for a, color in zip(a_vals, colors):
+        phi = lam ** (a - 1)
+        ax1.plot(lam, phi, color=color, linewidth=2, label=f"$a={a:g}$")
+
+    ax1.set_xlabel(r"$\lambda$", fontsize=12)
+    ax1.set_ylabel(r"$\phi(\lambda) = M\lambda^{a-1}$", fontsize=12)
+    ax1.set_title("Spectral error density", fontsize=12)
+    ax1.set_xlim(0, beta)
+    ax1.set_ylim(0, 15)
+    ax1.legend(fontsize=9.5, loc="upper right")
+    ax1.grid(True, alpha=0.25)
+
+    for a, color in zip(a_vals, colors):
+        integrand = lam ** a
+        ax2.plot(lam, integrand, color=color, linewidth=2, label=f"$a={a:g}$")
+
+    ax2.set_xlabel(r"$\lambda$", fontsize=12)
+    ax2.set_ylabel(r"$\lambda\,\phi(\lambda) = M\lambda^{a}$", fontsize=12)
+    ax2.set_title(r"Integrand of $\mathcal{E}_k$ (before polynomial filter)", fontsize=12)
+    ax2.set_xlim(0, beta)
+    ax2.set_ylim(0, 5)
+    ax2.legend(fontsize=9.5, loc="upper left")
+    ax2.grid(True, alpha=0.25)
+
+    fig.tight_layout()
+    fig.savefig(FIGURES_DIR / "spectral_density_regimes.png", dpi=150,
+                bbox_inches="tight")
+    plt.close(fig)
+    print("  ✓ spectral_density_regimes.png")
+
+
 def make_marchenko_pastur_regimes_plot():
     gammas = [0.5, 1.0, 2.0]
     titles = [r"$\gamma<1$", r"$\gamma=1$", r"$\gamma>1$"]
