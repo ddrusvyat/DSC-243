@@ -866,9 +866,9 @@ The next figure explains *why* the source exponent changes across kernels. For t
 
 We now show how the source condition controls the rate of convergence of gradient descent. The GD rate is $O(k^{-(1+2s)})$, with two distinct payoffs depending on the sign of $s$:
 
-1. **(faster rate when $s > 0$ ).** The rate $O(\|w\|^2\cdot k^{-(1+2s)})$ is strictly faster than $O(\|e_0\|^2\cdot k^{-1})$. The source condition concentrates the initial error on large-eigenvalue directions, which GD resolves quickly.
+1. **(faster rate when $s > 0$).** The rate $O(\lVert w\rVert^2\cdot k^{-(1+2s)})$ is strictly faster than $O(\lVert e_0\rVert^2\cdot k^{-1})$. The source condition concentrates the initial error on large-eigenvalue directions, which GD resolves quickly.
 
-2. **(dimension-free rate when $-\tfrac{1}{2} < s < 0$).** The rate $O(\lVert w\rVert^2/ k^{1+2s})$ is slower than $O(\lVert e_0\rVert^2/k)$ in terms of $k$, but the bound depends on $\lVert w\rVert^2$ rather than $\lVert e_0\rVert^2$. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $w$, the initial error scales as $\lVert e_0\rVert^2 \asymp n^{2|s|\alpha}\lVert w\rVert^2$, so the vanilla bound diverges as $n \to \infty$, whereas the source-condition bound $O(\lVert w\rVert^2/ k^{1+2s})$ is independent of $n$.
+2. **(dimension-free rate when $s \in (-\tfrac{1}{2}, 0)$).** The rate $O(\lVert w\rVert^2/ k^{1+2s})$ is slower than $O(\lVert e_0\rVert^2/k)$ in terms of $k$, but the bound depends on $\lVert w\rVert^2$ rather than $\lVert e_0\rVert^2$. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $w$, the initial error scales as $\lVert e_0\rVert^2 \asymp n^{-2s\alpha}\lVert w\rVert^2$, so the vanilla bound diverges as $n \to \infty$, whereas the source-condition bound $O(\lVert w\rVert^2/ k^{1+2s})$ is independent of $n$.
 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
