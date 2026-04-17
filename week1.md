@@ -982,7 +982,7 @@ $$\phi(\lambda) = M\,\lambda^{a-1} \qquad \text{on } (0, \beta],$$
 
 the exponent $a$ controls the spectral mass near zero. For $a > 1$, the density vanishes at zero (few eigenvalues near the origin); for $a = 1$, the density is flat; for $0 < a < 1$, the density diverges but remains integrable.
 
-The figure below illustrates the three regimes. The left panel plots the spectral error density $\phi(\lambda) = M\lambda^{a-1}$: for $a < 0$ it diverges at the origin, for $a = 0$ it is flat, and for $a > 0$ it vanishes. The right panel plots the integrand $\lambda\,\phi(\lambda) = M\lambda^a$ that appears in the spectral integral $\mathcal{E}_k$: even when $\phi$ itself is non-integrable ($a \leq 0$), the extra $\lambda$ factor makes the integrand integrable whenever $a > -1$.
+The figure below illustrates the three regimes. The left panel plots the spectral error density $\phi(\lambda) = M\lambda^{a-1}$: for $a > 1$ it vanishes at the origin, for $a = 1$ it is flat, and for $a < 1$ it diverges (still integrable when $a > 0$). The right panel plots the integrand $\lambda\,\phi(\lambda) = M\lambda^a$ that appears in the spectral integral $\mathcal{E}_k$: even when $\phi$ itself is non-integrable ($a \leq 0$), the extra $\lambda$ factor makes the integrand integrable whenever $a > -1$.
 
 ![Spectral error density regimes](figures/spectral_density_regimes.png)
 

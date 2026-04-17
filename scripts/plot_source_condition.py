@@ -64,7 +64,7 @@ def _plot_source_condition(ax, eigvals, eigvecs, y, color, title):
     lam_range = np.array([ev[-1] * 0.5, ev[0] * 2])
     ax.loglog(lam_range, np.exp(intercept) * lam_range ** slope,
               "k--", linewidth=1.5,
-              label=(rf"$\lambda^{{{slope:.1f}}}$ fit "
+              label=(rf"$\hat\mu^{{{slope:.1f}}}$ fit "
                      rf"$\Rightarrow\; s' \approx {slope:.1f}$"))
 
     ax.set_title(title, fontsize=10.5)
@@ -99,7 +99,7 @@ def make_single_kernel_plot():
     _plot_source_condition(axes[1], eigvals, eigvecs, y_rough, "#d7191c",
                            "Rough: random signs")
 
-    axes[0].set_ylabel(r"$|c_i| = \lambda_i^{-1}|v_i^\top y|$", fontsize=12)
+    axes[0].set_ylabel(r"$|c_i| = \hat\mu_i^{-1}|v_i^\top y|$", fontsize=12)
     for ax in axes:
         ax.set_xlabel(r"Eigenvalue $\hat\mu_i$ of $K/n$", fontsize=12)
 
@@ -176,9 +176,9 @@ def make_all_kernels_plot():
     ax2.set_xscale("log")
     ax2.set_yscale("log")
     ax2.set_xlabel(r"Eigenvalue $\hat\mu_i$ of $K/n$", fontsize=12)
-    ax2.set_ylabel(r"$|c_i| = |b_i|/\lambda_i$", fontsize=12)
+    ax2.set_ylabel(r"$|c_i| = |b_i|/\hat\mu_i$", fontsize=12)
     ax2.set_title(
-        r"Initial error coefficients $c_i = b_i/\lambda_i$",
+        r"Initial error coefficients $c_i = b_i/\hat\mu_i$",
         fontsize=11)
     ax2.legend(fontsize=8.5, framealpha=0.9, loc="lower right")
     ax2.grid(True, alpha=0.25, which="both")

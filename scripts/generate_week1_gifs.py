@@ -189,7 +189,7 @@ def make_gd_condition_number_performance_plot():
     ax.set_xlim(0, n_iters)
     ax.set_ylim(1e-16, None)
     ax.set_xlabel(r"Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$f(x_k)-\min\, f$", fontsize=12)
+    ax.set_ylabel(r"$f(x_k)-f^\ast$", fontsize=12)
     ax.set_title(r"Gradient descent with stepsize $1/\beta$: varying $\kappa$", fontsize=13)
     ax.grid(True, alpha=0.25)
     ax.legend(fontsize=10, ncol=2, loc="upper right")
@@ -281,7 +281,7 @@ def make_gif_convergence():
     ax.set_ylim(1e-15, 2)
     ax.set_yscale("log")
     ax.set_xlabel("Iteration", fontsize=12)
-    ax.set_ylabel(r"$(f(x_k)-f(x^\star))/(f(x_0)-f(x^\star))$", fontsize=12)
+    ax.set_ylabel(r"$(f(x_k)-f(x^\ast))/(f(x_0)-f(x^\ast))$", fontsize=12)
     ax.set_title("Convergence Comparison", fontsize=13)
     ax.grid(True, alpha=0.3)
 
@@ -433,7 +433,7 @@ def make_gd_vs_cg_plot():
     ax.annotate("$x_0$", x0, textcoords="offset points", xytext=(8, 5),
                 fontsize=12, zorder=5)
     ax.plot(0, 0, "*", color="gold", markersize=15, zorder=5)
-    ax.annotate("$x^\\star$", (0, 0), textcoords="offset points",
+    ax.annotate("$x^\\ast$", (0, 0), textcoords="offset points",
                 xytext=(8, -10), fontsize=12, zorder=5)
 
     ax.set_xlabel("$x_1$", fontsize=12)
@@ -472,7 +472,7 @@ def make_gd_vs_cg_gif():
     levels = np.linspace(0, zz.max() * 0.55, 30)
     ax.contour(xx, yy, zz, levels=levels, cmap="Greys", alpha=0.45)
     ax.plot(0, 0, "*", color="gold", markersize=15, zorder=5)
-    ax.annotate("$x^\\star$", (0, 0), textcoords="offset points",
+    ax.annotate("$x^\\ast$", (0, 0), textcoords="offset points",
                 xytext=(8, -10), fontsize=12, zorder=5)
     ax.plot(x0[0], x0[1], "o", color="black", markersize=8, zorder=5)
     ax.annotate("$x_0$", x0, textcoords="offset points", xytext=(8, 5),
@@ -801,7 +801,7 @@ def make_chebyshev_condition_number_performance_plot():
     ax.set_xlim(0, n_iters)
     ax.set_ylim(1e-16, None)
     ax.set_xlabel(r"Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$f(x_k)-f^\star$", fontsize=12)
+    ax.set_ylabel(r"$f(x_k)-f^\ast$", fontsize=12)
     ax.set_title(r"GD (solid) vs Chebyshev (dashed): varying $\kappa$", fontsize=13)
     ax.grid(True, alpha=0.25)
     ax.legend(fontsize=10, ncol=2, loc="upper right")
@@ -879,7 +879,7 @@ def make_gd_cheb_cg_condition_number_plot():
     ax.set_xlim(0, n_iters)
     ax.set_ylim(1e-16, None)
     ax.set_xlabel(r"Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$f(x_k)-f^\star$", fontsize=12)
+    ax.set_ylabel(r"$f(x_k)-f^\ast$", fontsize=12)
     ax.set_title(r"GD (solid) vs Chebyshev (dashed) vs CG (dotted): varying $\kappa$",
                  fontsize=13)
     ax.grid(True, alpha=0.25)
@@ -1303,7 +1303,7 @@ def make_cg_vs_gd_powerlaw_plot():
     ax.set_xlim(0, n_iters)
     ax.set_ylim(1e-16, 1.2)
     ax.set_xlabel("Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$(f(x_k)-f(x^\star))/(f(x_0)-f(x^\star))$", fontsize=12)
+    ax.set_ylabel(r"$(f(x_k)-f(x^\ast))/(f(x_0)-f(x^\ast))$", fontsize=12)
     ax.set_title("CG vs GD under Power-Law Spectrum", fontsize=13)
     ax.grid(True, alpha=0.25)
 
@@ -1348,7 +1348,7 @@ def make_cg_vs_gd_mp_gif():
     ax.set_xlim(0, n_iters)
     ax.set_ylim(1e-16, 1.2)
     ax.set_xlabel("Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$(f(x_k)-f(x^\star))/(f(x_0)-f(x^\star))$", fontsize=12)
+    ax.set_ylabel(r"$(f(x_k)-f(x^\ast))/(f(x_0)-f(x^\ast))$", fontsize=12)
     ax.set_title("CG vs GD across Marchenko--Pastur Regimes", fontsize=13)
     ax.grid(True, alpha=0.25)
 
@@ -1382,7 +1382,7 @@ def make_cg_vs_gd_mp_gif():
     ax.set_xlim(0, n_iters)
     ax.set_ylim(1e-16, 1.2)
     ax.set_xlabel("Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$(f(x_k)-f(x^\star))/(f(x_0)-f(x^\star))$", fontsize=12)
+    ax.set_ylabel(r"$(f(x_k)-f(x^\ast))/(f(x_0)-f(x^\ast))$", fontsize=12)
     ax.set_title("CG vs GD across Marchenko--Pastur Regimes", fontsize=13)
     ax.grid(True, alpha=0.25)
     for color, lab, err_gd, err_cg in zip(colors, labels, all_err_gd, all_err_cg):

@@ -58,7 +58,7 @@ def animate(frame):
     ax.set_ylim(0, max(y_top, 1e-6))
 
     title.set_text(
-        rf"$k = {k}$,  $\lambda^* = \beta/(2k+1) = {lam_star:.4f}$"
+        rf"$k = {k}$,  $\lambda^\ast = \beta/(2k+1) = {lam_star:.4f}$"
     )
     return line, vline, peak_dot, title
 
