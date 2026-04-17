@@ -813,7 +813,7 @@ with eigenfunctions $\phi_i$ forming an orthonormal basis for $L^2(\nu)$. For th
 
 $$h = \sum_{i\geq 1} \hat{h}_i\,\phi_i.$$
 
-The source condition $h = T^s g$ with $\|g\|^2_{L_2(\nu)}\leq M$ reads, in the eigenbasis, as
+The source condition $h = T^s g$ with $\lVert g\rVert^2_{L^2(\nu)}\leq M$ reads, in the eigenbasis, as
 
 $$\hat{h}_i = \mu_i^s\,\hat{g}_i, \qquad \sum_{i\geq 1} \hat{g}_i^2 \leq M^2,$$
 
@@ -848,7 +848,7 @@ $$c_i \;\approx\; \frac{\mu_i^{s-1}}{\sqrt{n}}\,\hat{g}_i \;=\; \hat\mu_i^{s-1}\
 
 Note that
 
-$$\|w\|_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \|g\|^2_{L_2(\nu)}.$$
+$$\|w\|_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \|g\|^2_{L^2(\nu)}.$$
 
 Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s' = s - 1$. The exponent shift is the essential point: **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$.** In particular, one needs $s > 1$ (e.g. $h \in H^{2+\epsilon}$ for the Laplace kernel).
 
