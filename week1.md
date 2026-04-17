@@ -950,7 +950,7 @@ $$
 f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2.
 $$
 
-where we define the polynomial $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ and $c_i$ are the coordinates of $e_0$ is the eigenbasis of $A$. The idea is that if $d$ is large and the eigenvalues are well-spread out, the sum in the expression may be estimated as an integral with respect to a continous density. To make this precise define the **spectral error measure**
+where we define the polynomial $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ and $c_i$ are the coordinates of $e_0$ in the eigenbasis of $A$. The idea is that if $d$ is large and the eigenvalues are well-spread out, the sum in the expression may be estimated as an integral with respect to a continous density.  To make this precise define the **spectral error measure**
 
 $$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
 
@@ -982,7 +982,11 @@ $$\phi(\lambda) = M\,\lambda^{a-1} \qquad \text{on } (0, \beta],$$
 
 the exponent $a$ controls the spectral mass near zero. For $a > 1$, the density vanishes at zero (few eigenvalues near the origin); for $a = 1$, the density is flat; for $0 < a < 1$, the density diverges but remains integrable.
 
-Note that $\phi$ itself need not be integrable; the error integral $\mathcal{E}_k$ converges whenever $a > -1$ (the extra $\lambda$ factor in the integrand provides integrability). The integral then evaluates exactly via the Beta function.
+The figure below illustrates the three regimes. The left panel plots the spectral error density $\phi(\lambda) = M\lambda^{a-1}$: for $a < 0$ it diverges at the origin, for $a = 0$ it is flat, and for $a > 0$ it vanishes. The right panel plots the integrand $\lambda\,\phi(\lambda) = M\lambda^a$ that appears in the spectral integral $\mathcal{E}_k$: even when $\phi$ itself is non-integrable ($a \leq 0$), the extra $\lambda$ factor makes the integrand integrable whenever $a > -1$.
+
+![Spectral error density regimes](figures/spectral_density_regimes.png)
+
+
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -992,9 +996,9 @@ $$F(\lambda) \approx 1 - \frac{(C/\lambda)^{1/\alpha}}{d} = 1 - \frac{C^{1/\alph
 
 Differentiating gives $\rho_A(\lambda) = F'(\lambda) \propto \lambda^{-1/\alpha - 1}$. With isotropic error ($c_i^2 \approx \lVert e_0\rVert^2/d$), the spectral error density is $\phi(\lambda)  \propto \lambda^{-1/\alpha - 1}$. Matching to $\phi = M\lambda^{a-1}$ gives $a = -1/\alpha$. 
 
-Since $a = -1/\alpha < 0$, the total mass $\lVert e_0\rVert^2 = \int \phi\,d\lambda$ diverges---the density $\phi(\lambda) \propto \lambda^{-1/\alpha-1}$ has a non-integrable singularity at $\lambda = 0$. In kernel regression (starting from $x_0 = 0$), this has a concrete interpretation: the initial error is $e_0 = A^{-1}b$, so its spectral coefficients are $c_i = b_i/\lambda_i$. Because $\lambda_i \to 0$ polynomially, the coefficients $c_i$ grow for modes with small eigenvalues. As $n$ increases, more and more modes with tiny eigenvalues appear, each contributing a large $c_i^2$ term, and $\lVert e_0\rVert^2 = \sum c_i^2$ diverges. In the particulcar, the vanilla $O(\|e_0\|^2/k)$ becomes meaningless.
+Since $a = -1/\alpha < 0$, the total mass $\lVert e_0\rVert^2 = \int \phi\,d\lambda$ diverges---the density $\phi(\lambda) \propto \lambda^{-1/\alpha-1}$ has a non-integrable singularity at $\lambda = 0$. In kernel regression (starting from $x_0 = 0$), this has a concrete interpretation: the initial error is $e_0 = A^{-1}b$, so its spectral coefficients are $c_i = b_i/\lambda_i$. Because $\lambda_i \to 0$ polynomially, the coefficients $c_i$ grow for modes with small eigenvalues. As $n$ increases, more and more modes with tiny eigenvalues appear, each contributing a large $c_i^2$ term, and $\lVert e_0\rVert^2 = \sum c_i^2$ diverges. In particulcar, the vanilla rate $O(\|e_0\|^2/k)$ becomes meaningless.
 
-Suppose more generally that $c_i$ satisfy a source condition $e_0 = A^s w$, and therefore $c_i = \lambda_i^s w_i$. If in addition, the coordinates $w_i$ are isotropic ($w_i^2 \approx \lVert w\rVert^2/d$), the spectral error density becomes $\phi(\lambda) \propto \lambda^{2s}\rho_A(\lambda) \propto \lambda^{- \tfrac{1}{\alpha} - 1+2s}$. The source condition counteracts the $1/\lambda_i$ blow-up: $c_i = \lambda_i^s w_i$ decays with the eigenvalues, and for large enough $s$ (specifically $s > 1/(2\alpha)$) the mass $\lVert e_0\rVert^2$ becomes finite. 
+Suppose more generally that $c_i$ satisfy a source condition $e_0 = A^s w$, and therefore $c_i = \lambda_i^s w_i$. If in addition, the coordinates $w_i$ are isotropic ($w_i^2 \approx \lVert w\rVert^2/d$), the spectral error density becomes $\phi(\lambda) \propto \lambda^{2s}\rho_A(\lambda) \propto \lambda^{- \tfrac{1}{\alpha} - 1+2s}$. The source condition counteracts the $1/\lambda_i$ blow-up: $c_i = \lambda_i^s w_i$ decays with the eigenvalues. 
 
 </div>
 
@@ -1037,9 +1041,6 @@ The following table summarizes these regimes in general.
 | $a \geq 0$ | finite ($a>0$) or $\infty$ ($a=0$) | $O(k^{-(a+1)})$, $a+1\geq 1$ | **improves** on $O(1/k)$ |
 | $-1 < a < 0$ | $\infty$ | $O(k^{-(a+1)})$, $a+1<1$ | $O(1/k)$ bound is **vacuous**; spectral integral is the only finite bound |
 
-The figure below illustrates the three regimes. The left panel plots the spectral error density $\phi(\lambda) = M\lambda^{a-1}$: for $a < 0$ it diverges at the origin, for $a = 0$ it is flat, and for $a > 0$ it vanishes. The right panel plots the integrand $\lambda\,\phi(\lambda) = M\lambda^a$ that appears in the spectral integral $\mathcal{E}_k$: even when $\phi$ itself is non-integrable ($a \leq 0$), the extra $\lambda$ factor makes the integrand integrable whenever $a > -1$.
-
-![Spectral error density regimes](figures/spectral_density_regimes.png)
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -1074,7 +1075,7 @@ The initial error norms illustrate the divergence phenomenon discussed above. Wi
 | Matérn 5/2 | $\approx 3\times 10^8$ | $\approx 0.012$ | $1.8 \times 10^{14}$ |
 | Gaussian | $\approx 5\times 10^{39}$ | $\approx 2.5 \times 10^{9}$ | $3.6 \times 10^{29}$ |
 
-The function gap (which contains the stabilizing $\lambda_i$ factor) is dimension-stable, but $\lVert e_0\rVert^2$ grows by 40 orders of magnitude from Laplace to Gaussian. This is exactly why the vanilla $O(1/k)$ bound --- which uses $\lVert e_0\rVert^2$ as its constant --- becomes useless for smooth kernels, while the spectral integral remains informative.
+The function gap (which contains the stabilizing $\lambda_i$ factor) is dimension-stable, but $\lVert e_0\rVert^2$ grows by 40 orders of magnitude from Laplace to Gaussian. This is exactly why the vanilla $O(1/k)$ bound --- which uses $\lVert e_0\rVert^2$ as its constant --- becomes meaningless for smooth kernels, while the spectral integral remains informative.
 
 
 
@@ -1084,7 +1085,7 @@ The function gap (which contains the stabilizing $\lambda_i$ factor) is dimensio
 
 When $A \succ 0$, the eigenvalues lie in $[\alpha, \beta]$ with $\alpha > 0$, and the base rate of convergence is exponential: $O((1-\alpha/\beta)^{2k})$. The spectral integral can still yield improvements, but they take the form of a *polynomial correction* to the exponential rate rather than a change in the polynomial exponent.
 
-The key tool is the **Laplace method** for integrals. In $(16)$, the factor $(1-\lambda/\beta)^{2k}$ is largest at $\lambda = \alpha$ and decays exponentially as $\lambda$ moves away from $\alpha$. For large $k$, the integral is dominated by a neighborhood of $\lambda = \alpha$ whose width shrinks as $O(1/k)$. The behavior of the spectral error density $\phi$ near $\lambda = \alpha$ therefore determines the polynomial correction (a standard edge-asymptotic viewpoint in spectral analysis; see [BS10]).
+The key tool is the **Laplace method** for integrals. In $(16)$, the factor $(1-\lambda/\beta)^{2k}$ is largest at $\lambda = \alpha$ and decays exponentially as $\lambda$ moves away from $\alpha$. For large $k$, the integral is dominated by a neighborhood of $\lambda = \alpha$ whose width shrinks as $O(1/k)$. The behavior of the spectral error density $\phi$ near $\lambda = \alpha$ therefore determines the polynomial correction.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -1092,7 +1093,7 @@ The key tool is the **Laplace method** for integrals. In $(16)$, the factor $(1-
 
 $$\phi(\lambda) = C\,(\lambda - \alpha)^p\bigl(1 + O(\lambda - \alpha)\bigr) \quad \textit{as } \lambda \to \alpha^+$$
 
-*for constants $C > 0$ and $p > -1$. Then for GD with $\eta = 1/\beta$,*
+*for constants $C > 0$ and $p > -1$. Then the GD iterates with $\eta = 1/\beta$ satisfy*
 
 $$\mathcal{E}_k \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{18}$$
 
