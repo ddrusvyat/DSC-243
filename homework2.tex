@@ -1,0 +1,328 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\K}{\mathcal{K}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\bstar}{f^\ast}
+\newcommand{\xstar}{x^\ast}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{DSC 243 --- Homework 2}} \\
+\vspace{0.5em}
+{\large The Positive Semidefinite Case and Convergence Under Spectral Structure}
+\end{center}
+
+\textbf{Instructions.}
+Use the notation from the notes. Unless explicitly stated otherwise, assume
+\begin{align*}
+&f(x) = \tfrac{1}{2} x^\top A x - b^\top x,\\
+&A = A^\top \succeq 0,\\
+&b \in \mathrm{range}(A),\\
+&\beta = \lambda_{\max}(A),\\
+&\alpha = \lambda_{\min}(A),\\
+&\text{and when } \alpha > 0,\ \kappa = \beta/\alpha.
+\end{align*}
+Let $\xstar\in\{x:Ax=b\}$ and $e_0 = x_0 - \xstar$. Let $v_1,\dots,v_d$ be an orthonormal eigenbasis of $A$ with eigenvalues $\lambda_1,\dots,\lambda_d$, and write $e_0 = \sum_{i=1}^d c_i v_i$. Throughout, we repeatedly use the exact spectral formula
+\[
+f(x_k) - \bstar \;=\; \tfrac{1}{2}\sum_{i=1}^{d}\lambda_i\,p_k(\lambda_i)^2\,c_i^2, \qquad p_k(\lambda) := \prod_{j=1}^{k}(1-\eta_j\lambda),
+\]
+derived in Section 2 for gradient descent with time-varying stepsizes $\eta_1,\dots,\eta_k$. You may quote results proved in class or in the notes, but every nontrivial step must be justified.
+
+\section*{Part I: Theory}
+
+\begin{enumerate}[label=\textbf{T\arabic*.}, leftmargin=0pt, itemindent=2.5em]
+
+%---------------------------------------------------------------------
+\item \textbf{Sublinear convergence of GD in the positive semidefinite case.}
+In this problem you will carefully derive the $O(1/k)$ rate of Theorem~6.1 and extract some consequences.
+
+\begin{enumerate}[label=(\alph*)]
+\item Prove the elementary inequality
+\[
+\sup_{t\in[0,1]} t(1-t)^q
+\;=\;
+\frac{1}{q+1}\left(\frac{q}{q+1}\right)^q
+\;\le\;
+\frac{1}{q+1}
+\qquad\text{for every }q>0,
+\]
+and identify the point $t^\ast\in[0,1]$ at which the supremum is attained.
+
+\item Using (a), prove \emph{Theorem~6.1}: with constant stepsize $\eta=1/\beta$,
+\[
+f(x_k)-\bstar \;\le\; \frac{\beta}{2(2k+1)}\,\norm{x_0-\xstar}^2.
+\]
+You may use the spectral formula stated in the instructions above.
+
+\item \emph{Sharper constant.} Show that the argument in (b) in fact gives
+\[
+f(x_k)-\bstar \;\le\; \frac{\beta}{2(2k+1)}\left(\frac{2k}{2k+1}\right)^{2k}\norm{x_0-\xstar}^2.
+\]
+What is the limit of $(2k/(2k+1))^{2k}$ as $k\to\infty$? Interpret the improvement over (b) for large $k$.
+
+\item \emph{General constant stepsize.} Fix any $\eta\in(0,1/\beta]$ and let $k$ be large enough that $1/(2k+1)\le \eta\beta$. By repeating the argument of (b) using the substitution $t=\eta\lambda$, show that
+\[
+f(x_k)-\bstar \;\le\; \frac{1}{2\eta(2k+1)}\norm{x_0-\xstar}^2.
+\]
+Among $\eta\in(0,1/\beta]$, which value minimizes this upper bound, and what does it reduce to?
+
+\item \emph{Iteration complexity.} Using (b), determine the smallest $k$ that guarantees
+\[
+f(x_k)-\bstar \;\le\; \eps,
+\]
+as a function of $\beta$, $\norm{x_0-\xstar}^2$ and $\eps$.
+\end{enumerate}
+
+%---------------------------------------------------------------------
+\item \textbf{Chebyshev polynomials of the second kind and PSD acceleration.}
+Define $U_j$ by $U_0(x)=1$, $U_1(x)=2x$, and the recurrence
+\[
+U_{j+1}(x)=2xU_j(x)-U_{j-1}(x)\qquad (j\ge 1).
+\]
+
+\begin{enumerate}[label=(\alph*)]
+\item \emph{Trigonometric form.} Show by induction that
+\[
+U_j(\cos\theta) \;=\; \frac{\sin\bigl((j+1)\theta\bigr)}{\sin\theta},\qquad \theta\in(0,\pi).
+\]
+
+\item Compute $U_j(1)$ and $U_j(-1)$. Show that $U_j$ has $j$ simple roots in $(-1,1)$ at $\cos(\ell\pi/(j+1))$ for $\ell=1,\dots,j$. Deduce that $U_j$ has leading coefficient $2^j$.
+
+\item \emph{Orthogonality.} Show that with respect to the weight $\sqrt{1-x^2}$ on $[-1,1]$,
+\[
+\int_{-1}^{1} U_j(x)\,U_k(x)\,\sqrt{1-x^2}\,dx \;=\; \frac{\pi}{2}\,\delta_{jk}.
+\]
+\textbf{Hint:} substitute $x=\cos\theta$ and use the trigonometric form.
+
+\item \emph{Weighted extremal property.} For any polynomial $p$ of degree exactly $k$ with the same leading coefficient as $U_k$ (that is, $2^k$), show that
+\[
+\max_{x\in[-1,1]}\sqrt{1-x^2}\,\lvert p(x)\rvert
+\;\ge\;
+\max_{x\in[-1,1]}\sqrt{1-x^2}\,\lvert U_k(x)\rvert
+\;=\; 1.
+\]
+\textbf{Hint:} The identity $\sqrt{1-x^2}\,U_k(x)=\sin\bigl((k+1)\theta\bigr)$ for $x=\cos\theta$ shows that $\sqrt{1-x^2}\,U_k(x)$ attains $\pm 1$ at $k+1$ alternating values of $x$. Consider the polynomial $r:=p-U_k$ of degree at most $k-1$, and count the sign changes of $\sqrt{1-x^2}\,r$ forced on you by the assumption that $\sqrt{1-x^2}\lvert p\rvert<1$ everywhere.
+
+\item \emph{Proof of Lemma~6.2.} Let $\phi_k(\lambda):=\bigl(1-\tfrac{\lambda}{\beta}\bigr)U_{k-1}(1-2\lambda/\beta)/k$. Using the substitution $\cos\theta=1-2\lambda/\beta$, show that
+\[
+\max_{\lambda\in[0,\beta]} \lambda\,\phi_k(\lambda)^2 \;\le\; \frac{\beta}{4k^2}.
+\]
+
+\item \emph{Proof of Theorem~6.2.} Verify that the stepsizes $\eta_j = \bigl(\beta\sin^2(j\pi/(2k))\bigr)^{-1}$ for $j=1,\dots,k$ produce the polynomial $p_k=\phi_k$ in the spectral formula, and deduce the PSD Chebyshev rate
+\[
+f(x_k)-\bstar \;\le\; \frac{\beta}{8k^2}\,\norm{x_0-\xstar}^2.
+\]
+Compare the iteration complexity with that of T1(e).
+\end{enumerate}
+
+%---------------------------------------------------------------------
+\item \textbf{Source condition and the $O(k^{-(1+2s)})$ rate of GD.}
+Suppose the initial error satisfies the source condition
+\[
+e_0 \;=\; A^s\,w\qquad\text{for some } w\in\R^d \text{ with } \norm{w}^2\le M \text{ and } s>-\tfrac{1}{2}.
+\]
+
+\begin{enumerate}[label=(\alph*)]
+\item Writing $c_i = \lambda_i^s\tilde c_i$ with $\tilde c_i := v_i^\top w$, substitute into the spectral formula (with $\eta=1/\beta$) to obtain
+\[
+f(x_k)-\bstar \;\le\; \frac{\norm{w}^2}{2}\,\max_{\lambda\in[0,\beta]}\,\lambda^{1+2s}(1-\lambda/\beta)^{2k}.
+\]
+
+\item Setting $t=\lambda/\beta$, show that
+\[
+\max_{t\in[0,1]} t^{1+2s}(1-t)^{2k}
+\;=\;
+\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}
+\left(\frac{2k}{2k+1+2s}\right)^{2k}.
+\]
+Deduce
+\[
+f(x_k)-\bstar \;\le\; \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\norm{w}^2,
+\]
+which is Theorem~7.1.
+
+\item Verify that at $s=0$ the bound of (b) recovers (the slightly sharper form of) Theorem~6.1 derived in T1(c).
+
+\item Show that the asymptotic rate is
+\[
+f(x_k)-\bstar \;=\; O\!\bigl(\beta^{1+2s}\,k^{-(1+2s)}\,\norm{w}^2\bigr)\qquad\text{as }k\to\infty.
+\]
+
+\item \emph{Iteration complexity.} For $s>-\tfrac{1}{2}$, derive the smallest $k$ (up to constants) such that $f(x_k)-\bstar\le\eps$. In particular, how does the complexity blow up as $s\downarrow-\tfrac{1}{2}$?
+
+\item \emph{Interpretation.} Explain in one or two sentences why the source condition improves the exponent from $-1$ (Theorem 6.1) to $-(1+2s)$, in terms of which eigendirections carry most of the initial error.
+\end{enumerate}
+
+%---------------------------------------------------------------------
+\item \textbf{Power-law spectral density: the GD rate.}
+Assume the spectral error measure $\mu=\sum_{i} c_i^2\delta_{\lambda_i}$ is well-approximated by a continuous density $d\mu(\lambda)=\phi(\lambda)\,d\lambda$ with
+\[
+\phi(\lambda) \;=\; M\,\lambda^{a-1}\qquad\text{on }(0,\beta],\qquad M>0,\ a>-1,
+\]
+and define the idealized spectral-integral error
+\[
+\mathcal{E}_k \;:=\; \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^2\,\phi(\lambda)\,d\lambda.
+\]
+Take $p_k(\lambda)=(1-\lambda/\beta)^k$, corresponding to GD with $\eta=1/\beta$.
+
+\begin{enumerate}[label=(\alph*)]
+\item Show that with the substitution $t=\lambda/\beta$,
+\[
+\mathcal{E}_k \;=\; \frac{M\,\beta^{a+1}}{2}\int_0^1 t^{a}(1-t)^{2k}\,dt
+\;=\; \frac{M\,\beta^{a+1}}{2}\,B(a+1,\,2k+1),
+\]
+where $B(p,q)=\Gamma(p)\Gamma(q)/\Gamma(p+q)$ is the Beta function. Deduce
+\[
+\mathcal{E}_k \;=\; \frac{M\,\beta^{a+1}}{2}\cdot\frac{\Gamma(a+1)\,\Gamma(2k+1)}{\Gamma(2k+a+2)}.
+\]
+
+\item Using the standard estimate $\Gamma(n+c)/\Gamma(n)\sim n^c$ as $n\to\infty$ (which follows from Stirling), prove the asymptotic
+\[
+\mathcal{E}_k \;\sim\; \frac{M\,\Gamma(a+1)\,\beta^{a+1}}{2\,(2k)^{a+1}} \qquad\text{as }k\to\infty.
+\]
+
+\item Verify the two special cases: $a=1$ (flat spectrum $\phi=M$ on $(0,\beta]$, \,constant eigenvalue density) gives $O(k^{-2})$; the critical exponent $a=1/2$ gives $O(k^{-3/2})$.
+
+\item \emph{Comparison with the vanilla $O(1/k)$ bound.} Compare the rate $O(k^{-(a+1)})$ of (b) with the worst-case Theorem~6.1 bound $O\bigl(\beta\,\norm{e_0}^2/k\bigr)$. In which range of $a$ is (b) strictly better (same or stronger rate \emph{and} finite constant, even when $\norm{e_0}^2$ is infinite)? Justify.
+
+\item \emph{Source condition as a spectral integral.} Suppose the eigenvalue density of $A$ behaves polynomially, $\rho_A(\lambda)\propto \lambda^{-1/\mathsf{a}-1}$ near $\lambda=0$, and the coefficients $\tilde c_i=v_i^\top w$ from T3 are isotropic. Show that the effective spectral error density is $\phi(\lambda)\propto\lambda^{2s-1/\mathsf{a}-1}$, so that the power-law exponent is $a=2s-1/\mathsf{a}$. Use (b) to deduce the resulting GD rate in terms of $s$ and $\mathsf{a}$. For what ranges of $s$ and $\mathsf{a}$ is the resulting rate faster than $O(1/k)$?
+\end{enumerate}
+
+%---------------------------------------------------------------------
+\item \textbf{(Optional) CG on Marchenko--Pastur at $\gamma=1$.}
+At the critical aspect ratio $\gamma=1$ the Marchenko--Pastur law has no atom at zero and its density is
+\[
+\rho_{MP}(\lambda) \;=\; \frac{\sqrt{4-\lambda}}{2\pi\sqrt{\lambda}}\qquad\text{on }[0,4].
+\]
+Throughout this problem you may take for granted Theorem~7.4 from the notes (``minimum-norm polynomial via a reproducing kernel'') as well as the following explicit form of its conclusion: if $\{\psi_j\}_{j=0}^k$ is an orthonormal basis of $\mathcal{P}_k$ with respect to the inner product $\langle f,g\rangle=\int fg\,d\mu$ and $x_0\in\R$ is fixed, then
+\begin{equation}\tag{21}\label{eq:T4-formula}
+\min_{\substack{p\in\mathcal{P}_k\\ p(x_0)=1}}\int p(\lambda)^2\,d\mu(\lambda) \;=\; \frac{1}{\sum_{j=0}^{k}\psi_j(x_0)^2}.
+\end{equation}
+We take the spectral assumption of the notes: the reweighted empirical measure satisfies $\nu_d\Rightarrow \norm{e_0}^2\mu_{MP}$, which reduces the analysis of CG at $\gamma=1$ to the polynomial problem
+\[
+\mathcal{E}_k \;=\; \frac{\norm{e_0}^2}{2}\,\min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_0^4 p(\lambda)^2\,d\mu(\lambda),\qquad d\mu(\lambda):=\lambda\,\rho_{MP}(\lambda)\,d\lambda.
+\]
+
+\begin{enumerate}[label=(\alph*)]
+\item Show that $d\mu(\lambda)=\dfrac{\sqrt{\lambda(4-\lambda)}}{2\pi}\,d\lambda$ on $[0,4]$.
+
+\item Apply the affine change of variables $x(\lambda):=\lambda/2-1$, mapping $[0,4]\to[-1,1]$. Show that in the new coordinate,
+\[
+d\mu \;=\; \frac{2}{\pi}\sqrt{1-x^2}\,dx.
+\]
+
+\item Using T2(c) and the formula $d\mu=(2/\pi)\sqrt{1-x^2}\,dx$ from (b), verify that
+\[
+\psi_j(\lambda) \;:=\; U_j\bigl(x(\lambda)\bigr),\qquad j=0,1,\dots,k,
+\]
+is an \emph{orthonormal} basis of $\mathcal{P}_k$ in $L^2(\mu)$. In particular, show $\int \psi_j\psi_\ell\,d\mu=\delta_{j\ell}$.
+
+\item Using $U_j(-1)=(-1)^j(j+1)$, show that $\psi_j(0)^2=(j+1)^2$.
+
+\item Using (a)--(d) and formula \eqref{eq:T4-formula} at $x_0=0$, show
+\[
+\min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_0^4 p(\lambda)^2\,d\mu(\lambda) \;=\; \frac{1}{\sum_{j=0}^k (j+1)^2} \;=\; \frac{6}{(k+1)(k+2)(2k+3)}.
+\]
+
+\item Deduce the \emph{CG on Marchenko--Pastur} bound
+\[
+\mathcal{E}_k \;=\; \frac{3\,\norm{e_0}^2}{(k+1)(k+2)(2k+3)} \;=\; O\!\bigl(\norm{e_0}^2/k^{3}\bigr).
+\]
+
+\item Compare this with the GD rate $\mathcal{E}_k\sim \norm{e_0}^2/(\sqrt{2\pi}\,k^{3/2})$ at $\gamma=1$ (derived by specializing T4(b) to $a=1/2$ and $M=\norm{e_0}^2/\pi$). By what factor does CG outperform GD for $\eps=10^{-6}$?
+\end{enumerate}
+
+\end{enumerate}
+
+\section*{Part II: Experiments}
+
+\begin{enumerate}[label=\textbf{E\arabic*.}, leftmargin=0pt, itemindent=2.5em]
+
+%---------------------------------------------------------------------
+\item \textbf{GD, PSD Chebyshev, and CG on a power-law spectrum.}
+Take $d=200$ and
+\[
+A \;=\; \operatorname{diag}\bigl(i^{-3}\bigr)_{i=1}^d
+\]
+(so $A\succ 0$ with $\alpha=d^{-3}$, $\beta=1$ and $\kappa=d^3\approx 8\times 10^6$). Let $\xstar=\mathbf{1}\in\R^d$, $b=A\xstar$. Use the same generic random initial point $x_0$ for every method.
+
+\begin{enumerate}[label=(\alph*)]
+\item Run gradient descent with constant stepsize $\eta=1/\beta$ for $k=5000$ iterations.
+
+\item For each horizon $K\in\{10,20,50,100,200,500,1000,2000\}$, run PSD-Chebyshev with the stepsize schedule $\eta_j = 1/(\beta\sin^2(j\pi/(2K)))$ for $j=1,\dots,K$, starting from the same $x_0$. Record the final $f(x_K)-\bstar$ for each choice of $K$ and plot these values as a function of $K$.
+
+\item Run the conjugate gradient method from $x_0$ for $k=5000$ iterations (truncating once the gap drops below $10^{-13}\norm{x_0-\xstar}^2$).
+
+\item On the same semilog plot of $(f(x_k)-\bstar)/(f(x_0)-\bstar)$ versus $k$, overlay:
+\begin{itemize}
+\item the GD curve from (a);
+\item the final-iterate values from (b), plotted as a step function or marker plot;
+\item the CG curve from (c);
+\item the theoretical upper bounds $\beta/(2(2k+1))\cdot \norm{x_0-\xstar}^2/(f(x_0)-\bstar)$ (Theorem 6.1) and $\beta/(8k^2)\cdot \norm{x_0-\xstar}^2/(f(x_0)-\bstar)$ (Theorem 6.2).
+\end{itemize}
+
+\item Comment on the empirically observed rates of GD, PSD-Chebyshev, and CG. Which is fastest? For large $k$, does CG separate from PSD-Chebyshev, and if so, why? (Recall that the spectrum here decays polynomially, so the spectral-density analysis of Section~7 is relevant.)
+\end{enumerate}
+
+%---------------------------------------------------------------------
+\item \textbf{Source condition and the matching GD rate.}
+Take $d=2000$ and
+\[
+A \;=\; \operatorname{diag}\bigl(i^{-\mathsf{a}}\bigr)_{i=1}^d\qquad\text{with }\mathsf{a}=2.
+\]
+
+For each $s\in\{-\tfrac{1}{4},\,0,\,\tfrac{1}{2},\,1\}$, generate an initial error satisfying the source condition $e_0=A^s w$ as follows: sample $w\in\R^d$ with iid $\mathcal{N}(0,1)$ entries (rescale so $\norm{w}^2=d$), and set $x_0=\xstar+e_0$ with $\xstar=\mathbf{1}$, $b=A\xstar$.
+
+\begin{enumerate}[label=(\alph*)]
+\item For each $s$, run GD with $\eta=1/\beta$ for $k=10^4$ iterations. Plot $(f(x_k)-\bstar)/(f(x_0)-\bstar)$ versus $k$ on a log-log scale (four curves, one per value of $s$).
+
+\item On each curve, overlay the theoretical reference line $c_s\,k^{-(1+2s)}$ (dotted), where $c_s$ is the theoretical constant from Theorem~7.1 (expressed in terms of $\beta$, $s$, $\norm{w}^2$, $f(x_0)-\bstar$). Do the empirical slopes match the theoretical exponent $-(1+2s)$?
+
+\item For $s=-1/4$ (the case with $s<0$), compare the empirical value of $\norm{e_0}^2$ and $f(x_0)-\bstar$. Observe that $\norm{e_0}^2$ is large but the function gap remains well-defined. Explain in one or two sentences how Theorem~7.1 delivers a \emph{dimension-free} bound in this regime (that is, the right-hand side of the bound depends on $\norm{w}$, not $\norm{e_0}$).
+
+\item Compute iteration complexity empirically: for each $s$, report the smallest $k$ that achieves relative gap $10^{-4}$ and $10^{-6}$. Does the ratio of complexities across $s$ match what T3(e) predicts?
+\end{enumerate}
+
+%---------------------------------------------------------------------
+\item \textbf{CG on Marchenko--Pastur spectra across the three regimes.}
+Fix $d=1200$ and consider three aspect ratios $\gamma\in\{0.5,\,1,\,2\}$:
+\[
+n_{0.5} \;=\; 2d,\qquad n_{1} \;=\; d,\qquad n_{2} \;=\; d/2.
+\]
+For each $\gamma$, draw $D\in\R^{n\times d}$ with iid $\mathcal{N}(0,1)$ entries and set $A=\tfrac{1}{n}D^\top D$. Sample $\xstar$ uniformly on the sphere of radius $\sqrt{d}$ and set $b=A\xstar$, $x_0=0$. Run both GD with stepsize $\eta=1/\lambda_{\max}(A)$ and CG, and record $f(x_k)-\bstar$ versus $k$. For each $\gamma$, take the \emph{median} over $20$ independent draws of $D$ (and $\xstar$).
+
+\begin{enumerate}[label=(\alph*)]
+\item For each $\gamma$, plot on a log-log scale the median relative gap $(f(x_k)-\bstar)/(f(x_0)-\bstar)$ versus $k$ for GD and CG. Shade the $10\%$--$90\%$ interquantile range.
+
+\item On the $\gamma=1$ plot, overlay the dotted reference lines
+\begin{align*}
+\text{GD reference:}\quad &\frac{1}{\sqrt{2\pi}\,k^{3/2}}\cdot\frac{\norm{e_0}^2}{f(x_0)-\bstar},\\[2pt]
+\text{CG reference (from T5(f)):}\quad &\frac{3}{(k+1)(k+2)(2k+3)}\cdot\frac{\norm{e_0}^2}{f(x_0)-\bstar}.
+\end{align*}
+Report whether the empirical rates track the predicted $k^{-3/2}$ and $k^{-3}$ exponents.
+
+\item On the $\gamma=0.5$ plot (positive definite case), overlay the \emph{theoretical Chebyshev upper bound}
+\[
+4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}\cdot 1,\qquad \kappa\;=\;\bigl((1+\sqrt\gamma)/(1-\sqrt\gamma)\bigr)^2,
+\]
+and also a power-times-exponential reference $c\,k^{-3/2}(1-1/\kappa)^{2k}$ (from the Laplace-method Theorem~7.3 applied to the MP edge). Which of the two is closer to empirical CG for early $k$? Late $k$? Briefly explain why.
+
+\item On the $\gamma=2$ plot (rank-deficient), verify that in the effective spectrum the \emph{nonzero} eigenvalues lie in $[(\sqrt\gamma-1)^2,(\sqrt\gamma+1)^2]$. Overlay the PSD Chebyshev/CG worst-case bound $\beta/(8k^2)\cdot\norm{e_0}^2$ as a reference, as well as the power-times-exponential reference from the Laplace method with $\alpha_{\mathrm{eff}}=(\sqrt\gamma-1)^2$ and $\beta=(\sqrt\gamma+1)^2$. Discuss whether the effective-condition-number rate or the power-times-exponential rate better describes empirical behavior.
+
+\item \emph{Summary.} In one or two sentences, describe how the three MP regimes ($\gamma<1$, $\gamma=1$, $\gamma>1$) differ from the point of view of convergence of CG: where does the $k^{-3/2}$ edge factor come from, and in which regime does CG achieve the sharpest gain over GD?
+\end{enumerate}
+
+\end{enumerate}
+
+\end{document}
