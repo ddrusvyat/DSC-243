@@ -28,7 +28,7 @@ We cover three algorithms of increasing sophistication:
 2. **Chebyshev-accelerated gradient descent**
 3. **Conjugate Gradient method**
 
-We will speak both about worst-case rates---depending only on extremal eigenvalues---and more refined guararntees that take into accoun the interaction between initialization and the spectral behavior of the eigenvalues.
+We will speak both about worst-case rates---depending only on extremal eigenvalues---and more refined guarantees that take into account the interaction between initialization and the spectral behavior of the eigenvalues.
 
 ### Contents
 
@@ -36,8 +36,8 @@ We will speak both about worst-case rates---depending only on extremal eigenvalu
 - [2. Gradient Descent: linear convergence with constant stepsize](#sec-2)
 - [3. Acceleration by Chebyshev Stepsizes](#sec-3)
 - [4. The Krylov Subspace Method and Conjugate Gradient](#sec-4)
-- [6. The Positive Semidefinite Case](#sec-6)
-- [7. Convergence Under Spectral Structure](#sec-7)
+- [6. Sublinear Rates in the Positive Semidefinite Case](#sec-6)
+- [7. Convergence Under Source Conditions and Spectral Structure](#sec-7)
 - [8. Related Literature](#sec-8)
 - [Summary](#summary)
 
@@ -514,7 +514,7 @@ The next figure repeats the varying-$\kappa$ experiment from Section 3, now with
 
 ---
 
-## 6. The Positive Semidefinite Case {#sec-6}
+## 6. Sublinear Rates in the Positive Semidefinite Case {#sec-6}
 
 ### Motivation
 
@@ -772,7 +772,7 @@ The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional qua
 
 ---
 
-## 7. Convergence Under Spectral Structure {#sec-7}
+## 7. Convergence Under Source Conditions and Spectral Structure {#sec-7}
 
 ### Beyond worst-case analysis
 
