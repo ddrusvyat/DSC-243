@@ -30,9 +30,20 @@ We cover three algorithms of increasing sophistication:
 
 We will speak both about worst-case rates---depending only on extremal eigenvalues---and more refined guararntees that take into accoun the interaction between initialization and the spectral behavior of the eigenvalues.
 
+### Contents
+
+- [1. Problem Setup](#sec-1)
+- [2. Gradient Descent: linear convergence with constant stepsize](#sec-2)
+- [3. Acceleration by Chebyshev Stepsizes](#sec-3)
+- [4. The Krylov Subspace Method and Conjugate Gradient](#sec-4)
+- [6. The Positive Semidefinite Case](#sec-6)
+- [7. Convergence Under Spectral Structure](#sec-7)
+- [8. Related Literature](#sec-8)
+- [Summary](#summary)
+
 ---
 
-## 1. Problem Setup
+## 1. Problem Setup {#sec-1}
 
 We consider the quadratic minimization problem
 
@@ -66,7 +77,7 @@ under the correspondence $A = D^\top D$ and $b = D^\top y$. In applications, $D 
 
 ---
 
-## 2. Gradient Descent: linear convergence with constant stepsize
+## 2. Gradient Descent: linear convergence with constant stepsize {#sec-2}
 
 We will be interested in algorithms that access the matrix $A$ only by evaluating matrix-vector products $v\mapsto Av$ for any query vector $v$. This **matrix-free** abstraction is powerful for several reasons:
 
@@ -222,7 +233,7 @@ At this point we have extracted essentially the best guarantee available from on
 
 
 
-## 3. Acceleration by Chebyshev Stepsizes
+## 3. Acceleration by Chebyshev Stepsizes {#sec-3}
 
 
 The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value after $k$ iteration using a fixed step-size; in essence, the argument reduced to choosing a fixed step-size that guarantees the largest function value decrease in a single step and then iterating the bound. We now show that by monitoring performance across the entire time horizon, it is possible to choose a **time-varying stepsize** that yields a much faster rate of convergence. To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = x_j - x^\ast$ evolves as $e_{j+1} = (I - \eta_j A)\,e_j$. Therefore, after $k$ steps we have:
@@ -384,7 +395,7 @@ As a final illustration, the plot below overlays GD with stepsize $1/\beta$ (sol
 
 ---
 
-## 4. The Krylov Subspace Method and Conjugate Gradient
+## 4. The Krylov Subspace Method and Conjugate Gradient {#sec-4}
 
 ### From polynomials to Krylov subspaces
 
@@ -503,7 +514,7 @@ The next figure repeats the varying-$\kappa$ experiment from Section 3, now with
 
 ---
 
-## 6. The Positive Semidefinite Case
+## 6. The Positive Semidefinite Case {#sec-6}
 
 ### Motivation
 
@@ -761,7 +772,7 @@ The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional qua
 
 ---
 
-## 7. Convergence Under Spectral Structure
+## 7. Convergence Under Spectral Structure {#sec-7}
 
 ### Beyond worst-case analysis
 
@@ -1464,7 +1475,7 @@ So we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to the 
 
 ---
 
-## 8. Related Literature
+## 8. Related Literature {#sec-8}
 
 The results discussed in these notes are largely classical in numerical optimization, Krylov methods, inverse problems, and random matrix theory. The novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
 
@@ -1521,7 +1532,7 @@ The notes combine ideas that appear in different communities; the table below ma
 
 ---
 
-## Summary
+## Summary {#summary}
 
 **Worst-case iteration complexity.**
 
