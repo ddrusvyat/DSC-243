@@ -1177,6 +1177,8 @@ $$
 \int f\,d\hat{\mu}_A \;\xrightarrow[n\to\infty]{\text{a.s.}}\; \int f\,d\mu_{\mathrm{MP}}.
 $$
 
+This type of weak convergence is denoted $\hat{\mu}_A\;\Rightarrow\;\mu_{\mathrm{MP}}$.
+
 The animation below illustrates this convergence for the three regimes $\gamma \in \{0.5,\,1,\,2\}$ (with iid standard Gaussian entries in $D$). For each frame a fresh $D$ is drawn at the given $n$, the $d$ eigenvalues of $A=\tfrac{1}{n}D^\top D$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\{B_j\}$ on the $\lambda$-axis, and each bin height equals
 
 $$
