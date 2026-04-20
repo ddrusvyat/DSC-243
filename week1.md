@@ -1171,13 +1171,13 @@ $$
 \hat{\mu}_A \;=\; \frac{1}{d}\sum_{i=1}^{d}\delta_{\lambda_i(A)},
 $$
 
-Note that this measure is itself random because $A$ is random. Marchenko and Pastur showed that $\hat{\mu}_A$ weakly converges to a deterministic limit measure $\mu_{\mathrm{MP}}$, called *Marchenko--Pastur law*. That is for any bounded continuous function $f$, it holds:
+Note that this measure is itself random because $A$ is random. Marchenko and Pastur showed that $\hat{\mu}\_A$ weakly converges to a deterministic limit measure $\mu\_{\mathrm{MP}}$, called *Marchenko--Pastur law*. That is for any bounded continuous function $f$, it holds:
 
 $$
 \int f\,d\hat{\mu}_A \;\xrightarrow[n\to\infty]{\text{a.s.}}\; \int f\,d\mu_{\mathrm{MP}}.
 $$
 
-This type of weak convergence is denoted $\hat{\mu}_A\;\Rightarrow\;\mu_{\mathrm{MP}}$.
+This type of weak convergence is denoted $\hat{\mu}\_A\;\Rightarrow\;\mu\_{\mathrm{MP}}$.
 
 The animation below illustrates this convergence for the three regimes $\gamma \in \{0.5,\,1,\,2\}$ (with iid standard Gaussian entries in $D$). For each frame a fresh $D$ is drawn at the given $n$, the $d$ eigenvalues of $A=\tfrac{1}{n}D^\top D$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\{B_j\}$ on the $\lambda$-axis, and each bin height equals
 
