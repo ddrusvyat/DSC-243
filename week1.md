@@ -1452,8 +1452,7 @@ So we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to the 
 
 ## 8. Related Literature
 
-The main narrative of the notes is complete; this section situates the preceding results in the literature.
-The results discussed in these notes are classical and widely documented in numerical optimization, Krylov methods, inverse problems, and random matrix theory.
+The results discussed in these notes are largely classical in numerical optimization, Krylov methods, inverse problems, and random matrix theory. The novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
 
 - **Gradient descent and first-order complexity.** Linear-rate GD analysis for strongly convex quadratics and condition-number dependence are standard; see [Pol64, Nes04, Nes18].
 - **Chebyshev acceleration and semi-iterative methods.** The minimax polynomial viewpoint and Chebyshev stepsizes are classical; see [Var62, You71, Saa03].
@@ -1480,7 +1479,7 @@ The notes combine ideas that appear in different communities; the table below ma
 | Theorem 7.5 (CG on Marchenko--Pastur) | [Saa03], [Gre97], [PS20], [SP20], [PvMPP21] | Closed-form CG asymptotics on MP via the Chebyshev-second-kind reproducing kernel; the $k^{-3}$ exponent matches the average-case complexity of Polyak/Nesterov momentum [PS20, SP20] and the universality analysis of [PvMPP21], derived by Stieltjes-transform methods. |
 | Theorem 7.6 (CG on power-law spectral density) | [Sze39], [Saa03], [Gre97], [CGPSP22] | Reproducing-kernel CG bound under power-law $\phi(\lambda)=M\lambda^{a-1}$, computed via Jacobi $P_j^{(0,a)}$ as the orthonormal basis on the rescaled interval; doubles the GD exponent of Theorem 7.2 from $a+1$ to $2(a+1)$ and specialises the "tail-driven" average-case rates of [CGPSP22] to the CG/Krylov setting. |
 
-In particular, the novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
+
 
 ### References
 
