@@ -1214,7 +1214,7 @@ $$
 
 has the same asymptotic shape as the empirical spectral measure of $A$, that is
 
-$$\nu_d \;\Rightarrow\; \lVert e_0\rVert^2\,\mu_{MP}, \qquad \text{a.s.~~~ as }~~~ n\to\infty,\ d/n\to\gamma.$$
+$$\nu_d \;\Rightarrow\; \lVert e_0\rVert^2\,\mu_{MP}, \qquad \text{a.s.~~~ as    }     n\to\infty,\ d/n\to\gamma.$$
 
 This is the only property used below and holds for example if we initialize at $x_0=0$ and $x^{\ast}\sim \mathcal{N}(0,\frac{R}{d}I_d)$ for any constant $R>0$.
 
