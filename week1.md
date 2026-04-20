@@ -1185,7 +1185,7 @@ $$
 \frac{\#\{i:\lambda_i(A) \in B_j\}}{d \cdot \lvert B_j\rvert},
 $$
 
-so that the total area of the histogram equals $1$ (matching the mass of $\hat{\mu}_A$). As $n$ grows, this histogram collapses onto the Marchenko--Pastur density curve overlaid in black. In the rank-deficient case $\gamma = 2$ the matrix $A$ has exactly $d - n$ zero eigenvalues, which form an atom of mass $1-1/\gamma$ at $\lambda=0$ in $\hat\mu_A$; those are excluded from the histogram, so the bulk integrates to the remaining mass $1/\gamma$ and aligns with $\rho_{MP}$ on $[\lambda_-,\lambda_+]$.
+so that the total area of the histogram equals $1$ (matching the mass of $\hat{\mu}\_A$). As $n$ grows, this histogram collapses onto the Marchenko--Pastur density curve overlaid in black. In the rank-deficient case $\gamma = 2$ the matrix $A$ has exactly $d - n$ zero eigenvalues, which form an atom of mass $1-1/\gamma$ at $\lambda=0$ in $\hat\mu_A$; those are excluded from the histogram, so the bulk integrates to the remaining mass $1/\gamma$ and aligns with $\rho\_{\mathrm{MP}}$ on $[\lambda\_-,\lambda\_+]$.
 
 ![Empirical spectrum converging to the Marchenko--Pastur law](figures/mp_empirical_spectrum.gif)
 
