@@ -1167,7 +1167,7 @@ $$
 \hat{\mu}_A \;=\; \frac{1}{d}\sum_{i=1}^{d}\delta_{\lambda_i(A)},
 $$
 
-Note that this measure is itself random because $A$ is random. The claim is that $\hat{\mu}_A$ weakly converges to the Marchenko--Pastur law $\mu_{MP}$ (denoted as $\hat{\mu}_A\;\Rightarrow\;\mu_{\rm MP}$) in the sense that for any bounded continuous function $f$ the integral $\int f\hat \mu_A$ convergenes to $\int f\hat \mu_{\rm MP}$ almost surely. 
+Note that this measure is itself random because $A$ is random. The claim is that $\hat{\mu}_A$ weakly converges to the Marchenko--Pastur law $\mu_{\mathrm{MP}}$ (denoted $\hat{\mu}_A\Rightarrow\mu_{\mathrm{MP}}$) in the sense that for any bounded continuous function $f$ the integral $\int f\,d\hat{\mu}_A$ converges to $\int f\,d\mu_{\mathrm{MP}}$ almost surely.
 
 The animation below illustrates this convergence for the three regimes $\gamma \in \{0.5,\,1,\,2\}$ (with iid standard Gaussian entries in $D$). For each frame a fresh $D$ is drawn at the given $n$, the $d$ eigenvalues of $A=\tfrac{1}{n}D^\top D$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\{B_j\}$ on the $\lambda$-axis, and each bin height equals
 
