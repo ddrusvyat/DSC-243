@@ -10,14 +10,19 @@ several exponents a, overlaid with the predicted asymptotic rates
     GD:  E_k ~ M Gamma(a+1) beta^{a+1} / (2 (2k)^{a+1})            (Thm 7.2)
     CG:  E_k ~ M Gamma(a+1) Gamma(a+2) beta^{a+1} / (2 k^{2(a+1)}) (Thm 7.6)
 
-Setup. We work with a diagonal A = diag(lambda_1, ..., lambda_d) where the
-eigenvalues lambda_i are the (i - 1/2)/d quantiles of the density
-phi(lambda)/integral(phi) on (0, beta] (so the empirical eigenvalue
-distribution is the natural quantile discretisation of the density), and
-initial error coordinates c_i are chosen so that the discrete spectral
-measure sum_i c_i^2 delta_{lambda_i} is the Riemann sum approximation of
-phi(lambda) d lambda. Concretely we take c_i^2 = phi(lambda_i) * w_i where
-w_i is the local quantile width.
+Setup. For each trial we draw a fresh diagonal problem in the eigenbasis:
+
+  * Eigenvalues lambda_i are sampled iid from the density rho = phi/integral(phi)
+    on (0, beta]; concretely lambda_i = beta * U_i^{1/a} for U_i ~ Uniform(0,1).
+  * Initial-error coordinates c_i are sampled iid as c_i = sigma * xi_i with
+    xi_i ~ N(0, 1) and sigma^2 = M * beta^a / (a * d). This normalisation is
+    chosen so that for every continuous test function g,
+        E[sum_i c_i^2 g(lambda_i)] = integral M lambda^{a-1} g(lambda) dlambda,
+    matching the Riemann discretisation used by the deterministic version of
+    this experiment.
+
+We then plot the median curve over n_trials draws and shade the 10%-90%
+interquantile band (same convention as the MP gamma=1 figure).
 """
 
 from __future__ import annotations
@@ -36,33 +41,31 @@ FIGURES_DIR = Path(__file__).resolve().parent.parent / "figures"
 FIGURES_DIR.mkdir(exist_ok=True)
 
 
-def build_powerlaw_problem(a: float, beta: float, d: int, M: float = 1.0):
+def sample_powerlaw_problem(
+    a: float,
+    beta: float,
+    d: int,
+    rng: np.random.Generator,
+    M: float = 1.0,
+):
     """
-    Build A = diag(lambda) and an initial error e0 (in eigenbasis = standard
-    basis) such that the discrete spectral measure sum c_i^2 delta_{lambda_i}
-    is the natural Riemann discretisation of phi(lambda) = M lambda^{a-1} on
-    (0, beta].
+    Sample one random diagonal problem in the eigenbasis with the prescribed
+    power-law spectral error density phi(lambda) = M lambda^{a-1} on (0, beta].
 
-    Eigenvalues placed at quantiles of phi/integral(phi) (which has CDF
-    F(lambda) = (lambda/beta)^a). Quantile widths w_i used to weight c_i^2
-    so that sum c_i^2 g(lambda_i) -> integral M lambda^{a-1} g(lambda) d lambda
-    for any continuous g.
+    Eigenvalues are drawn iid from rho = phi/integral(phi) (CDF
+    F(lambda) = (lambda/beta)^a, inverse CDF lambda = beta * u^{1/a}).
+    Coefficients c_i are drawn iid Gaussian with variance M beta^a / (a d), so
+    that the discrete spectral measure sum_i c_i^2 delta_{lambda_i} converges
+    in expectation to phi(lambda) d lambda as d -> infinity.
     """
     if a <= 0:
         raise ValueError("Use a > 0 so that integral(phi) is finite.")
 
-    # Use cell-centre quantiles u_i = (i - 1/2)/d of the CDF F(lambda) =
-    # (lambda/beta)^a. Inverse CDF gives lambda_i = beta * u_i^{1/a}.
-    u = (np.arange(1, d + 1) - 0.5) / d
+    u = rng.uniform(size=d)
     lam = beta * u ** (1.0 / a)
 
-    # Cell edges u_{i-1} = (i-1)/d, u_i = i/d so that widths w_i = lambda_i^{up}
-    # - lambda_i^{lo} match the Riemann sum normalisation:
-    #   sum_i M lambda_i^{a-1} (lambda_i^{up} - lambda_i^{lo})  ~ integral phi.
-    edges = beta * (np.arange(d + 1) / d) ** (1.0 / a)
-    widths = np.diff(edges)
-    c_sq = M * lam ** (a - 1.0) * widths
-    c = np.sqrt(c_sq)
+    sigma2 = M * beta ** a / (a * d)
+    c = np.sqrt(sigma2) * rng.standard_normal(d)
 
     return lam, c
 
@@ -121,29 +124,44 @@ def main():
     M = 1.0
     d = 20000
     k_max = 800
+    n_trials = 15
+    rng = np.random.default_rng(0)
 
     a_values = [0.5, 1.0, 1.5]
     colors = ["#2c7bb6", "#1a9641", "#d7191c"]
 
     fig, ax = plt.subplots(figsize=(7.6, 5.6))
     iters = np.arange(1, k_max + 1)
+    floor = 1e-22
 
     for a, color in zip(a_values, colors):
-        lam, c = build_powerlaw_problem(a=a, beta=beta, d=d, M=M)
+        gd_runs = np.zeros((n_trials, k_max + 1))
+        cg_runs = np.zeros((n_trials, k_max + 1))
         eta = 1.0 / beta
-        gaps_gd, gaps_cg = run_gd_cg(lam, c, eta, k_max)
+        for t in range(n_trials):
+            lam, c = sample_powerlaw_problem(a=a, beta=beta, d=d, rng=rng, M=M)
+            gaps_gd, gaps_cg = run_gd_cg(lam, c, eta, k_max)
+            gd_runs[t] = np.maximum(gaps_gd, floor)
+            cg_runs[t] = np.maximum(gaps_cg, floor)
+            print(f"  a={a:>3}  trial {t + 1}/{n_trials} done")
 
-        # Truncate CG at machine precision floor to avoid the cliff.
-        floor = 1e-22
-        gd_mask = gaps_gd[1:] > floor
-        cg_mask = gaps_cg[1:] > floor
-        gd_vals = gaps_gd[1:]
-        cg_vals = gaps_cg[1:]
+        gd_med = np.median(gd_runs, axis=0)
+        cg_med = np.median(cg_runs, axis=0)
+        gd_lo, gd_hi = np.quantile(gd_runs, [0.1, 0.9], axis=0)
+        cg_lo, cg_hi = np.quantile(cg_runs, [0.1, 0.9], axis=0)
 
-        ax.loglog(iters[gd_mask], gd_vals[gd_mask], "-", color=color,
+        gd_mask = gd_med[1:] > floor
+        cg_mask = cg_med[1:] > floor
+
+        ax.fill_between(iters[gd_mask], gd_lo[1:][gd_mask], gd_hi[1:][gd_mask],
+                        color=color, alpha=0.12, linewidth=0)
+        ax.loglog(iters[gd_mask], gd_med[1:][gd_mask], "-", color=color,
                   linewidth=1.8, alpha=0.95,
                   label=fr"GD, $a={a}$")
-        ax.loglog(iters[cg_mask], cg_vals[cg_mask], "--", color=color,
+
+        ax.fill_between(iters[cg_mask], cg_lo[1:][cg_mask], cg_hi[1:][cg_mask],
+                        color=color, alpha=0.12, linewidth=0)
+        ax.loglog(iters[cg_mask], cg_med[1:][cg_mask], "--", color=color,
                   linewidth=1.8, alpha=0.95,
                   label=fr"CG, $a={a}$")
 
@@ -162,7 +180,8 @@ def main():
     ax.set_ylabel(r"$f(x_k) - f^\ast$", fontsize=12)
     ax.set_title(
         r"GD vs CG under power-law spectral density "
-        rf"$\phi(\lambda)=M\lambda^{{a-1}}$ on $(0,{beta:g}]$",
+        rf"$\phi(\lambda)=M\lambda^{{a-1}}$ on $(0,{beta:g}]$"
+        + f"  (median over {n_trials} trials)",
         fontsize=11.5,
     )
 
