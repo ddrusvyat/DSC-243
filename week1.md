@@ -868,7 +868,13 @@ We now show how the source condition controls the rate of convergence of gradien
 
 1. **(faster rate when $s > 0$).** The rate $O(\lVert w\rVert^2\cdot k^{-(1+2s)})$ is strictly faster than $O(\lVert e_0\rVert^2\cdot k^{-1})$. The source condition concentrates the initial error on large-eigenvalue directions, which GD resolves quickly.
 
-2. **(dimension-free rate when $s \in (-\tfrac{1}{2}, 0)$).** The rate $O(\lVert w\rVert^2/ k^{1+2s})$ is slower than $O(\lVert e_0\rVert^2/k)$ in terms of $k$, but the bound depends on $\lVert w\rVert^2$ rather than $\lVert e_0\rVert^2$. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $w$, the initial error scales as $\lVert e_0\rVert^2 \asymp n^{-2s\alpha}\lVert w\rVert^2$, so the vanilla bound diverges as $n \to \infty$, whereas the source-condition bound $O(\lVert w\rVert^2/ k^{1+2s})$ is independent of $n$.
+2. **(dimension-free rate when $s \in (-\tfrac{1}{2}, 0)$).** The rate $O(\lVert w\rVert^2/ k^{1+2s})$ is slower than $O(\lVert e_0\rVert^2/k)$ in terms of $k$, but the bound depends on $\lVert w\rVert^2$ rather than $\lVert e_0\rVert^2$. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $w$, the initial error scales as
+
+$$
+\lVert e_0\rVert^2 \;=\; \sum_{i=1}^n \lambda_i^{2s}\,w_i^2 \;\approx\; \frac{\lVert w\rVert^2}{n}\sum_{i=1}^n i^{-2s\alpha} \;\asymp\; \frac{\lVert w\rVert^2}{n}\cdot n^{\,1-2s\alpha} \;=\; n^{-2s\alpha}\,\lVert w\rVert^2,
+$$
+
+Therefore, the vanilla bound diverges as $n \to \infty$, whereas the source-condition bound $O(\lVert w\rVert^2/ k^{1+2s})$ is independent of $n$.
 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
@@ -1083,47 +1089,57 @@ The function gap (which contains the stabilizing $\lambda_i$ factor) is dimensio
 
 ### The Laplace method for positive definite spectra
 
-When $A \succ 0$, the eigenvalues lie in $[\alpha, \beta]$ with $\alpha > 0$, and the base rate of convergence is exponential: $O((1-\alpha/\beta)^{2k})$. The spectral integral can still yield improvements, but they take the form of a *polynomial correction* to the exponential rate rather than a change in the polynomial exponent.
+When $A \succ 0$, the eigenvalues lie in $[\alpha, \beta]$ with $\alpha > 0$, and the base rate of convergence for GD is exponential: $O((1-\alpha/\beta)^{2k})$. The spectral integral can still yield improvements, but they take the form of a *polynomial correction* to the exponential rate rather than a change in the polynomial exponent. The argument is based on the so-called Laplace estimate for integrals of exponential functions.
 
-The key tool is the **Laplace method** for integrals. In $(16)$, the factor $(1-\lambda/\beta)^{2k}$ is largest at $\lambda = \alpha$ and decays exponentially as $\lambda$ moves away from $\alpha$. For large $k$, the integral is dominated by a neighborhood of $\lambda = \alpha$ whose width shrinks as $O(1/k)$. The behavior of the spectral error density $\phi$ near $\lambda = \alpha$ therefore determines the polynomial correction.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 7.3 (Laplace estimate).** *Let $A \succ 0$ with eigenvalues in $[\alpha, \beta]$, and suppose the spectral error density $\phi$ is continuous on $[\alpha, \beta]$ with*
+**Theorem 7.3 (Laplace upper bound).** *Let $A \succ 0$ with eigenvalues in $[\alpha, \beta]$, and suppose the spectral error density $\phi$ satisfies*
 
-$$\phi(\lambda) = C\,(\lambda - \alpha)^p\bigl(1 + O(\lambda - \alpha)\bigr) \quad \textit{as } \lambda \to \alpha^+$$
+$$\phi(\lambda) \leq C\,(\lambda - \alpha)^p \qquad \textit{on } [\alpha, \beta]$$
 
-*for constants $C > 0$ and $p > -1$. Then the GD iterates with $\eta = 1/\beta$ satisfy*
+*for constants $C > 0$ and $p > -1$. Then for every $k \geq 1$ the GD iterates with $\eta = 1/\beta$ satisfy*
 
-$$\mathcal{E}_k \sim \frac{C\,\alpha\,\Gamma(p+1)}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\frac{\alpha}{\beta}\right)^{2k} \quad \textit{as } k \to \infty. \tag{18}$$
+$$\mathcal{E}_k \leq \frac{C\,\Gamma(p+1)}{2}\left[\alpha + \frac{(p+1)(\beta-\alpha)}{2k}\right]{\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\left(1-\kappa^{-1}\right)^{2k}}. \tag{18}$$
+
+*In particular, the leading term is $\tfrac{C\,\alpha\,\Gamma(p+1)}{2}\bigl(\tfrac{\beta-\alpha}{2k}\bigr)^{p+1}(1-\kappa^{-1})^{2k}$, and the bracketed correction is $1 + O(1/k)$.*
 
 </div>
 
-*Proof.* Substitute $u = \lambda - \alpha$ in $\mathcal{E}_k$:
+*Proof.* Substitute $u = \lambda - \alpha$ in $\mathcal{E}_k$ to get
 
 $$
-\mathcal{E}_k = \frac{1}{2}\int_0^{\beta-\alpha} (\alpha + u)\,\bigl(1 - \alpha/\beta - u/\beta\bigr)^{2k}\,\phi(\alpha + u)\,du.
+\mathcal{E}_k = \frac{1}{2}\int_0^{\beta-\alpha} (\alpha + u)\,\bigl(1 - \tfrac{\alpha+u}{\beta}\bigr)^{2k}\,\phi(\alpha + u)\,du.
 $$
 
-Factor out the dominant exponential using the identity $1-\alpha/\beta - u/\beta = (1-\alpha/\beta)(1 - u/(\beta - \alpha))$:
+Next, factor out the dominant exponential using the identity 
 
-$$
-= \frac{(1-\alpha/\beta)^{2k}}{2}\int_0^{\beta-\alpha} (\alpha + u)\left(1 - \frac{u}{\beta-\alpha}\right)^{2k}\phi(\alpha + u)\,du.
-$$
+$$1-\tfrac{\alpha+u}{\beta} = (1-\tfrac{\alpha}{\beta})(1 - \tfrac{u}{\beta - \alpha})$$
 
-For large $k$, the factor $(1-u/(\beta-\alpha))^{2k}$ concentrates the integrand near $u = 0$. Using the hypotheses $\phi(\alpha+u) = Cu^p(1+O(u))$ and $\alpha + u = \alpha(1+O(u))$, the integral is asymptotic to
-
+to get
 $$
-\alpha\,C\int_0^{\beta-\alpha} u^p\left(1 - \frac{u}{\beta-\alpha}\right)^{2k}du.
+= \frac{(1-\kappa^{-1})^{2k}}{2}\int_0^{\beta-\alpha} (\alpha + u)\left(1 - \frac{u}{\beta-\alpha}\right)^{2k}\phi(\alpha + u)\,du.
 $$
 
-The substitution $v = 2ku/(\beta-\alpha)$ converts this to
+Using the hypothesis $\phi(\alpha+u)\leq Cu^p$, we bound the last integral by
 
 $$
-\alpha\,C\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\int_0^{2k} v^p\left(1-\frac{v}{2k}\right)^{2k}dv.
+C\int_0^{\beta-\alpha}\bigl[\alpha\,u^p + u^{p+1}\bigr]\left(1-\tfrac{u}{\beta-\alpha}\right)^{2k}du.
 $$
 
-As $k \to \infty$, the integrand converges pointwise to $v^p\,e^{-v}$ and is bounded by $v^p\,e^{-v}$ (since $(1-v/n)^n \leq e^{-v}$ for $v \in [0,n]$). By the dominated convergence theorem, the integral converges to $\Gamma(p+1)$. Combining and noting that $(\beta-\alpha)/\beta = 1-\alpha/\beta$ yields the formula $(18)$. <span style="float: right;">$\square$</span>
+For each exponent $q \in \{p, p+1\}$, the substitution $v = 2ku/(\beta-\alpha)$ gives
+
+$$
+\int_0^{\beta-\alpha} u^q\left(1-\tfrac{u}{\beta-\alpha}\right)^{2k}du \;=\; \left(\tfrac{\beta-\alpha}{2k}\right)^{q+1}\!\!\int_0^{2k} v^q\left(1-\tfrac{v}{2k}\right)^{2k}dv \;\leq\; \left(\tfrac{\beta-\alpha}{2k}\right)^{q+1}\Gamma(q+1),
+$$
+
+where in the last step we used the pointwise inequality $(1-v/(2k))^{2k}\leq e^{-v}$ on $[0,2k]$ and extended the integral to $[0,\infty)$. Combining the two cases ($q = p, p+1$) and using equality $\Gamma(p+2) = (p+1)\Gamma(p+1)$, we deduce
+
+$$
+\mathcal{E}_k \;\leq\; \frac{C\,(1-\kappa^{-1})^{2k}}{2}\left(\frac{\beta-\alpha}{2k}\right)^{p+1}\Gamma(p+1)\left[\alpha + \frac{(p+1)(\beta-\alpha)}{2k}\right],
+$$
+
+which completes the proof. <span style="float: right;">$\square$</span>
 
 Compared with the worst-case bound $f(x_k) - f^\ast \leq (1-\alpha/\beta)^{2k}(f(x_0)-f^\ast)$, the Laplace estimate reveals a polynomial improvement of order $k^{-(p+1)}$ that depends on how the spectral density vanishes at the left edge of the spectrum. A flat density ($p = 0$) gives a $1/k$ improvement; a square-root vanishing ($p = 1/2$) gives $k^{-3/2}$; higher-order vanishing gives even larger gains.
 
@@ -1133,15 +1149,65 @@ The figure below compares several edge exponents $p$ against the same exponentia
 
 ### Application: Marchenko--Pastur spectrum
 
-The Marchenko--Pastur distribution arises as the limiting spectral distribution of sample covariance matrices $A = X^\top X/n$ when the entries of $X \in \mathbb{R}^{n \times d}$ are i.i.d. with zero mean and variance $1/d$, in the asymptotic regime $d/n \to \gamma > 0$ [MP67, BS10]. The absolutely continuous part has density
+We now specialize to the linear least-squares setting from the beginning of the notes, but with a random design matrix $D\in\mathbb{R}^{n\times d}$ whose entries are iid with zero mean and unit variance. Consider
+
+$$
+\min_{x\in\mathbb{R}^d} \frac{1}{2n}\|Dx-y\|^2.
+$$
+
+This is exactly the quadratic problem from Section 1, equivalently the problem of solving the normal equations $Ax=b$, with
+
+$$
+A=\frac{1}{n}D^\top D,\qquad b=\frac{1}{n}D^\top y.
+$$
+
+The **Marchenko--Pastur distribution** arises as the limiting spectral distribution of the sample covariance / Gram matrix $A = \tfrac{1}{n}D^\top D$ when the entries of $D \in \mathbb{R}^{n \times d}$ are iid with zero mean and unit variance, in the proportional asymptotic regime $$\tfrac{d}{n} \to \gamma > 0\qquad \textrm{as}\qquad n\to \infty.$$ Here, convergence is meant in the following precise sense. Letting $\lambda_1(A),\dots,\lambda_d(A)$ denote the eigenvalues of $A$, define the *empirical spectral measure*
+
+$$
+\hat{\mu}_A \;=\; \frac{1}{d}\sum_{i=1}^{d}\delta_{\lambda_i(A)},
+$$
+
+Note that this measure is itself random because $A$ is random. The claim is that $\hat{\mu}_A$ weakly converges to the Marchenko--Pastur law $\mu_{MP}$ (denoted as $\hat{\mu}_A\;\Rightarrow\;\mu_{\rm MP}$) in the sense that for any bounded continuous function $f$ the integral $\int f\hat \mu_A$ convergenes to $\int f\hat \mu_{\rm MP}$ almost surely. 
+
+The animation below illustrates this convergence for the three regimes $\gamma \in \{0.5,\,1,\,2\}$ (with iid standard Gaussian entries in $D$). For each frame a fresh $D$ is drawn at the given $n$, the $d$ eigenvalues of $A=\tfrac{1}{n}D^\top D$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\{B_j\}$ on the $\lambda$-axis, and each bin height equals
+
+$$
+\frac{\#\{i:\lambda_i(A) \in B_j\}}{d \cdot \lvert B_j\rvert},
+$$
+
+so that the total area of the histogram equals $1$ (matching the mass of $\hat{\mu}_A$). As $n$ grows, this histogram collapses onto the Marchenko--Pastur density curve overlaid in black. In the rank-deficient case $\gamma = 2$ the matrix $A$ has exactly $d - n$ zero eigenvalues, which form an atom of mass $1-1/\gamma$ at $\lambda=0$ in $\hat\mu_A$; those are excluded from the histogram, so the bulk integrates to the remaining mass $1/\gamma$ and aligns with $\rho_{MP}$ on $[\lambda_-,\lambda_+]$.
+
+![Empirical spectrum converging to the Marchenko--Pastur law](figures/mp_empirical_spectrum.gif)
+
+Concretely, $\mu_{MP}$ admits the decomposition
+
+$$
+\mu_{MP} \;=\; \max\!\left(0,\;1-\tfrac{1}{\gamma}\right)\,\delta_{0} \;+\; \rho_{MP}(\lambda)\,d\lambda,
+$$
+
+consisting of (i) a point mass at $\lambda=0$ of weight $\max(0,\,1-1/\gamma)$, which is nonzero only when $\gamma > 1$ and accounts for the $d-n$ forced zero eigenvalues of $A$, and (ii) an absolutely continuous part supported on $[\lambda_-,\lambda_+]$ with density
 
 $$
 \rho_{MP}(\lambda) = \frac{\sqrt{(\lambda_+ - \lambda)(\lambda - \lambda_-)}}{2\pi\gamma\,\lambda}, \qquad \lambda \in [\lambda_-, \lambda_+],
 $$
 
-where $\lambda_\pm = (1 \pm \sqrt{\gamma})^2$. The behavior depends on $\gamma$.
+where $\lambda_\pm := (1 \pm \sqrt{\gamma})^2$. The continuous part carries total mass $\min(1,\,1/\gamma)$, so together with the atom the measure integrates to $1$.
 
-1. **$\gamma < 1$ (no atom at zero).** Here $\lambda_- > 0$, so the problem is positive definite with
+To connect the Marchenko--Pastur law with the spectral integral bounds, we assume directly that the **reweighted empirical spectral measure**
+
+$$
+\nu_d:=\sum_{i=1}^d c_i^2\,\delta_{\lambda_i}
+$$
+
+has the same asymptotic shape as the empirical spectral measure of $A$, that is
+$$\nu_d \;\Rightarrow\; \lVert e_0\rVert^2\,\mu_{MP}, \qquad \text{a.s.~~~ as }~~~ n\to\infty,\ d/n\to\gamma.$$
+
+This is the only property used below and holds for example if we initialize at $x_0=0$ and $x^{\ast}\sim \mathcal{N}(0,\frac{R}{d}I_d)$ for any constant $R>0$.
+
+Let us now look at the convergence of GD for the least squares problem.
+
+
+1. **$\gamma < 1$ (no atom at zero).** Here $\lambda_- > 0$ and therefore $n>d$. This setting is relevant for linear regression with more feature vectors $(n)$ than the dimension of the space $(d)$. The problem is positive definite with
 
 $$\kappa = \frac{\lambda_+}{\lambda_-} = \frac{(1+\sqrt\gamma)^2}{(1-\sqrt\gamma)^2}.$$
 
@@ -1151,7 +1217,7 @@ $$
 \rho_{MP}(\lambda) \sim \frac{\sqrt{(\lambda_+ - \lambda_-)(\lambda - \lambda_-)}}{2\pi\gamma\,\lambda_-} = \frac{2\gamma^{1/4}\sqrt{\lambda - \lambda_-}}{2\pi\gamma\,(1-\sqrt\gamma)^2} \quad \text{as } \lambda \to \lambda_-^+.
 $$
 
-With isotropic initialization ($\phi = \|e_0\|^2\rho_{MP}$), Theorem 7.3 applies with $\alpha = \lambda_-$, $\beta = \lambda_+$, and $p = 1/2$. Since $\Gamma(3/2) = \sqrt\pi/2$, the estimate $(18)$ gives
+With isotropic initialization, Theorem 7.3 applies with $\alpha = \lambda_-$, $\beta = \lambda_+$, and $p = 1/2$. Since $\Gamma(3/2) = \sqrt\pi/2$, the estimate $(18)$ gives
 
 $$
 \mathcal{E}_k \sim \frac{\tilde{C}(\gamma)}{k^{3/2}}\left(1 - \frac{1}{\kappa}\right)^{2k}\|e_0\|^2 \quad \text{as } k \to \infty,
@@ -1159,16 +1225,16 @@ $$
 
 where $\tilde{C}(\gamma)$ is an explicit constant depending on the aspect ratio $\gamma$.
 
-2. **$\gamma = 1$ (hard edge at zero).** Then $\lambda_-=0$ and
+2. **$\gamma = 1$ (hard edge at zero).** This is the case of a square data matrix $n=d$. Then the left edge is $\lambda_-=0$ and
 
 $$
 \rho_{MP}(\lambda) = \frac{\sqrt{4-\lambda}}{2\pi\sqrt{\lambda}} \sim \frac{1}{\pi\sqrt{\lambda}} \quad \text{as } \lambda \to 0^+.
 $$
 
-Thus $\phi(\lambda) \propto \lambda^{-1/2}$ (power-law exponent $a=1/2$ in Theorem 7.2 with $s=0$), and
+Thus under isotropic initialization $\phi(\lambda) \sim \tfrac{\lVert e_0\rVert^2}{\pi}\,\lambda^{-1/2}$ near $\lambda=0$ (power-law exponent $a=1/2$ in Theorem 7.2 with $s=0$, $M = \lVert e_0\rVert^2/\pi$, $\beta = 4$). The asymptotic $(17)$ then gives
 
 $$
-f(x_k)-f^\ast=O(k^{-3/2}).
+\mathcal{E}_k \;\sim\; \frac{\lVert e_0\rVert^2}{\sqrt{2\pi}\,k^{3/2}} \qquad \text{as } k \to \infty.
 $$
 
 3. **$\gamma > 1$ (rank deficient).** The empirical spectrum has an atom at $0$ of asymptotic mass $1-1/\gamma$, so globally $\alpha=0$. However, the nonzero spectrum still lies in $[(\sqrt{\gamma}-1)^2,\ (\sqrt{\gamma}+1)^2]$. Since the objective gap carries the factor $\lambda$ in $(16)$, the nullspace part does not contribute to $f(x_k)-f^\ast$. Therefore the nonzero spectral component behaves as in the positive definite case, with
@@ -1180,74 +1246,207 @@ $$
 and the same asymptotic form
 
 $$
-f(x_k)-f^\ast\sim \frac{\hat{C}(\gamma)}{k^{3/2}}\left(1-\frac{\alpha_{\mathrm{eff}}}{\beta}\right)^{2k}\|e_0\|^2.
+\mathcal{E}_k\sim \frac{\hat{C}(\gamma)}{k^{3/2}}\left(1-\frac{\alpha_{\mathrm{eff}}}{\beta}\right)^{2k}\|e_0\|^2.
 $$
 
 In all three regimes, the square-root edge behavior of Marchenko--Pastur yields the same $k^{-3/2}$ polynomial factor; what changes is whether it multiplies an exponential term (gap $>0$) or appears alone (gap $=0$).
 
-The first figure summarizes the three Marchenko--Pastur spectral shapes, including the atom at zero when $\gamma>1$.
+### Extensions to time varying stepsizes and the Krylov method
 
-![Marchenko--Pastur spectral densities for three aspect-ratio regimes, including the atom at zero when gamma is greater than 1](figures/marchenko_pastur_regimes.png)
-
-The next figure compares the corresponding convergence proxies over iterations.
-
-![Convergence-proxy curves versus iteration across Marchenko--Pastur regimes (gamma less than 1, gamma equals 1, gamma greater than 1)](figures/mp_convergence_regimes.png)
-
-### Discussion
-
-The two mechanisms---source conditions and spectral structure---are complementary and can be combined. Under the power-law density $\phi(\lambda) = M\lambda^{a-1}$ of Theorem 7.2, a source condition of order $s$ shifts the effective exponent from $a$ to $a_{\mathrm{eff}} = a + 2s$, giving rate $\mathcal{E}_k = O(k^{-(a+2s+1)})$, which improves both over the pointwise bound $O(k^{-(1+2s)})$ (Theorem 7.1) and the spectral bound without source condition $O(k^{-(a+1)})$.
-
-In the positive definite setting with source condition $e_0=A^s w$, there is a clear phase transition around
+We now turn to the analogous analysis for **gradient descent with time-varying stepsizes**. Passing directly to the limit under the reweighted spectral assumption $\nu_d\Rightarrow\nu$ of the earlier subsections, finding the best stepsize sequence is equivalent to solving the polynomial problem
 
 $$
-k_{\mathrm{trans}} \approx \frac{1+2s}{2}(\kappa-1).
+\mathcal{E}_k \;=\; \min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\,\int_{0}^{\beta}\lambda\,p(\lambda)^2\,d\nu(\lambda), \tag{19}
 $$
 
-before this scale, the source-condition estimate behaves sublinearly as $k^{-(1+2s)}$, while beyond it the linear factor $(1-1/\kappa)^{2k}$ dominates and the source condition appears primarily through an improved constant.
+where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta]$ --- for example $\nu=\lVert e_0\rVert^2\,\mu_{MP}$ in the Marchenko--Pastur setting --- and $\mathcal{P}_k$ consists of degree at most $k$ polynomials. Note that the constraint set $\mathcal{V}_k:=\{p\in \mathcal{P}_k: p(0)=1\}$ is a finite-dimensional affine space. Strictly speaking, we should stipulate in $(19)$ that the polynomials in question have all real roots. For all examples we will consider the optimal polynomial in $\mathcal{V}_k$ will have all real roots and therefore there is no distinction between the two optimization problems.
 
-The spectral integral approach also extends beyond gradient descent. In the polynomial framework of Section 3, any polynomial method with polynomial $p_k$ satisfying $p_k(0) = 1$ yields
+Interestingly, we will now see that the solution to $(19)$ can be computed explicitely. The key idea is to realize that the objective has the form $\|p\|^2$ where the norm is induced by the inner product $\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$ where we define the reqeighted measure $d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$. Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to this inner product. Note that an orthonormal basis can be analytically constructed by a Gram-Schmidt process. Define now the similarity measure (kernel) on $\mathbb{R}$ by the expression
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^2\,d\mu(\lambda).
+K_k(t,s) \;:=\; \sum_{j=0}^{k}\psi_j(t)\,\psi_j(s).
 $$
 
-For the Krylov subspace method and CG, $p_k$ is chosen optimally over $\mathcal{P}_k$. This gives a direct generalization of all Section 7 results.
+The kernel $K_k$ does not depend on the choice of orthonormal basis, and it satisfies the following *reproducing identity*.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 7.4 (CG spectral variational form).** *Let $A \succeq 0$, assume $b \in \mathrm{range}(A)$, and let $x^\ast=\mathrm{proj}_S(x_0)$. For each CG iterate before termination,*
+**Lemma 7.4 (Reproducing identity).** *For every $p\in\mathcal{P}_k$ and every $s\in\mathbb{R}$,* it holds:
 
 $$
-f(x_k^{\mathrm{CG}})-f^\ast = \frac{1}{2}\min_{\substack{p \in \mathcal{P}_k\\ p(0)=1}} \int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda). \tag{19}
-$$
-
-*Consequently, for every admissible polynomial $q_k$ with $q_k(0)=1$,*
-
-$$
-f(x_k^{\mathrm{CG}})-f^\ast \leq \frac{1}{2}\int_0^\beta \lambda\,q_k(\lambda)^2\,d\mu(\lambda).
+p(s) \;=\; \int p(t)\,K_k(t,s)\,d\mu(t). \tag{20}
 $$
 
 </div>
 
-Choosing $q_k(\lambda)=(1-\lambda/\beta)^k$ recovers gradient descent with stepsize $1/\beta$, hence
+*Proof.* Expand $p$ in the orthonormal basis $\{\psi_j\}_{j=0}^{k}$ of $\mathcal{P}_k$ to obtain
 
 $$
-f(x_k^{\mathrm{CG}})-f^\ast\le f(x_k^{\mathrm{GD}})-f^\ast.
+p(t) \;=\; \sum_{j=0}^{k}\langle p,\psi_j\rangle\,\psi_j(t).
 $$
 
-Therefore every spectral bound proved in Section 7 for GD transfers immediately to CG (with the same assumptions and constants): source-condition rates from Theorem 7.1, power-law rates from Theorem 7.2, Laplace edge asymptotics from Theorem 7.3, and the three Marchenko--Pastur regimes. In each case, CG is never worse and can be strictly better because it optimizes over all degree-$k$ polynomials rather than using the single fixed polynomial $(1-\lambda/\beta)^k$ (see [Saa03, Gre97]).
+Multiplying both sides by $\psi_j(s)$, summing over $j$, and evaluating at $t=s$ gives
 
-The figure below illustrates this dominance on a synthetic power-law spectrum: for matched initialization and steps, the CG curve stays below the GD curve.
+$$
+p(s) \;=\; \sum_{j=0}^{k}\langle p,\psi_j\rangle\,\psi_j(s) \;=\; \int p(t)\,\Bigl(\sum_{j=0}^{k}\psi_j(t)\,\psi_j(s)\Bigr)\,d\mu(t) \;=\; \int p(t)\,K_k(t,s)\,d\mu(t),
+$$
 
-![CG vs GD on power-law spectrum](figures/cg_vs_gd_powerlaw.png)
+as claimed. <span style="float: right;">$\square$</span>
 
-In particular, in the PSD baseline case ($s=0$), Theorem 6.3 already shows a sharper $O(1/k^2)$ CG rate versus the $O(1/k)$ GD rate from Theorem 6.1. Under favorable spectral structure (source conditions, edge decay, or Marchenko--Pastur geometry), the same mechanism yields at least the GD structured rate and often improves it further in practice.
 
-The next figure compares GD and CG across the three Marchenko--Pastur regimes ($\gamma<1$, $\gamma=1$, $\gamma>1$), again showing the same regime transitions with CG typically ahead.
+We now ready to write out explicitely the solution to $(19)$ in terms of the kernel $K_k$.
 
-![CG vs GD across Marchenko--Pastur regimes](figures/cg_vs_gd_mp.png)
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-The key message is that worst-case bounds, while universal, can be highly pessimistic when the problem has spectral structure. The spectral integral converts qualitative knowledge about the eigenvalue distribution into quantitative improvements in convergence rates, and the Laplace method provides a systematic tool for extracting these improvements.
+
+
+**Theorem 7.4 (Minimum-norm polynomial).** *Fix $x_0\in\mathbb R$. The unique solution of*
+
+$$
+\min_{\substack{p\in\mathcal{P}_k\\ p(x_0)=1}}\;\int \lambda p(\lambda)^2\,d\nu(\lambda)
+$$
+
+*is* given by
+
+$$
+p^\ast(t) \;=\; \frac{K_k(t,x_0)}{K_k(x_0,x_0)} \qquad \text{with minimal value}\quad \frac{1}{K_k(x_0,x_0)}.
+$$
+
+</div>
+
+*Proof.* For any feasible $p$, the reproducing identity $(20)$ gives $1=p(x_0)=\langle p,K_k(\cdot,x_0)\rangle$. By Cauchy--Schwarz, we obtain
+
+$$
+1 \;=\; \bigl|\langle p,K_k(\cdot,x_0)\rangle\bigr|^2 \;\leq\; \lVert p\rVert^2\;\lVert K_k(\cdot,x_0)\rVert^2.
+$$
+
+Applying $(20)$ to the polynomial $K_k(\cdot,x_0)\in\mathcal{P}_k$ at $s=x_0$ yields $\lVert K_k(\cdot,x_0)\rVert^2=K_k(x_0,x_0)$. Hence we deduce $\lVert p\rVert^2\geq 1/K_k(x_0,x_0)$. The polynomial $p^\ast=K_k(\cdot,x_0)/K_k(x_0,x_0)$ is feasible and attains this lower bound; uniqueness follows from the equality case in Cauchy--Schwarz, which forces $p$ to be proportional to $K_k(\cdot,x_0)$, with the proportionality constant fixed by $p(x_0)=1$. <span style="float: right;">$\square$</span>
+
+
+
+We now apply Theorem 7.4 to the Marchenko--Pastur problem in the critical case $\gamma=1$. The orthogonal polynomials with respect to the corresponding measure turn out to be the Chebychev polynomials of the second kind $U_k$.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 7.5 (CG on Marchenko--Pastur, critical case).** *Suppose $\gamma=1$ and the reweighted spectral assumption $\nu_d\Rightarrow \lVert e_0\rVert^2\,\mu_{MP}$ holds. Then for every $k\geq 1$,* it holds:
+
+$$
+\mathcal{E}_k \;=\; \frac{3\,\lVert e_0\rVert^2}{(k+1)(k+2)(2k+3)}. \tag{22}
+$$
+In particular, this is the rate achieved by the iterates of the CG algorithm.
+</div>
+
+*Proof.* Specializing the Marchenko--Pastur distribution to $\gamma=1$ yields
+
+$$
+\rho_{MP}(\lambda) \;=\; \frac{\sqrt{4-\lambda}}{2\pi\sqrt{\lambda}}\qquad\textrm{on}\qquad[0,4].
+$$
+
+Therefore the measure $d\mu(\lambda):=\lambda\,\rho_{MP}(\lambda)\,d\lambda$ that appears in $(19)$ is
+
+$$
+d\mu(\lambda) \;=\; \frac{\sqrt{\lambda(4-\lambda)}}{2\pi}\,d\lambda \qquad\textrm{on}\qquad [0,4],
+$$
+
+and minimizing the right-hand side of $(19)$ amounts to
+
+$$
+\mathcal{E}_k \;=\; \frac{\lVert e_0\rVert^2}{2}\,\min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_{0}^{4} p(\lambda)^2\,d\mu(\lambda).
+$$
+
+This is the abstract problem of Theorem 7.4 with $x_0=0$. It suffices now to identify an orthogonal basis of $\mathcal{P}_k$ in $L^2(\mu)$. Apply the affine change of variables
+
+$$
+x(\lambda) \;:=\; \frac{\lambda}{2}-1,
+$$
+
+which maps $[0,4]$ to $[-1,1]$. With this change of coordinates we have $\sqrt{\lambda(4-\lambda)}=2\sqrt{1-x^2}$ and $d\lambda=2\,dx$, hence $d\mu = \tfrac{2}{\pi}\sqrt{1-x^2}\,dx$. A standard fact is that the Chebyshev polynomials of the second kind $U_j$ from Section 6 are orthogonal on $[-1,1]$ with weight $\sqrt{1-x^2}$ and their square norm is $\int_{-1}^{1}U_j(x)^2\sqrt{1-x^2}\,dx=\pi/2$. Therefore
+
+$$
+q_j(\lambda) \;:=\; U_j\!\bigl(x(\lambda)\bigr),
+$$
+
+is an *orthonormal* basis of $\mathcal{P}_k$ in $L^2(\mu)$. Usingt the identities $U_j(-1)=(-1)^j(j+1)$ and $U_j(1)=j+1$ from Section 6 gives $q_j(0)^2=(j+1)^2$. Substituting into the orthogonal-polynomial formula $(21)$ gives
+
+$$
+\min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_{0}^{4}p(\lambda)^2\,d\mu(\lambda) \;=\;  \frac{1}{\sum_{j=0}^{k}(j+1)^2} \;=\; \frac{6}{(k+1)(k+2)(2k+3)},
+$$
+
+Multiplying by $\lVert e_0\rVert^2/2$ yields the bound $(22)$. <span style="float: right;">$\square$</span>
+
+Two remarks comparing $(22)$ with the GD bound at $\gamma=1$ are in order.
+
+1. **Improvement over the universal CG bound.** The universal CG bound from Theorem 6.3 gives $f(x_k^{\mathrm{CG}})-f^\ast=O(\lVert e_0\rVert^2/k^{2})$. The MP analysis improves this to $O(\lVert e_0\rVert^2/k^{3})$.
+
+2. **Comparison with GD.** Contrasting $(22)$ with the GD asymptotic $\mathcal E_k\sim \lVert e_0\rVert^2/(\sqrt{2\pi}\,k^{3/2})$ derived in regime $2$ above, CG converges at the faster rate $k^{-3}$ at the critical aspect ratio.
+
+**Numerical illustration.** The figure below confirms both rates on a random linear least-squares problem at the critical aspect ratio. We draw $D\in\mathbb R^{n\times n}$ with iid standard Gaussian entries ($n=d=1500$, so $\gamma=1$), form $A=\tfrac{1}{n}D^\top D$ (whose limiting spectrum is $\mu_{MP}$ on $[0,4]$), pick $x^\ast$ uniformly on the sphere of radius $\sqrt{n}$, and run GD with stepsize $\eta=1/\lambda_{\max}(A)$ and CG starting from $x_0=0$, plotting the median objective gap over $30$ independent trials (shaded bands show the $10$--$90\%$ interquantile range). Both curves match their predicted sublinear rates --- $O(k^{-3/2})$ for GD and $O(k^{-3})$ for CG. The GD band is essentially invisible (the empirical rate is highly self-averaging across draws of $A$), while the CG band widens slightly in the tail, reflecting CG's greater sensitivity to the random small-eigenvalue structure of $A$.
+
+![Sublinear convergence of GD and CG on random least squares at $\gamma=1$](figures/convergence_mp_gamma1.png)
+
+As the final application of the spectral integral approach, we now derive convergence of CG under a power-law spectrum. We assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. The relevant measure is therefore  $d\mu(\lambda):=\lambda\,\phi(\lambda)\,d\lambda=M\lambda^{a}\,d\lambda$. After rescaling $[0,\beta]$ to $[-1,1]$, it turns out that orthonormal collection of polynomials is comprise of so-called Jacobi polynomials $P_j^{(0,a)}$.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 7.6 (CG on power-law spectral density).** *Assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. Then the CG iterates satisfy*
+
+$$
+\mathcal{E}_k^{\mathrm{CG}} \;\leq\; \frac{M\,\beta^{a+1}}{2\,S_k(a)}, \qquad S_k(a):=\sum_{j=0}^{k}(2j+a+1)\binom{j+a}{j}^{2}. \tag{23}
+$$
+
+*In particular, as $k\to\infty$,* we have
+
+$$
+\mathcal{E}_k^{\mathrm{CG}} \;\sim\; \frac{M\,\Gamma(a+1)\,\Gamma(a+2)\,\beta^{a+1}}{2\,k^{2(a+1)}}. \tag{24}
+$$
+
+</div>
+
+*Proof.* Substituting $\phi(\lambda)=M\lambda^{a-1}$ into $(19)$ and writing $d\mu(\lambda):=\lambda\,\phi(\lambda)\,d\lambda=M\lambda^{a}\,d\lambda$ on $[0,\beta]$ yields
+
+$$
+\mathcal{E}_k^{\mathrm{CG}} \;=\; \frac{1}{2}\,\min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_{0}^{\beta} p(\lambda)^{2}\,d\mu(\lambda).
+$$
+
+This is the abstract problem of Theorem 7.4 with $x_0=0$. By the orthogonal-polynomial form $(21)$, it suffices to identify an orthogonal basis of $\mathcal{P}_k$ in $L^{2}(\mu)$. Apply the affine change of variables
+
+$$
+x(\lambda) \;:=\; \frac{2\lambda}{\beta}-1,
+$$
+
+which maps $[0,\beta]$ to $[-1,1]$. Hence we have $d\mu = M(\beta/2)^{a+1}(1+x)^{a}\,dx$. Classically, the so-called Jacobi polynomials $P_j^{(0,a)}$ are orthogonal on $[-1,1]$ with weight $(1+x)^{a}$ and squared norms
+
+$$
+\int_{-1}^{1} P_j^{(0,a)}(x)^{2}\,(1+x)^{a}\,dx \;=\; \frac{2^{a+1}}{2j+a+1},
+$$
+
+That is,
+
+$$
+q_j(\lambda) \;:=\; P_j^{(0,a)}\!\bigl(x(\lambda)\bigr)
+$$
+
+is an orthogonal basis of $\mathcal{P}_k$ in $L^{2}(\mu)$. A standard computation therefore shows
+
+$$
+\min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_{0}^{\beta}p(\lambda)^{2}\,d\mu(\lambda) \;=\; \biggl(\sum_{j=0}^{k}\frac{q_j(0)^{2}}{h_j}\biggr)^{-1} \;=\; \frac{M\,\beta^{a+1}}{S_k(a)},
+$$
+
+where $h_j:=\lVert q_j\rVert_{L^{2}(\mu)}^{2}=M\beta^{a+1}/(2j+a+1)$ is the squared $L^{2}(\mu)$ norm of $q_j$, and the denominator $S_k(a)$ is the sum defined in $(23)$, obtained by using the Jacobi endpoint identity $P_j^{(0,a)}(-1)=(-1)^{j}\binom{j+a}{j}$ to evaluate $q_j(0)^{2}=\binom{j+a}{j}^{2}$. Multiplying by $1/2$ yields $(23)$. For the asymptotic estimate, Stirling gives $\binom{j+a}{j}=\Gamma(j+a+1)/(j!\,\Gamma(a+1))\sim j^{a}/\Gamma(a+1)$ as $j\to\infty$, so
+
+$$
+S_k(a) \;\sim\; \frac{2}{\Gamma(a+1)^{2}}\sum_{j=0}^{k} j^{2a+1} \;\sim\; \frac{k^{2(a+1)}}{(a+1)\,\Gamma(a+1)^{2}} \;=\; \frac{k^{2(a+1)}}{\Gamma(a+1)\,\Gamma(a+2)},
+$$
+
+and substituting into $(23)$ yields $(24)$. <span style="float: right;">$\square$</span>
+
+So we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to the rate of gradient descent $O(k^{-(a+1)})$ in Theorem 7.2.
+
+
+**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\{\tfrac{1}{2},1,\tfrac{3}{2}\}$. For each $a$, we set $d=2\!\times\!10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\!\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretisation of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $x_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across more than five decades. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime --- visibly so for $a=\tfrac{1}{2}$, where the slope is shallow enough that the regime is long --- before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps and its rapid mop-up of the few remaining well-separated eigenvalues.
+
+![Sublinear convergence of GD and CG under power-law spectral density](figures/convergence_powerlaw.png)
+
 
 ---
 
@@ -1261,6 +1460,7 @@ The results discussed in these notes are classical and widely documented in nume
 - **Conjugate gradient and Krylov optimality.** Foundational CG/Krylov results originate in [HS52, Lan52]; modern treatments include [Saa03, Gre97].
 - **Source conditions and spectral-decay rates.** The source-condition framework and decay-dependent rates are standard in inverse problems and regularization theory; see [EHN96, Han95].
 - **Marchenko--Pastur asymptotics.** The limiting spectral law is due to [MP67], with modern expositions in [BS10, Ver18].
+- **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behaviour of this density determines the asymptotic exponent.
 
 ### How the present results map to the cited literature
 
@@ -1273,10 +1473,12 @@ The notes combine ideas that appear in different communities; the table below ma
 | Theorems 3--4 (Krylov optimality and CG correctness) | [HS52], [Lan52], [Saa03], [Gre97] | Canonical Krylov-space characterization: CG realizes the polynomial/Krylov minimizer with three-term recurrences. |
 | Theorems 5--7 (PSD regime: $O(1/k)$ for GD, $O(1/k^2)$ for Chebyshev/CG) | [Saa03], [EHN96], [Han95] | Same polynomial-filter mechanism appears in semi-iterative and regularization analyses when small eigenvalues dominate. |
 | Theorem 7.1 (source condition exponent $1+2s$) | [EHN96], [Han95] | Matches the inverse-problem viewpoint: smoothness/source conditions convert spectral decay assumptions into algebraic convergence exponents. |
-| Theorem 7.2 (power-law spectral density) | [EHN96], [BS10], [Ver18] | Beta-function evaluation of the spectral integral under power-law density $\phi(\lambda)=M\lambda^{a-1}$; yields precise asymptotics for GD. |
-| Theorem 7.3 (Laplace edge correction) | [BS10], [Ver18] | Uses edge asymptotics of spectral integrals; the $k^{-(p+1)}$ correction reflects local density behavior near the spectral edge. |
-| Marchenko--Pastur subsection | [MP67], [BS10], [Ver18] | Imports MP density/edge behavior into the optimization bounds, yielding regime-dependent prefactors and the $k^{-3/2}$ edge signature. |
-| Theorem 7.4 (CG variational spectral form) | [Saa03], [Gre97] | Restates the classical CG polynomial minimization property in the spectral-integral notation used in Section 7. |
+| Theorem 7.2 (power-law spectral density) | [EHN96], [BS10], [Ver18], [PS20], [CGPSP22] | Beta-function evaluation of the spectral integral under power-law density $\phi(\lambda)=M\lambda^{a-1}$; yields precise asymptotics for GD. Specialises the average-case framework of [PS20] and the "only tails matter" universality of [CGPSP22] to first-order GD, where the soft-edge exponent $a$ at $\lambda=0$ sets the rate. |
+| Theorem 7.3 (Laplace edge correction) | [BS10], [Ver18], [CGPSP22] | Uses edge asymptotics of spectral integrals; the $k^{-(p+1)}$ correction reflects local density behavior near the spectral edge and is the GD analogue of the edge-driven asymptotics identified in [CGPSP22]. |
+| Marchenko--Pastur subsection | [MP67], [BS10], [Ver18], [PS20], [PvMPP21] | Imports MP density/edge behavior into the optimization bounds, yielding regime-dependent prefactors and the $k^{-3/2}$ edge signature. [PS20] derives the matching Nesterov-type average-case rates by designing momentum schemes tuned to the MP density, and [PvMPP21] establishes universality of the halting-time asymptotics under MP. |
+| Theorem 7.4 (Constrained min-norm polynomial via reproducing kernel) | [Sze39], [Saa03], [Gre97] | Standard reproducing-kernel/orthogonal-polynomial solution of the one-point-constrained $L^2$ minimization; supplies the abstract tool used in Theorems 7.5--7.6. |
+| Theorem 7.5 (CG on Marchenko--Pastur) | [Saa03], [Gre97], [PS20], [SP20], [PvMPP21] | Closed-form CG asymptotics on MP via the Chebyshev-second-kind reproducing kernel; the $k^{-3}$ exponent matches the average-case complexity of Polyak/Nesterov momentum [PS20, SP20] and the universality analysis of [PvMPP21], derived by Stieltjes-transform methods. |
+| Theorem 7.6 (CG on power-law spectral density) | [Sze39], [Saa03], [Gre97], [CGPSP22] | Reproducing-kernel CG bound under power-law $\phi(\lambda)=M\lambda^{a-1}$, computed via Jacobi $P_j^{(0,a)}$ as the orthonormal basis on the rescaled interval; doubles the GD exponent of Theorem 7.2 from $a+1$ to $2(a+1)$ and specialises the "tail-driven" average-case rates of [CGPSP22] to the CG/Krylov setting. |
 
 In particular, the novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
 
@@ -1296,38 +1498,35 @@ In particular, the novelty of these notes is mostly **synthesis and alignment of
 - [Nes04] Nesterov, Y. (2004). *Introductory Lectures on Convex Optimization*. Kluwer.
 - [Nes18] Nesterov, Y. (2018). *Lectures on Convex Optimization* (2nd ed.). Springer.
 - [Ver18] Vershynin, R. (2018). *High-Dimensional Probability*. Cambridge University Press.
+- [PS20] Pedregosa, F., and Scieur, D. (2020). *Acceleration through spectral density estimation*. Proceedings of the 37th International Conference on Machine Learning, PMLR 119:7553--7562. arXiv:2002.04756.
+- [SP20] Scieur, D., and Pedregosa, F. (2020). *Universal Average-Case Optimality of Polyak Momentum*. Proceedings of the 37th International Conference on Machine Learning, PMLR 119:8565--8572. arXiv:2002.04664.
+- [PvMPP21] Paquette, C., van Merriënboer, B., Paquette, E., and Pedregosa, F. (2021). *Halting Time is Predictable for Large Models: A Universality Property and Average-case Analysis*. arXiv:2006.04299.
+- [CGPSP22] Cunha, L., Gidel, G., Pedregosa, F., Scieur, D., and Paquette, C. (2022). *Only Tails Matter: Average-Case Universality and Robustness in the Convex Regime*. Proceedings of the 39th International Conference on Machine Learning, PMLR 162:4474--4491. arXiv:2206.09901.
+- [Sze39] Szegő, G. (1939). *Orthogonal Polynomials*. American Mathematical Society Colloquium Publications, vol. 23.
 ---
 
 ## Summary
 
-**Positive definite case** ($\alpha > 0$):
+**Worst-case iteration complexity.**
 
-| Method | Per-step cost | Iteration complexity | Requires $\alpha, \beta$? |
-|--------|--------------|---------------------|-------------------|
-| Gradient descent | One matvec | $O(\kappa\,\ln(1/\varepsilon))$ | Yes (for optimal step) |
-| Chebyshev GD | One matvec | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ | Yes |
-| Conjugate Gradient | One matvec | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$, at most $m$ steps ($m\le d$) | No |
+| Method | Positive definite ($\alpha > 0$) | Positive semidefinite ($\alpha = 0$) |
+|--------|----------------------------------|--------------------------------------|
+| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\|x_0 - x^\ast\|^2/\varepsilon)$ |
+| Chebyshev GD / Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ (CG: at most $m\le d$ steps) | $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$ (CG: at most $m\le d$ steps) |
 
-**Positive semidefinite case** ($\alpha = 0$):
 
-| Method | Per-step cost | Iteration complexity | Rate type |
-|--------|--------------|---------------------|-----------|
-| Gradient descent | One matvec | $O(\beta\,\|x_0 - x^\ast\|^2/\varepsilon)$ | Sublinear $O(1/k)$ |
-| Chebyshev GD | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$ | Sublinear $O(1/k^2)$ |
-| Conjugate Gradient | One matvec | $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$, at most $m$ steps | Sublinear $O(1/k^2)$ |
-
-The key takeaway: one spectral idea runs through the entire development. On quadratics, the Chebyshev and CG methods achieve a square-root improvement over gradient descent in *every* regime---whether measured by the condition number $\kappa$ in the positive definite case or by the iteration complexity in the positive semidefinite case. CG accomplishes this *adaptively*, without needing to know the eigenvalues or fixing the iteration count in advance, and terminates (in exact arithmetic) in a number of steps bounded by the number of distinct nonzero eigenvalues of $A$. In practice CG does not exactly terminate after finitely many steps due to compounding of numerical errors.
 
 **Spectral structure** (Section 7):
 
 | Setting | Assumption | GD rate | CG rate |
 |---------|-----------|---------|---------|
-| Source condition, order $s$ | $e_0 = A^s w$ | $O(k^{-(1+2s)})$ | At least $O(k^{-(1+2s)})$, typically better |
-| Power-law model $(\alpha,\beta)$ | $\lambda_i \sim i^{-\alpha}$, $\delta_i \sim i^{-\beta/2}$ | $\Theta(k^{-(\alpha+\beta-1)/\alpha})$ | At least same rate, typically better |
-| PD, edge exponent $p$ | $\phi(\lambda) \sim (\lambda-\alpha)^p$ | $(1-1/\kappa)^{2k} \cdot O(k^{-(p+1)})$ | At least same bound, with adaptive improvement possible |
-| Marchenko--Pastur | $d/n \to \gamma$ | $\gamma \neq 1$: $(1-\alpha_{\mathrm{eff}}/\beta)^{2k}O(k^{-3/2})$, $\gamma=1$: $O(k^{-3/2})$ | At least same regime-wise rate, often faster in practice |
+| Source condition, order $s$ | $e_0 = A^s w$ | $O(k^{-(1+2s)})$ | --- |
+| Power-law model $(\alpha,\beta)$ | $\lambda_i \sim i^{-\alpha}$, $\delta_i \sim i^{-\beta/2}$ | $\Theta(k^{-(\alpha+\beta-1)/\alpha})$ | --- |
+| Power-law density (Theorems 7.2, 7.6) | $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$, $a>-1$ | $\Theta(k^{-(a+1)})$ | $O(k^{-2(a+1)})$ |
+| PD, edge exponent $p$ | $\phi(\lambda) \sim (\lambda-\alpha)^p$ | $(1-1/\kappa)^{2k} \cdot O(k^{-(p+1)})$ | --- |
+| Marchenko--Pastur | $d/n \to \gamma$ | $\gamma \neq 1$: $(1-\alpha_{\mathrm{eff}}/\beta)^{2k}O(k^{-3/2})$, $\gamma=1$: $O(k^{-3/2})$ | $\gamma=1$: $O(k^{-3})$ (Theorem 7.5) |
 
-When the spectrum has structure---whether through a source condition on the initial error, a favorable eigenvalue density, or both---the worst-case bounds can be improved by polynomial factors in $k$. The spectral integral and Laplace method provide the tools for extracting these improvements.
+
 
 ---
 
