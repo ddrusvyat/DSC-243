@@ -1119,8 +1119,9 @@ Next, factor out the dominant exponential using the identity
 $$1-\tfrac{\alpha+u}{\beta} = (1-\tfrac{\alpha}{\beta})(1 - \tfrac{u}{\beta - \alpha})$$
 
 to get
+
 $$
-= \frac{(1-\kappa^{-1})^{2k}}{2}\int_0^{\beta-\alpha} (\alpha + u)\left(1 - \frac{u}{\beta-\alpha}\right)^{2k}\phi(\alpha + u)\,du.
+\mathcal{E}_k= \frac{(1-\kappa^{-1})^{2k}}{2}\int_0^{\beta-\alpha} (\alpha + u)\left(1 - \frac{u}{\beta-\alpha}\right)^{2k}\phi(\alpha + u)\,du.
 $$
 
 Using the hypothesis $\phi(\alpha+u)\leq Cu^p$, we bound the last integral by
@@ -1129,7 +1130,7 @@ $$
 C\int_0^{\beta-\alpha}\bigl[\alpha\,u^p + u^{p+1}\bigr]\left(1-\tfrac{u}{\beta-\alpha}\right)^{2k}du.
 $$
 
-For each exponent $q \in \{p, p+1\}$, the substitution $v = 2ku/(\beta-\alpha)$ gives
+For each exponent $q \in \lbrace p, p+1\rbrace$, the substitution $v = 2ku/(\beta-\alpha)$ gives
 
 $$
 \int_0^{\beta-\alpha} u^q\left(1-\tfrac{u}{\beta-\alpha}\right)^{2k}du \;=\; \left(\tfrac{\beta-\alpha}{2k}\right)^{q+1}\!\!\int_0^{2k} v^q\left(1-\tfrac{v}{2k}\right)^{2k}dv \;\leq\; \left(\tfrac{\beta-\alpha}{2k}\right)^{q+1}\Gamma(q+1),
