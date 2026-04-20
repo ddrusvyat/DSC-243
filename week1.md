@@ -1516,6 +1516,7 @@ The notes combine ideas that appear in different communities; the table below ma
 - [PvMPP21] Paquette, C., van Merriënboer, B., Paquette, E., and Pedregosa, F. (2021). *Halting Time is Predictable for Large Models: A Universality Property and Average-case Analysis*. arXiv:2006.04299.
 - [CGPSP22] Cunha, L., Gidel, G., Pedregosa, F., Scieur, D., and Paquette, C. (2022). *Only Tails Matter: Average-Case Universality and Robustness in the Convex Regime*. Proceedings of the 39th International Conference on Machine Learning, PMLR 162:4474--4491. arXiv:2206.09901.
 - [Sze39] Szegő, G. (1939). *Orthogonal Polynomials*. American Mathematical Society Colloquium Publications, vol. 23.
+
 ---
 
 ## Summary
