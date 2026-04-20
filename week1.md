@@ -1161,13 +1161,21 @@ $$
 A=\frac{1}{n}D^\top D,\qquad b=\frac{1}{n}D^\top y.
 $$
 
-The **Marchenko--Pastur distribution** arises as the limiting spectral distribution of the sample covariance / Gram matrix $A = \tfrac{1}{n}D^\top D$ when the entries of $D \in \mathbb{R}^{n \times d}$ are iid with zero mean and unit variance, in the proportional asymptotic regime $$\tfrac{d}{n} \to \gamma > 0\qquad \textrm{as}\qquad n\to \infty.$$ Here, convergence is meant in the following precise sense. Letting $\lambda_1(A),\dots,\lambda_d(A)$ denote the eigenvalues of $A$, define the *empirical spectral measure*
+The **Marchenko--Pastur distribution** arises as the limiting spectral distribution of the sample covariance / Gram matrix $A = \tfrac{1}{n}D^\top D$ when the entries of $D \in \mathbb{R}^{n \times d}$ are iid with zero mean and unit variance, in the proportional asymptotic regime 
+
+$$\tfrac{d}{n} \to \gamma > 0\qquad \textrm{as}\qquad n\to \infty.$$ 
+
+Here, convergence is meant in the following precise sense. Letting $\lambda_1(A),\dots,\lambda_d(A)$ denote the eigenvalues of $A$, define the *empirical spectral measure*
 
 $$
 \hat{\mu}_A \;=\; \frac{1}{d}\sum_{i=1}^{d}\delta_{\lambda_i(A)},
 $$
 
-Note that this measure is itself random because $A$ is random. The claim is that $\hat{\mu}_A$ weakly converges to the Marchenko--Pastur law $\mu_{\mathrm{MP}}$ (denoted $\hat{\mu}_A\Rightarrow\mu_{\mathrm{MP}}$) in the sense that for any bounded continuous function $f$ the integral $\int f\,d\hat{\mu}_A$ converges to $\int f\,d\mu_{\mathrm{MP}}$ almost surely.
+Note that this measure is itself random because $A$ is random. Marchenko and Pastur showed that $\hat{\mu}_A$ weakly converges to a deterministic limit measure $\mu_{\mathrm{MP}}$, called *Marchenko--Pastur law*. That is for any bounded continuous function $f$, it holds:
+
+$$
+\int f\,d\hat{\mu}_A \;\xrightarrow[n\to\infty]{\text{a.s.}}\; \int f\,d\mu_{\mathrm{MP}}.
+$$
 
 The animation below illustrates this convergence for the three regimes $\gamma \in \{0.5,\,1,\,2\}$ (with iid standard Gaussian entries in $D$). For each frame a fresh $D$ is drawn at the given $n$, the $d$ eigenvalues of $A=\tfrac{1}{n}D^\top D$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\{B_j\}$ on the $\lambda$-axis, and each bin height equals
 
