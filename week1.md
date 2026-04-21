@@ -5,7 +5,7 @@ math:
   engine: mathjax
 ---
 
-# Week 1: Convex Quadratics
+# Week 1-3: Convex Quadratics
 
 [← Back to course page](./)
 
@@ -1412,27 +1412,27 @@ Two remarks comparing $(22)$ with the GD bound at $\gamma=1$ are in order.
 
 As the final application of the spectral integral approach, we now derive convergence of CG under a power-law spectrum. We assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. The relevant measure is therefore  $d\mu(\lambda):=\lambda\,\phi(\lambda)\,d\lambda=M\lambda^{a}\,d\lambda$. After the affine rescaling $x=2\lambda/\beta-1$ that maps $[0,\beta]$ to $[-1,1]$, this measure becomes $d\mu=M(\beta/2)^{a+1}(1+x)^{a}\,dx$, so the relevant orthogonal family is that of the classical **Jacobi polynomials** with parameters $(0,a)$. We briefly recall their definition and the three properties used in the proof below.
 
-**Jacobi polynomials.** For parameters $p,q>-1$, the *Jacobi polynomials* $\lbrace P_k^{(p,q)}\rbrace_{k\geq 0}$ are the family of polynomials with $\deg P_k^{(p,q)}=k$ that are orthogonal on $[-1,1]$ with respect to the weight $w_{p,q}(x):=(1-x)^{p}(1+x)^{q}$, normalized by the convention
+**Jacobi polynomials.** For parameters $p,q>-1$, the *Jacobi polynomials* $\lbrace P_k^{(p,q)}\rbrace_{k\geq 0}$ are a family of polynomials with $\deg P_k^{(p,q)}=k$ that are orthogonal on $[-1,1]$ with respect to the weight $w_{p,q}(x):=(1-x)^{p}(1+x)^{q}$, normalized by the convention
 
 $$
 P_k^{(p,q)}(1) \;=\; \binom{k+p}{k}.
 $$
 
-(Orthogonality alone determines each $P_k^{(p,q)}$ only up to a nonzero scalar, since Gram--Schmidt on $1,x,x^{2},\dots$ in $L^{2}(w_{p,q})$ leaves one free constant per degree; the choice above pins down both the sign and the magnitude.) In our setting we only need the specialization $(p,q)=(0,a)$. The proof of Theorem 7.6 relies on exactly three standard facts about this family.
+ In our setting we only need the specialization $(p,q)=(0,a)$. The proof of Theorem 7.6 relies on the following three standard facts about this family.
 
-1. **Orthogonality and squared norms on $[-1,1]$:**
+1. **Orthogonality and squared norms:**
 
 $$
-\int_{-1}^{1} P_i^{(0,a)}(x)\,P_j^{(0,a)}(x)\,(1+x)^{a}\,dx \;=\; \frac{2^{a+1}}{2j+a+1}\,\delta_{ij}.
+\int_{-1}^{1} P_i^{(0,a)}(x)\,P_j^{(0,a)}(x)\,(1+x)^{a}\,dx \;=\; \frac{2^{a+1}}{2j+a+1}\,{\bf 1}_{i=j}.
 $$
 
 2. **Endpoint identity:**
 
 $$
-P_j^{(0,a)}(-1) \;=\; (-1)^{j}\binom{j+a}{j}, \qquad\text{where}\qquad \binom{j+a}{j}:=\frac{\Gamma(j+a+1)}{j!\,\Gamma(a+1)}.
+P_j^{(0,a)}(-1) \;=\; (-1)^{j}\binom{j+a}{j} \qquad\text{where}\qquad \binom{j+a}{j}:=\frac{\Gamma(j+a+1)}{j!\,\Gamma(a+1)}.
 $$
 
-3. **Asymptotic growth via Stirling:** as $j\to\infty$,
+3. **Asymptotic growth via Stirling:** as $j\to\infty$, we have
 
 $$
 \binom{j+a}{j} \;=\; \frac{\Gamma(j+a+1)}{j!\,\Gamma(a+1)} \;\sim\; \frac{j^{a}}{\Gamma(a+1)}.
@@ -1444,7 +1444,7 @@ $$
 **Theorem 7.6 (CG on power-law spectral density).** *Assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. Then the CG iterates satisfy*
 
 $$
-\mathcal{E}_k^{\mathrm{CG}} \;\leq\; \frac{M\,\beta^{a+1}}{2\,S_k(a)}, \qquad S_k(a):=\sum_{j=0}^{k}(2j+a+1)\binom{j+a}{j}^{2}. \tag{23}
+\mathcal{E}_k^{\mathrm{CG}} \;\leq\; \frac{M\,\beta^{a+1}}{2\,S_k(a)} \qquad\textrm{where}\qquad S_k(a):=\sum_{j=0}^{k}(2j+a+1)\binom{j+a}{j}^{2}. \tag{23}
 $$
 
 *In particular, as $k\to\infty$,* we have
@@ -1485,18 +1485,18 @@ $$
 \min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_{0}^{\beta}p(\lambda)^{2}\,d\mu(\lambda) \;=\; \biggl(\sum_{j=0}^{k}\frac{q_j(0)^{2}}{h_j}\biggr)^{-1} \;=\; \frac{M\,\beta^{a+1}}{S_k(a)},
 $$
 
-where $h_j:=\lVert q_j\rVert_{L^{2}(\mu)}^{2}=M\beta^{a+1}/(2j+a+1)$ is the squared $L^{2}(\mu)$ norm of $q_j$, and the denominator $S_k(a)$ is the sum defined in $(23)$, obtained by using the Jacobi endpoint identity $P_j^{(0,a)}(-1)=(-1)^{j}\binom{j+a}{j}$ to evaluate $q_j(0)^{2}=\binom{j+a}{j}^{2}$. Multiplying by $1/2$ yields $(23)$. For the asymptotic estimate, Stirling gives $\binom{j+a}{j}=\Gamma(j+a+1)/(j!\,\Gamma(a+1))\sim j^{a}/\Gamma(a+1)$ as $j\to\infty$, so
+where $h_j:=\lVert q_j\rVert_{L^{2}(\mu)}^{2}=M\beta^{a+1}/(2j+a+1)$ is the squared $L^{2}(\mu)$ norm of $q_j$, and the denominator $S_k(a)$ is the sum defined in $(23)$, obtained by using the Jacobi endpoint identity $P_j^{(0,a)}(-1)=(-1)^{j}\binom{j+a}{j}$ to evaluate $q_j(0)^{2}=\binom{j+a}{j}^{2}$. Multiplying by $1/2$ yields $(23)$. For the asymptotic estimate, Stirling gives $\binom{j+a}{j}=\Gamma(j+a+1)/(j!\,\Gamma(a+1))\sim j^{a}/\Gamma(a+1)$ as $j\to\infty$, and therefore
 
 $$
 S_k(a) \;\sim\; \frac{2}{\Gamma(a+1)^{2}}\sum_{j=0}^{k} j^{2a+1} \;\sim\; \frac{k^{2(a+1)}}{(a+1)\,\Gamma(a+1)^{2}} \;=\; \frac{k^{2(a+1)}}{\Gamma(a+1)\,\Gamma(a+2)},
 $$
 
-and substituting into $(23)$ yields $(24)$. <span style="float: right;">$\square$</span>
+Substituting into $(23)$ yields $(24)$. <span style="float: right;">$\square$</span>
 
-So we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to the rate of gradient descent $O(k^{-(a+1)})$ in Theorem 7.2.
+Thus we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to the rate of gradient descent $O(k^{-(a+1)})$ in Theorem 7.2.
 
 
-**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\{\tfrac{1}{2},1,\tfrac{3}{2}\}$. For each $a$, we set $d=2 \times 10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretisation of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $x_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across more than five decades. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime --- visibly so for $a=\tfrac{1}{2}$, where the slope is shallow enough that the regime is long --- before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps and its rapid mop-up of the few remaining well-separated eigenvalues.
+**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\{\tfrac{1}{2},1,\tfrac{3}{2}\}$. For each $a$, we set $d=2 \times 10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretisation of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $x_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across a long time horizon. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps.
 
 ![Sublinear convergence of GD and CG under power-law spectral density](figures/convergence_powerlaw.png)
 
