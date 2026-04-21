@@ -1358,6 +1358,7 @@ We now apply Theorem 7.4 to the Marchenko--Pastur problem in the critical case $
 $$
 \mathcal{E}_k \;=\; \frac{3\,\lVert e_0\rVert^2}{(k+1)(k+2)(2k+3)}. \tag{22}
 $$
+
 In particular, this is the rate achieved by the iterates of the CG algorithm.
 </div>
 
@@ -1409,7 +1410,34 @@ Two remarks comparing $(22)$ with the GD bound at $\gamma=1$ are in order.
 
 ![Sublinear convergence of GD and CG on random least squares at $\gamma=1$](figures/convergence_mp_gamma1.png)
 
-As the final application of the spectral integral approach, we now derive convergence of CG under a power-law spectrum. We assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. The relevant measure is therefore  $d\mu(\lambda):=\lambda\,\phi(\lambda)\,d\lambda=M\lambda^{a}\,d\lambda$. After rescaling $[0,\beta]$ to $[-1,1]$, it turns out that orthonormal collection of polynomials is comprise of so-called Jacobi polynomials $P_j^{(0,a)}$.
+As the final application of the spectral integral approach, we now derive convergence of CG under a power-law spectrum. We assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. The relevant measure is therefore  $d\mu(\lambda):=\lambda\,\phi(\lambda)\,d\lambda=M\lambda^{a}\,d\lambda$. After the affine rescaling $x=2\lambda/\beta-1$ that maps $[0,\beta]$ to $[-1,1]$, this measure becomes $d\mu=M(\beta/2)^{a+1}(1+x)^{a}\,dx$, so the relevant orthogonal family is that of the classical **Jacobi polynomials** with parameters $(0,a)$. We briefly recall their definition and the three properties used in the proof below.
+
+**Jacobi polynomials.** For parameters $p,q>-1$, the *Jacobi polynomials* $\lbrace P_k^{(p,q)}\rbrace_{k\geq 0}$ are the family of polynomials with $\deg P_k^{(p,q)}=k$ that are orthogonal on $[-1,1]$ with respect to the weight $w_{p,q}(x):=(1-x)^{p}(1+x)^{q}$, normalized by the convention
+
+$$
+P_k^{(p,q)}(1) \;=\; \binom{k+p}{k}.
+$$
+
+(Orthogonality alone determines each $P_k^{(p,q)}$ only up to a nonzero scalar, since Gram--Schmidt on $1,x,x^{2},\dots$ in $L^{2}(w_{p,q})$ leaves one free constant per degree; the choice above pins down both the sign and the magnitude.) In our setting we only need the specialization $(p,q)=(0,a)$. The proof of Theorem 7.6 relies on exactly three standard facts about this family.
+
+1. **Orthogonality and squared norms on $[-1,1]$:**
+
+$$
+\int_{-1}^{1} P_i^{(0,a)}(x)\,P_j^{(0,a)}(x)\,(1+x)^{a}\,dx \;=\; \frac{2^{a+1}}{2j+a+1}\,\delta_{ij}.
+$$
+
+2. **Endpoint identity:**
+
+$$
+P_j^{(0,a)}(-1) \;=\; (-1)^{j}\binom{j+a}{j}, \qquad\text{where}\qquad \binom{j+a}{j}:=\frac{\Gamma(j+a+1)}{j!\,\Gamma(a+1)}.
+$$
+
+3. **Asymptotic growth via Stirling:** as $j\to\infty$,
+
+$$
+\binom{j+a}{j} \;=\; \frac{\Gamma(j+a+1)}{j!\,\Gamma(a+1)} \;\sim\; \frac{j^{a}}{\Gamma(a+1)}.
+$$
+
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
