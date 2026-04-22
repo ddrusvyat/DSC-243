@@ -1288,67 +1288,27 @@ $$
 
 where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta]$ --- for example $\nu=\lVert e_0\rVert^2\,\mu_{MP}$ in the Marchenko--Pastur setting --- and $\mathcal{P}_k$ consists of degree at most $k$ polynomials. Note that the constraint set $\mathcal{V}_k:=\lbrace p\in \mathcal{P}_k: p(0)=1\rbrace$ is a finite-dimensional affine space. Strictly speaking, we should stipulate in $(19)$ that the polynomials in question have all real roots. For all examples we will consider the optimal polynomial in $\mathcal{V}_k$ will have all real roots and therefore there is no distinction between the two optimization problems.
 
-Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $\lVert p\rVert ^2$ where the norm is induced by the inner product $\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$ where we define the reweighted measure $d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$. Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to this inner product. Note that an orthonormal basis can be analytically constructed by a Gram-Schmidt process. Define now the similarity measure (kernel) on $\mathbb{R}$ by the expression
+Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $\lVert p\rVert ^2$ where the norm is induced by the inner product $\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$ where we define the reweighted measure $d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$. Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to this inner product. Note that an orthonormal basis can be analytically constructed by a Gram-Schmidt process. Then writing $p=\sum_{i=0}^k u_i\psi_i$ for unknown coefficient $u_i$ the optimization problem $(19)$ can equivalently be written as 
 
-$$
-K_k(t,s) \;:=\; \sum_{j=0}^{k}\psi_j(t)\,\psi_j(s).
-$$
+$$\min_{u\in \mathbb{R}^{k+1}} \|u\|^2_2\qquad \textrm{subject to}\qquad \sum_{i=0}^k u_i\psi_i(0)=1,$$
 
-The kernel $K_k$ does not depend on the choice of orthonormal basis, and it satisfies the following *reproducing identity*.
-
-<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
-
-**Lemma 7.4 (Reproducing identity).** *For every $p\in\mathcal{P}_k$ and every $s\in\mathbb{R}$,* it holds:
-
-$$
-p(s) \;=\; \int p(t)\,K_k(t,s)\,d\mu(t). \tag{20}
-$$
-
-</div>
-
-*Proof.* Expand $p$ in the orthonormal basis $\lbrace \psi_j\rbrace _{j=0}^{k}$ of $\mathcal{P}_k$ to obtain
-
-$$
-p(t) \;=\; \sum_{j=0}^{k}\langle p,\psi_j\rangle\,\psi_j(t).
-$$
-
-Multiplying both sides by $\psi_j(s)$, summing over $j$, and evaluating at $t=s$ gives
-
-$$
-p(s) \;=\; \sum_{j=0}^{k}\langle p,\psi_j\rangle\,\psi_j(s) \;=\; \int p(t)\,\Bigl(\sum_{j=0}^{k}\psi_j(t)\,\psi_j(s)\Bigr)\,d\mu(t) \;=\; \int p(t)\,K_k(t,s)\,d\mu(t),
-$$
-
-as claimed. <span style="float: right;">$\square$</span>
+which amounts to fining the minimal $l_2$-norm vector in a hyperlane. The solution therefore is the rescaled outward normal, whose coordinates are explicitely $u_i=\psi_i(0)/\sum_{i=0}^k \psi_i(0)^2$. Therefore, the optimal polynomial $p$ that solves $(19)$ is 
+$$p^{\ast}(t)=\frac{\sum_{i=0}^{k}\psi_i(0)\psi_i(t)}{\sum_{i=0}^k \psi_i(0)^2}.$$
 
 
-We are now ready to write out explicitly the solution to $(19)$ in terms of the kernel $K_k$.
 
+Thus we have proved the following theorem. 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 
 
-**Theorem 7.4 (Minimum-norm polynomial).** *Fix $x_0\in\mathbb R$. The unique solution of*
+**Theorem 7.4 (Minimum-norm polynomial).** *Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to the inner product $\langle f,g\rangle=\int fg\,d\mu$, where $d\mu(\lambda)=\lambda\,d\nu(\lambda)$. Then the unique solution of $(19)$ is*
 
 $$
-\min_{\substack{p\in\mathcal{P}_k\\ p(x_0)=1}}\;\int \lambda p(\lambda)^2\,d\nu(\lambda)
-$$
-
-*is* given by
-
-$$
-p^\ast(t) \;=\; \frac{K_k(t,x_0)}{K_k(x_0,x_0)} \qquad \text{with minimal value}\quad \frac{1}{K_k(x_0,x_0)}.
+p^\ast(t) \;=\; \frac{\sum_{i=0}^{k}\psi_i(0)\,\psi_i(t)}{\sum_{i=0}^{k}\psi_i(0)^2} \qquad \text{with minimal value}\quad \frac{1}{\sum_{i=0}^{k}\psi_i(0)^2}. \tag{20}
 $$
 
 </div>
-
-*Proof.* For any feasible $p$, the reproducing identity $(20)$ gives $1=p(x_0)=\langle p,K_k(\cdot,x_0)\rangle$. By Cauchy--Schwarz, we obtain
-
-$$
-1 \;=\; \bigl|\langle p,K_k(\cdot,x_0)\rangle\bigr|^2 \;\leq\; \lVert p\rVert^2\;\lVert K_k(\cdot,x_0)\rVert^2.
-$$
-
-Applying $(20)$ to the polynomial $K_k(\cdot,x_0)\in\mathcal{P}_k$ at $s=x_0$ yields $\lVert K_k(\cdot,x_0)\rVert^2=K_k(x_0,x_0)$. Hence we deduce $\lVert p\rVert^2\geq 1/K_k(x_0,x_0)$. The polynomial $p^\ast=K_k(\cdot,x_0)/K_k(x_0,x_0)$ is feasible and attains this lower bound; uniqueness follows from the equality case in Cauchy--Schwarz, which forces $p$ to be proportional to $K_k(\cdot,x_0)$, with the proportionality constant fixed by $p(x_0)=1$. <span style="float: right;">$\square$</span>
-
 
 
 We now apply Theorem 7.4 to the Marchenko--Pastur problem in the critical case $\gamma=1$. The orthogonal polynomials with respect to the corresponding measure turn out to be the Chebyshev polynomials of the second kind $U_k$.
@@ -1382,7 +1342,7 @@ $$
 \mathcal{E}_k \;=\; \frac{\lVert e_0\rVert^2}{2}\,\min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_{0}^{4} p(\lambda)^2\,d\mu(\lambda).
 $$
 
-This is the abstract problem of Theorem 7.4 with $x_0=0$. It suffices now to identify an orthogonal basis of $\mathcal{P}_k$ in $L^2(\mu)$. Apply the affine change of variables
+This is the abstract problem of Theorem 7.4. It suffices now to identify an orthogonal basis of $\mathcal{P}_k$ in $L^2(\mu)$. Apply the affine change of variables
 
 $$
 x(\lambda) \;:=\; \frac{\lambda}{2}-1,
@@ -1463,7 +1423,7 @@ $$
 \mathcal{E}_k^{\mathrm{CG}} \;=\; \frac{1}{2}\,\min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\int_{0}^{\beta} p(\lambda)^{2}\,d\mu(\lambda).
 $$
 
-This is the abstract problem of Theorem 7.4 with $x_0=0$. By the orthogonal-polynomial form $(21)$, it suffices to identify an orthogonal basis of $\mathcal{P}_k$ in $L^{2}(\mu)$. Apply the affine change of variables
+This is the abstract problem of Theorem 7.4. By the orthogonal-polynomial form $(20)$, it suffices to identify an orthogonal basis of $\mathcal{P}_k$ in $L^{2}(\mu)$. Apply the affine change of variables
 
 $$
 x(\lambda) \;:=\; \frac{2\lambda}{\beta}-1,
@@ -2027,7 +1987,7 @@ The notes combine ideas that appear in different communities; the table below ma
 | Theorem 7.2 (power-law spectral density) | [EHN96], [BS10], [Ver18], [PS20], [CGPSP22] | Beta-function evaluation of the spectral integral under power-law density $\phi(\lambda)=M\lambda^{a-1}$; yields precise asymptotics for GD. Specialises the average-case framework of [PS20] and the "only tails matter" universality of [CGPSP22] to first-order GD, where the soft-edge exponent $a$ at $\lambda=0$ sets the rate. |
 | Theorem 7.3 (Laplace edge correction) | [BS10], [Ver18], [CGPSP22] | Uses edge asymptotics of spectral integrals; the $k^{-(p+1)}$ correction reflects local density behavior near the spectral edge and is the GD analogue of the edge-driven asymptotics identified in [CGPSP22]. |
 | Marchenko--Pastur subsection | [MP67], [BS10], [Ver18], [PS20], [PvMPP21] | Imports MP density/edge behavior into the optimization bounds, yielding regime-dependent prefactors and the $k^{-3/2}$ edge signature. [PS20] derives the matching Nesterov-type average-case rates by designing momentum schemes tuned to the MP density, and [PvMPP21] establishes universality of the halting-time asymptotics under MP. |
-| Theorem 7.4 (Constrained min-norm polynomial via reproducing kernel) | [Sze39], [Saa03], [Gre97] | Standard reproducing-kernel/orthogonal-polynomial solution of the one-point-constrained $L^2$ minimization; supplies the abstract tool used in Theorems 7.5--7.6. |
+| Theorem 7.4 (Constrained min-norm polynomial via orthonormal basis) | [Sze39], [Saa03], [Gre97] | Standard orthogonal-polynomial solution of the one-point-constrained $L^2$ minimization; supplies the abstract tool used in Theorems 7.5--7.6. |
 | Theorem 7.5 (CG on Marchenko--Pastur) | [Saa03], [Gre97], [PS20], [SP20], [PvMPP21] | Closed-form CG asymptotics on MP via the Chebyshev-second-kind reproducing kernel; the $k^{-3}$ exponent matches the average-case complexity of Polyak/Nesterov momentum [PS20, SP20] and the universality analysis of [PvMPP21], derived by Stieltjes-transform methods. |
 | Theorem 7.6 (CG on power-law spectral density) | [Sze39], [Saa03], [Gre97], [CGPSP22] | Reproducing-kernel CG bound under power-law $\phi(\lambda)=M\lambda^{a-1}$, computed via Jacobi $P_j^{(0,a)}$ as the orthonormal basis on the rescaled interval; doubles the GD exponent of Theorem 7.2 from $a+1$ to $2(a+1)$ and specialises the "tail-driven" average-case rates of [CGPSP22] to the CG/Krylov setting. |
 -->
