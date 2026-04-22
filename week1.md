@@ -124,7 +124,7 @@ f(x_k) - f^\ast
 \end{aligned}
 $$
 
-where $\|v\|_A = \sqrt{v^\top A v}$ is the **$A$-norm**---a measure of length that is adapted to the spectrum of $A$. This is the natural norm for measuring progress on quadratic problems.
+where $\lVert v\rVert _A = \sqrt{v^\top A v}$ is the **$A$-norm**---a measure of length that is adapted to the spectrum of $A$. This is the natural norm for measuring progress on quadratic problems.
 
 ### Convergence for a general stepsize
 
@@ -467,12 +467,12 @@ The key idea is to iteratively build a basis of the Krylov subspaces that is ort
 
 
 <p>
-Concretely, suppose that we have constructed an $A$-orthogonal basis $\{p_i\}_{i=0}^{k-1}$ for $\mathcal{K}_{k}$ and that we have available a minimizer  $x_k$ of $f$ on $x_0 + \mathcal{K}_k$. Let us see how we can efficiently extend the $A$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $x_{k+1}$ of $f$ on $x_0 + \mathcal{K}_{k+1}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
+Concretely, suppose that we have constructed an $A$-orthogonal basis $\lbrace p_i\rbrace _{i=0}^{k-1}$ for $\mathcal{K}_{k}$ and that we have available a minimizer  $x_k$ of $f$ on $x_0 + \mathcal{K}_k$. Let us see how we can efficiently extend the $A$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $x_{k+1}$ of $f$ on $x_0 + \mathcal{K}_{k+1}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
 </p>
 <p>
 Observe that we may write $r_k=b-Ax_k=r_0-A(x_k-x_0)$ and therefore $r_k$ lies in $\mathcal{K}_{k+1}$. Now, set 
-$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $A$-orthogonal to $\{p_i\}_{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Ap_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Ap_{k-1}}{p_{k-1}^\top Ap_{k-1}}$. Now for any $i<k-1$ we compute
-$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$ Observe that $p_{k-1}^{\top}Ap_i=0$ by assumed A-orthogonality of $\{p_i\}_{i=0}^{k-1}$ and $r_k^\top A p_{i}=0$ because $A p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $x_k$ imply  $r_k\perp K_{k}$. Thus $\{p_i\}_{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
+$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $A$-orthogonal to $\lbrace p_i\rbrace _{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Ap_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Ap_{k-1}}{p_{k-1}^\top Ap_{k-1}}$. Now for any $i<k-1$ we compute
+$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$ Observe that $p_{k-1}^{\top}Ap_i=0$ by assumed A-orthogonality of $\lbrace p_i\rbrace _{i=0}^{k-1}$ and $r_k^\top A p_{i}=0$ because $A p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $x_k$ imply  $r_k\perp K_{k}$. Thus $\lbrace p_i\rbrace _{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
 It remains to declare 
 $$x_{k+1}=\argmin_{\eta} f(x_k+\eta p_{k}). \tag{6}$$Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
 $$r_{k+1}^\top p_{i}=(r_k-\eta_k Ap_k)^{\top}p_i=r_k^\top p_i-\eta_k p_k^\top Ap_i=0,$$
@@ -499,7 +499,7 @@ The algorithm we just constructed is called the conjugate gradient method and is
 
 Each iteration of the conjugate gradient method requires one matrix-vector product $Ap_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Ax_k$ are the **residuals** satisfying $r_k = -\nabla f(x_k)$, while the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $x_k + \eta\, p_k$, while $\beta_k$ ensures $A$-orthogonality of consecutive search directions.
 
-*Remark.* In the literature, the update for $\beta_k$ is usually written in the equivalent form $\beta_k = \|r_{k+1}\|^2/\|r_k\|^2$. The equivalence is straightforward to establish from the residual recursion $Ap_k = (r_k - r_{k+1})/\eta_k$; we omit the argument for brevity. 
+*Remark.* In the literature, the update for $\beta_k$ is usually written in the equivalent form $\beta_k = \lVert r_{k+1}\rVert ^2/\lVert r_k\rVert ^2$. The equivalence is straightforward to establish from the residual recursion $Ap_k = (r_k - r_{k+1})/\eta_k$; we omit the argument for brevity. 
 
 
 
@@ -531,7 +531,7 @@ $$K\alpha = y,$$
 
 which is exactly the quadratic minimization problem $\min_\alpha \tfrac{1}{2}\alpha^\top K\alpha - y^\top \alpha$.
 
-Two of the most widely used kernels depend only on the $\ell_2$ distance $\|x-y\|$ and a length-scale parameter $\sigma>0$, called the bandwidth. The **Gaussian (RBF) kernel** is
+Two of the most widely used kernels depend only on the $\ell_2$ distance $\lVert x-y\rVert $ and a length-scale parameter $\sigma>0$, called the bandwidth. The **Gaussian (RBF) kernel** is
 
 $$k_{\mathrm{RBF}}(x,y)=\exp\!\left(-\frac{\|x-y\|^2}{2\sigma^2}\right).$$
 
@@ -545,10 +545,10 @@ where $K_m$ is the modified Bessel function of the second kind. The parameter $m
 
 | Kernel | $m$ | Closed form | Smoothness |
 |---|---|---|---|
-| Laplace | $\tfrac12$ | $\exp\bigl(-\tfrac{\|x-y\|}{\sigma}\bigr)$ | $C^0$ |
-| Matérn 3/2 | $\tfrac32$ | $\bigl(1+\tfrac{\sqrt{3}\|x-y\|}{\sigma}\bigr)\exp\bigl(-\tfrac{\sqrt{3}\|x-y\|}{\sigma}\bigr)$ | $C^1$ |
-| Matérn 5/2 | $\tfrac52$ | $\bigl(1+\tfrac{\sqrt{5}\|x-y\|}{\sigma}+\tfrac{5\|x-y\|^2}{3\sigma^2}\bigr)\exp\bigl(-\tfrac{\sqrt{5}\|x-y\|}{\sigma}\bigr)$ | $C^2$ |
-| Gaussian (RBF) | $\infty$ | $\exp\bigl(-\tfrac{\|x-y\|^2}{2\sigma^2}\bigr)$ | $C^\infty$ |
+| Laplace | $\tfrac12$ | $\exp\bigl(-\tfrac{\lVert x-y\rVert }{\sigma}\bigr)$ | $C^0$ |
+| Matérn 3/2 | $\tfrac32$ | $\bigl(1+\tfrac{\sqrt{3}\lVert x-y\rVert }{\sigma}\bigr)\exp\bigl(-\tfrac{\sqrt{3}\lVert x-y\rVert }{\sigma}\bigr)$ | $C^1$ |
+| Matérn 5/2 | $\tfrac52$ | $\bigl(1+\tfrac{\sqrt{5}\lVert x-y\rVert }{\sigma}+\tfrac{5\lVert x-y\rVert ^2}{3\sigma^2}\bigr)\exp\bigl(-\tfrac{\sqrt{5}\lVert x-y\rVert }{\sigma}\bigr)$ | $C^2$ |
+| Gaussian (RBF) | $\infty$ | $\exp\bigl(-\tfrac{\lVert x-y\rVert ^2}{2\sigma^2}\bigr)$ | $C^\infty$ |
 
 In the limit $m\to\infty$ the Matérn kernel recovers the Gaussian kernel.
 
@@ -641,7 +641,7 @@ $$O\!\left(\frac{\beta\,\|x_0 - x^\ast\|^2}{\varepsilon}\right).$$
 Compared with the $O(\kappa\,\ln(1/\varepsilon))$ complexity of gradient descent in the positive definite case, the dependence on accuracy has changed from **logarithmic** to **polynomial**: achieving an additional digit of accuracy now requires a tenfold increase in iterations, rather than a fixed additive cost. This is the hallmark of sublinear convergence.
 
 
-Note that an important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\|x_0 - x^\ast\|^2$ rather than the initial function gap $f(x_0) - f^\ast$, and this is unavoidable.
+Note that an important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\lVert x_0 - x^\ast\rVert ^2$ rather than the initial function gap $f(x_0) - f^\ast$, and this is unavoidable.
 
 ### Acceleration by Chebyshev stepsizes
 
@@ -727,14 +727,14 @@ $$
 f(x_k) - f^\ast = \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, \phi_k(\lambda_i)^2\, c_i^2
 \leq \tfrac{1}{2}\max_{\lambda \in [0,\beta]} \lambda\,\phi_k(\lambda)^2 \sum_{i=1}^d c_i^2.
 $$
-Applying Lemma 6.2 and using $\sum_{i=1}^d c_i^2=\|e_0\|^2=\|x_0-x^\ast\|^2$, we obtain
+Applying Lemma 6.2 and using $\sum_{i=1}^d c_i^2=\lVert e_0\rVert ^2=\lVert x_0-x^\ast\rVert ^2$, we obtain
 $$
 f(x_k) - f^\ast \leq \tfrac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|x_0-x^\ast\|^2
 = \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2.
 $$
 This completes the proof. <span style="float: right;">$\square$</span>
 
-Thus, the iteration complexity of the Chebyshev accelerated algorithm is $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$---a **square-root improvement** over the $O(\beta\,\|x_0 - x^\ast\|^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. This is a **quadratic improvement** in the complexity.
+Thus, the iteration complexity of the Chebyshev accelerated algorithm is $O(\sqrt{\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon})$---a **square-root improvement** over the $O(\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. This is a **quadratic improvement** in the complexity.
 
 The corresponding stepsize schedule in the positive semidefinite case is shown below for several values of $k$.
 
@@ -899,7 +899,7 @@ Therefore, the vanilla bound diverges as $n \to \infty$, whereas the source-cond
 
 $$f(x_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{13}$$
 
-*In particular, $f(x_k) - f^\ast = O\left(\beta^{1+2s}\,k^{-(1+2s)}\,\|w\|^2\right)$ as $k \to \infty$.*
+*In particular, $f(x_k) - f^\ast = O\left(\beta^{1+2s}\,k^{-(1+2s)}\,\lVert w\rVert ^2\right)$ as $k \to \infty$.*
 
 </div>
 
@@ -921,7 +921,7 @@ $$
 \max_{t\in [0,1]}g(t) = \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\left(\frac{2k}{2k+1+2s}\right)^{2k} \leq \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}.
 $$
 
-Multiplying by $\beta^{1+2s}/2$ and $\|w\|^2$ gives the bound $(13)$. <span style="float: right;">$\square$</span>
+Multiplying by $\beta^{1+2s}/2$ and $\lVert w\rVert ^2$ gives the bound $(13)$. <span style="float: right;">$\square$</span>
 
 The source condition can also be exploited by time-varying stepsizes. The relevant polynomial problem is now
 
@@ -975,13 +975,13 @@ where we define the polynomial $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ and
 
 $$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
 
-where $\delta_{\lambda_i}$ is a Dirac delta measure. Observe that $\mu([0,\beta]) = \|e_0\|^2$ and the error can be written as an integral:
+where $\delta_{\lambda_i}$ is a Dirac delta measure. Observe that $\mu([0,\beta]) = \lVert e_0\rVert ^2$ and the error can be written as an integral:
 
 $$
 f(x_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,d\mu(\lambda). \tag{16}
 $$
 
-When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \|e_0\|^2/d$), then $\phi(\lambda) \approx \|e_0\|^2\rho_A(\lambda)$. Note that $\phi$ need not be integrable; what matters is that the error integral $(16)$, which has an extra factor of $\lambda$, converges.
+When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \lVert e_0\rVert ^2/d$), then $\phi(\lambda) \approx \lVert e_0\rVert ^2\rho_A(\lambda)$. Note that $\phi$ need not be integrable; what matters is that the error integral $(16)$, which has an extra factor of $\lambda$, converges.
 
 Under this approximation, $f(x_k) - f^\ast \approx \mathcal{E}_k$, where
 
@@ -1011,13 +1011,13 @@ The figure below illustrates the three regimes. The left panel plots the spectra
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Example (polynomial eigenvalue decay).** Kernels such as Laplace and Matérn have eigenvalues that decay polynomially: $\lambda_i \asymp i^{-\alpha}$ for some $\alpha > 0$. To find the corresponding spectral exponent $a$,  we can compute the eigenvalue density $\rho_A$. The empirical CDF of the eigenvalues is $F(\lambda) = \tfrac{1}{d}\cdot \lvert\{i:\lambda_i \leq \lambda\}\rvert$. Since $\lambda_i = Ci^{-\alpha}$ is decreasing, $\lambda_i \leq \lambda$ iff $i \geq (C/\lambda)^{1/\alpha}$, so
+**Example (polynomial eigenvalue decay).** Kernels such as Laplace and Matérn have eigenvalues that decay polynomially: $\lambda_i \asymp i^{-\alpha}$ for some $\alpha > 0$. To find the corresponding spectral exponent $a$,  we can compute the eigenvalue density $\rho_A$. The empirical CDF of the eigenvalues is $F(\lambda) = \tfrac{1}{d}\cdot \lvert\lbrace i:\lambda_i \leq \lambda\rbrace \rvert$. Since $\lambda_i = Ci^{-\alpha}$ is decreasing, $\lambda_i \leq \lambda$ iff $i \geq (C/\lambda)^{1/\alpha}$, so
 
 $$F(\lambda) \approx 1 - \frac{(C/\lambda)^{1/\alpha}}{d} = 1 - \frac{C^{1/\alpha}}{d}\,\lambda^{-1/\alpha}.$$
 
 Differentiating gives $\rho_A(\lambda) = F'(\lambda) \propto \lambda^{-1/\alpha - 1}$. With isotropic error ($c_i^2 \approx \lVert e_0\rVert^2/d$), the spectral error density is $\phi(\lambda)  \propto \lambda^{-1/\alpha - 1}$. Matching to $\phi = M\lambda^{a-1}$ gives $a = -1/\alpha$. 
 
-Since $a = -1/\alpha < 0$, the total mass $\lVert e_0\rVert^2 = \int \phi\,d\lambda$ diverges---the density $\phi(\lambda) \propto \lambda^{-1/\alpha-1}$ has a non-integrable singularity at $\lambda = 0$. In kernel regression (starting from $x_0 = 0$), this has a concrete interpretation: the initial error is $e_0 = A^{-1}b$, so its spectral coefficients are $c_i = b_i/\lambda_i$. Because $\lambda_i \to 0$ polynomially, the coefficients $c_i$ grow for modes with small eigenvalues. As $n$ increases, more and more modes with tiny eigenvalues appear, each contributing a large $c_i^2$ term, and $\lVert e_0\rVert^2 = \sum c_i^2$ diverges. In particular, the vanilla rate $O(\|e_0\|^2/k)$ becomes meaningless.
+Since $a = -1/\alpha < 0$, the total mass $\lVert e_0\rVert^2 = \int \phi\,d\lambda$ diverges---the density $\phi(\lambda) \propto \lambda^{-1/\alpha-1}$ has a non-integrable singularity at $\lambda = 0$. In kernel regression (starting from $x_0 = 0$), this has a concrete interpretation: the initial error is $e_0 = A^{-1}b$, so its spectral coefficients are $c_i = b_i/\lambda_i$. Because $\lambda_i \to 0$ polynomially, the coefficients $c_i$ grow for modes with small eigenvalues. As $n$ increases, more and more modes with tiny eigenvalues appear, each contributing a large $c_i^2$ term, and $\lVert e_0\rVert^2 = \sum c_i^2$ diverges. In particular, the vanilla rate $O(\lVert e_0\rVert ^2/k)$ becomes meaningless.
 
 Suppose more generally that $c_i$ satisfy a source condition $e_0 = A^s w$, and therefore $c_i = \lambda_i^s w_i$. If in addition, the coordinates $w_i$ are isotropic ($w_i^2 \approx \lVert w\rVert^2/d$), the spectral error density becomes $\phi(\lambda) \propto \lambda^{2s}\rho_A(\lambda) \propto \lambda^{- \tfrac{1}{\alpha} - 1+2s}$. The source condition counteracts the $1/\lambda_i$ blow-up: $c_i = \lambda_i^s w_i$ decays with the eigenvalues. 
 
@@ -1195,7 +1195,7 @@ $$
 
 This type of weak convergence is denoted $\hat{\mu}\_A\;\Rightarrow\;\mu\_{\mathrm{MP}}$.
 
-The animation below illustrates this convergence for the three regimes $\gamma \in \{0.5,\,1,\,2\}$ (with iid standard Gaussian entries in $D$). For each frame a fresh $D$ is drawn at the given $n$, the $d$ eigenvalues of $A=\tfrac{1}{n}D^\top D$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\{B_j\}$ on the $\lambda$-axis, and each bin height equals
+The animation below illustrates this convergence for the three regimes $\gamma \in \lbrace 0.5,\,1,\,2\rbrace $ (with iid standard Gaussian entries in $D$). For each frame a fresh $D$ is drawn at the given $n$, the $d$ eigenvalues of $A=\tfrac{1}{n}D^\top D$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\lbrace B_j\rbrace $ on the $\lambda$-axis, and each bin height equals
 
 $$
 \frac{\#\{i:\lambda_i(A) \in B_j\}}{d \cdot \lvert B_j\rvert},
@@ -1288,7 +1288,7 @@ $$
 
 where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta]$ --- for example $\nu=\lVert e_0\rVert^2\,\mu_{MP}$ in the Marchenko--Pastur setting --- and $\mathcal{P}_k$ consists of degree at most $k$ polynomials. Note that the constraint set $\mathcal{V}_k:=\lbrace p\in \mathcal{P}_k: p(0)=1\rbrace$ is a finite-dimensional affine space. Strictly speaking, we should stipulate in $(19)$ that the polynomials in question have all real roots. For all examples we will consider the optimal polynomial in $\mathcal{V}_k$ will have all real roots and therefore there is no distinction between the two optimization problems.
 
-Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $\|p\|^2$ where the norm is induced by the inner product $\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$ where we define the reweighted measure $d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$. Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to this inner product. Note that an orthonormal basis can be analytically constructed by a Gram-Schmidt process. Define now the similarity measure (kernel) on $\mathbb{R}$ by the expression
+Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $\lVert p\rVert ^2$ where the norm is induced by the inner product $\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$ where we define the reweighted measure $d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$. Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to this inner product. Note that an orthonormal basis can be analytically constructed by a Gram-Schmidt process. Define now the similarity measure (kernel) on $\mathbb{R}$ by the expression
 
 $$
 K_k(t,s) \;:=\; \sum_{j=0}^{k}\psi_j(t)\,\psi_j(s).
@@ -1306,7 +1306,7 @@ $$
 
 </div>
 
-*Proof.* Expand $p$ in the orthonormal basis $\{\psi_j\}_{j=0}^{k}$ of $\mathcal{P}_k$ to obtain
+*Proof.* Expand $p$ in the orthonormal basis $\lbrace \psi_j\rbrace _{j=0}^{k}$ of $\mathcal{P}_k$ to obtain
 
 $$
 p(t) \;=\; \sum_{j=0}^{k}\langle p,\psi_j\rangle\,\psi_j(t).
@@ -1498,7 +1498,7 @@ Substituting into $(23)$ yields $(24)$. <span style="float: right;">$\square$</s
 Thus we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to the rate of gradient descent $O(k^{-(a+1)})$ in Theorem 7.2.
 
 
-**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\{\tfrac{1}{2},1,\tfrac{3}{2}\}$. For each $a$, we set $d=2 \times 10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretisation of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $x_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across a long time horizon. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps.
+**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\lbrace \tfrac{1}{2},1,\tfrac{3}{2}\rbrace $. For each $a$, we set $d=2 \times 10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretisation of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $x_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across a long time horizon. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps.
 
 ![Sublinear convergence of GD and CG under power-law spectral density](figures/convergence_powerlaw.png)
 
@@ -1530,7 +1530,7 @@ $$
 H := \mathbb{E}[xx^\top] \qquad\textrm{and set}\qquad \mu := \lambda_{\min}(H).
 $$
 
-We assume $H \succ 0$ throughout the section. As usual, for a vector $u$, we will use the norm $\|u\|_H^2 := u^\top H u$ induced by $H$. Exactly as in the deterministic least squares problem of Section 1 under the identification $A=H$, the excess population risk is the exact quadratic form 
+We assume $H \succ 0$ throughout the section. As usual, for a vector $u$, we will use the norm $\lVert u\rVert _H^2 := u^\top H u$ induced by $H$. Exactly as in the deterministic least squares problem of Section 1 under the identification $A=H$, the excess population risk is the exact quadratic form 
 
 $$L(w) - L(w_\ast) = \tfrac{1}{2}\|w - w_\ast\|_H^2.$$
 
@@ -1542,16 +1542,16 @@ $$
 
 This section in essense asserts that a type of fourth moment of $x$ is bounded by the second moment. Three standard settings where $(25)$ holds are the following:
 
-1. **Bounded features.** If $\|x\| \le R$ almost surely, then $(25)$ holds.
+1. **Bounded features.** If $\lVert x\rVert  \le R$ almost surely, then $(25)$ holds.
 2. **Gaussian features.** If $x \sim \mathcal{N}(0, H)$, then Isserlis' formula gives
-$$\mathbb{E}[\|x\|^2\, xx^\top] = (\operatorname{Tr} H)\,H + 2H^2,$$ and therefore $(25)$ holds with $R^2 = \operatorname{Tr} H + 2\|H\|_{\mathrm{op}} \le 3\operatorname{Tr}(H)$.
+$$\mathbb{E}[\|x\|^2\, xx^\top] = (\operatorname{Tr} H)\,H + 2H^2,$$ and therefore $(25)$ holds with $R^2 = \operatorname{Tr} H + 2\lVert H\rVert _{\mathrm{op}} \le 3\operatorname{Tr}(H)$.
 3. **Whitened features.** Suppose $x = H^{1/2} z$, where the coordinates of $z$ are i.i.d., centered, have unit variance, and have kurtosis $\kappa = \mathbb{E} z_i^4 < \infty$. Then an elementary algebraic manipulations  give
 
 $$\mathbb{E}[\|x\|^2\, xx^\top] = H^{1/2}\bigl[(\operatorname{Tr} H)\,I + 2H + (\kappa-3)\operatorname{diag}(H)\bigr]H^{1/2},$$
 
-and therefore $(25)$ holds with $R^2 = \operatorname{Tr} H + (\kappa - 1)\|H\|_{\mathrm{op}}$.
+and therefore $(25)$ holds with $R^2 = \operatorname{Tr} H + (\kappa - 1)\lVert H\rVert _{\mathrm{op}}$.
 
-Taking traces in $(25)$ yields $\operatorname{Tr}(H) = \mathbb{E}\|x\|^2 \le R^2$, and in particular $H \preceq R^2 I$; thus $R^2$ upper bounds the top eigenvalue of $H$, and will play a role analogous to $\beta$ in Section 1.
+Taking traces in $(25)$ yields $\operatorname{Tr}(H) = \mathbb{E}\lVert x\rVert ^2 \le R^2$, and in particular $H \preceq R^2 I$; thus $R^2$ upper bounds the top eigenvalue of $H$, and will play a role analogous to $\beta$ in Section 1.
 
 **Constant-stepsize SGD** iterates
 
@@ -1639,7 +1639,7 @@ $$
 = \|b_{t-1}\|^2 - 2\gamma\, b_{t-1}^\top H\, b_{t-1} + \gamma^2\, b_{t-1}^\top \mathbb{E}[\|x\|^2 xx^\top]\, b_{t-1}.
 $$
 
-Applying $(25)$ and using $\gamma R^2 < 1$, so that $2\gamma - \gamma^2 R^2 \geq \gamma$, gives $\mathbb{E}\|b_t\|^2 \leq \mathbb{E}\|b_{t-1}\|^2 - \gamma\,\mathbb{E}\|b_{t-1}\|_H^2 \leq (1-\gamma\mu)\mathbb{E}\|b_{t-1}\|^2$, where the second inequality uses $H \succeq \mu I$. Iterating yields the pointwise bound $\mathbb{E}\|b_s\|^2 \leq e^{-\gamma\mu s}\|w_0 - w_\ast\|^2$. Combined with $H \preceq R^2 I$ and Jensen's inequality, this gives
+Applying $(25)$ and using $\gamma R^2 < 1$, so that $2\gamma - \gamma^2 R^2 \geq \gamma$, gives $\mathbb{E}\lVert b_t\rVert ^2 \leq \mathbb{E}\lVert b_{t-1}\rVert ^2 - \gamma\,\mathbb{E}\lVert b_{t-1}\rVert _H^2 \leq (1-\gamma\mu)\mathbb{E}\lVert b_{t-1}\rVert ^2$, where the second inequality uses $H \succeq \mu I$. Iterating yields the pointwise bound $\mathbb{E}\lVert b_s\rVert ^2 \leq e^{-\gamma\mu s}\lVert w_0 - w_\ast\rVert ^2$. Combined with $H \preceq R^2 I$ and Jensen's inequality, this gives
 
 $$
 \mathbb{E}\|\overline b_{t:T}\|_H^2
@@ -1697,13 +1697,13 @@ C_\infty \;\preceq\; \mathcal{P}(C_\infty) + \gamma\,\widetilde{\mathcal{T}}^{-1
 \mathcal{P}(M) := \gamma\,\widetilde{\mathcal{T}}^{-1}\mathcal{S}(M). \tag{37}
 $$
 
-Write $\|\Sigma\|_H := \|H^{-1/2}\Sigma H^{-1/2}\|_{\mathrm{op}}$ for brevity, so that $\Sigma \preceq \|\Sigma\|_H H$. From $(36)$,
+Write $\lVert \Sigma\rVert _H := \lVert H^{-1/2}\Sigma H^{-1/2}\rVert _{\mathrm{op}}$ for brevity, so that $\Sigma \preceq \lVert \Sigma\rVert _H H$. From $(36)$,
 
 $$
 \widetilde{\mathcal{T}}^{-1}H \;=\; \gamma\sum_{k\ge 0}A^{2k}H \;\preceq\; \gamma\sum_{k\ge 0}A^kH \;=\; I,
 $$
 
-so $\widetilde{\mathcal{T}}^{-1}\Sigma \preceq \|\Sigma\|_H\,I$. Moreover $(25)$ gives $\mathcal{S}(I) \preceq R^2 H$, making $\mathcal{P}$ a PSD contraction: if $0 \preceq M \preceq aI$, then
+so $\widetilde{\mathcal{T}}^{-1}\Sigma \preceq \lVert \Sigma\rVert _H\,I$. Moreover $(25)$ gives $\mathcal{S}(I) \preceq R^2 H$, making $\mathcal{P}$ a PSD contraction: if $0 \preceq M \preceq aI$, then
 
 $$
 \mathcal{P}(M) \;\preceq\; a\gamma R^2\,\widetilde{\mathcal{T}}^{-1}H \;\preceq\; a\gamma R^2\, I. \tag{38}
@@ -1715,7 +1715,7 @@ $$
 C_\infty \;\preceq\; \frac{\gamma\,\|\Sigma\|_H}{1 - \gamma R^2}\, I. \tag{39}
 $$
 
-To sharpen $(39)$ to a trace bound we plug back into $(34)$. Combining $(39)$ with $\mathcal{S}(I) \preceq R^2 H$ gives $\mathcal{S}(C_\infty) \preceq \tfrac{\gamma R^2\|\Sigma\|_H}{1-\gamma R^2}H$. Multiplying $(34)$ by $H^{-1}$ and taking traces, with $\operatorname{Tr}(H^{-1}H)=d$, gives
+To sharpen $(39)$ to a trace bound we plug back into $(34)$. Combining $(39)$ with $\mathcal{S}(I) \preceq R^2 H$ gives $\mathcal{S}(C_\infty) \preceq \tfrac{\gamma R^2\lVert \Sigma\rVert _H}{1-\gamma R^2}H$. Multiplying $(34)$ by $H^{-1}$ and taking traces, with $\operatorname{Tr}(H^{-1}H)=d$, gives
 
 $$
 2\operatorname{Tr}(C_\infty)
@@ -1723,7 +1723,7 @@ $$
 \gamma\operatorname{Tr}(H^{-1}\Sigma) + \frac{\gamma^2 R^2\, d\,\|\Sigma\|_H}{1-\gamma R^2}.
 $$
 
-Substituting into $(35)$ and recognizing $\sigma_{\mathrm{MLE}}^2 = \tfrac12\operatorname{Tr}(H^{-1}\Sigma)$ and $\rho_{\mathrm{misspec}} = d\|\Sigma\|_H/\operatorname{Tr}(H^{-1}\Sigma)$ yields the final variance bound
+Substituting into $(35)$ and recognizing $\sigma_{\mathrm{MLE}}^2 = \tfrac12\operatorname{Tr}(H^{-1}\Sigma)$ and $\rho_{\mathrm{misspec}} = d\lVert \Sigma\rVert _H/\operatorname{Tr}(H^{-1}\Sigma)$ yields the final variance bound
 
 $$
 \tfrac{1}{2}\mathbb{E}\|\overline v_{t:T}\|_H^2
@@ -1745,7 +1745,7 @@ We work throughout this section with **streaming** SGD: at each step $(x_k,y_k)\
 
 ### The $1/d$ rescaling and the warm-up problem
 
-Consider the additive-noise model of Section 8 with isotropic features: $x \sim \mathcal{N}(0, I_d)$, $\eta \sim \mathcal{N}(0, \sigma^2)$ independent of $x$, and $y = \langle w_\ast, x\rangle + \eta$ with $\|w_\ast\| = 1$. The population risk is
+Consider the additive-noise model of Section 8 with isotropic features: $x \sim \mathcal{N}(0, I_d)$, $\eta \sim \mathcal{N}(0, \sigma^2)$ independent of $x$, and $y = \langle w_\ast, x\rangle + \eta$ with $\lVert w_\ast\rVert  = 1$. The population risk is
 
 $$
 L(w) = \tfrac{1}{2}\bigl(\sigma^2 + \|w-w_\ast\|^2\bigr), \qquad \nabla L(w) = w - w_\ast. \tag{41}
@@ -1765,7 +1765,7 @@ The following lemma computes the one-step change of the excess risk under $(42)$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma 9.1 (One-step update).** *Let $R(w) := \tfrac{1}{2}\|w-w_\ast\|^2 = L(w) - \tfrac{1}{2}\sigma^2$. The streaming iterates $(42)$ satisfy*
+**Lemma 9.1 (One-step update).** *Let $R(w) := \tfrac{1}{2}\lVert w-w_\ast\rVert ^2 = L(w) - \tfrac{1}{2}\sigma^2$. The streaming iterates $(42)$ satisfy*
 
 $$
 d\cdot \mathbb{E}\bigl[R(w_{k+1}) - R(w_k)\,\big|\,\mathcal{F}_k\bigr] = -2\gamma\,R(w_k) + \gamma^2\bigl(R(w_k)+\tfrac{\sigma^2}{2}\bigr) + O(d^{-1}), \tag{43}
@@ -1781,13 +1781,13 @@ $$
 \mathbb{E}[g_{k+1}\mid\mathcal{F}_k] = w_k - w_\ast, \qquad \mathbb{E}[\|g_{k+1}\|^2\mid\mathcal{F}_k] = (d+2)\|w_k - w_\ast\|^2 + d\sigma^2,
 $$
 
-where the second identity uses the Gaussian fourth-moment computation $\mathbb{E}[(x^\top v)^2\|x\|^2] = (d+2)\|v\|^2$. Expanding $R(w_{k+1}) = \tfrac{1}{2}\|w_k - w_\ast - (\gamma/d)g_{k+1}\|^2$ and taking conditional expectations gives
+where the second identity uses the Gaussian fourth-moment computation $\mathbb{E}[(x^\top v)^2\lVert x\rVert ^2] = (d+2)\lVert v\rVert ^2$. Expanding $R(w_{k+1}) = \tfrac{1}{2}\lVert w_k - w_\ast - (\gamma/d)g_{k+1}\rVert ^2$ and taking conditional expectations gives
 
 $$
 \mathbb{E}[R(w_{k+1})-R(w_k)\mid\mathcal{F}_k] = -\tfrac{\gamma}{d}\|w_k-w_\ast\|^2 + \tfrac{\gamma^2}{2d^2}\bigl((d+2)\|w_k-w_\ast\|^2 + d\sigma^2\bigr).
 $$
 
-Multiplying by $d$ and using $R(w_k) = \tfrac{1}{2}\|w_k-w_\ast\|^2$ produces $(43)$. <span style="float: right;">$\square$</span>
+Multiplying by $d$ and using $R(w_k) = \tfrac{1}{2}\lVert w_k-w_\ast\rVert ^2$ produces $(43)$. <span style="float: right;">$\square$</span>
 
 After rescaling time by $d$, the conditional drift of $R$ depends only on $R(w_k)$. Setting $\psi_d(t) := \mathbb{E}[R(w_{[td]})]$, the iteration $(43)$ is an Euler approximation with step $1/d$ of the one-dimensional ODE
 
@@ -1797,7 +1797,7 @@ $$
 
 The ODE is stable iff $\gamma < 2$, and in that regime $\psi(t) \to \psi_\infty := \tfrac{\gamma\sigma^2}{2(2-\gamma)}$ as $t\to\infty$. The function $\psi(t)$ is the candidate dimension-independent limit of the excess risk along streaming SGD.
 
-**Numerical illustration.** The figure below plots the excess-risk trajectory $L(w_{[td]}) - L(w_\ast)$ versus epoch $t$ for streaming SGD on the isotropic Gaussian model with $\sigma = 0.1$, $\gamma = 1$, $w_0 = 0$, and $d \in \{50, 200, 800, 3200\}$. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. As $d$ grows, the bands shrink around the deterministic ODE curve $\psi(t)$ from $(44)$.
+**Numerical illustration.** The figure below plots the excess-risk trajectory $L(w_{[td]}) - L(w_\ast)$ versus epoch $t$ for streaming SGD on the isotropic Gaussian model with $\sigma = 0.1$, $\gamma = 1$, $w_0 = 0$, and $d \in \lbrace 50, 200, 800, 3200\rbrace $. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. As $d$ grows, the bands shrink around the deterministic ODE curve $\psi(t)$ from $(44)$.
 
 ![Streaming SGD on isotropic Gaussian regression: concentration around the ODE limit](figures/sgd_high_d_ode_limit.png)
 
@@ -1807,9 +1807,9 @@ The closure in Lemma 9.1 was that the conditional drift of $R$ is a function of 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Definition 9.2 (Autonomous closure).** *A family of streaming least-squares problems indexed by $d$ admits an **autonomous closure** by observables $u : \mathbb{R}^d \to \mathbb{R}^r$ (with $u_1 = L$) if there exist continuous functions $F_1, F_2 : \mathbb{R}^r \to \mathbb{R}^r$ such that, uniformly on compact sets of $\|w_0\|$ as $d \to \infty$:*
+**Definition 9.2 (Autonomous closure).** *A family of streaming least-squares problems indexed by $d$ admits an **autonomous closure** by observables $u : \mathbb{R}^d \to \mathbb{R}^r$ (with $u_1 = L$) if there exist continuous functions $F_1, F_2 : \mathbb{R}^r \to \mathbb{R}^r$ such that, uniformly on compact sets of $\lVert w_0\rVert $ as $d \to \infty$:*
 
-*(i) $L$ is uniformly coercive: $\liminf_{\|w\|\to\infty}\liminf_{d\to\infty} L(w) = +\infty$;*
+*(i) $L$ is uniformly coercive: $\liminf_{\lVert w\rVert \to\infty}\liminf_{d\to\infty} L(w) = +\infty$;*
 
 *(ii) the conditional drift closes up,*
 
@@ -1843,7 +1843,7 @@ $$
 
 </div>
 
-*Proof.* Fix $T,R>0$ and set $\tau_R := \inf\{k : \|u(w_k)\| > R\}$. Coercivity of $L=u_1$ together with $(46)$ forces the iterates to remain bounded uniformly in $d$ for $k \le \tau_R$, so it suffices to prove $(48)$ with both processes stopped at $\tau_R$ and at the analogous ODE stopping time $\tau^\mu_R$, and then send $R \to\infty$. We suppress the stopping in the notation below.
+*Proof.* Fix $T,R>0$ and set $\tau_R := \inf\lbrace k : \lVert u(w_k)\rVert  > R\rbrace $. Coercivity of $L=u_1$ together with $(46)$ forces the iterates to remain bounded uniformly in $d$ for $k \le \tau_R$, so it suffices to prove $(48)$ with both processes stopped at $\tau_R$ and at the analogous ODE stopping time $\tau^\mu_R$, and then send $R \to\infty$. We suppress the stopping in the notation below.
 
 Set $\ell := \lfloor td \rfloor$. The Doob decomposition reads
 
@@ -1857,19 +1857,19 @@ $$
 \mathbb{E}\|M_\ell\|^2 = \sum_{k=0}^{\ell - 1}\mathbb{E}\|u(w_{k+1}) - u(w_k)\|^2 \;\le\; \tfrac{\ell}{d}\cdot o(1) \;=\; T\cdot o(1),
 $$
 
-so Doob's $L^2$ maximal inequality gives $\max_{k \le \ell}\|M_k\| \to 0$ in probability. Substituting $(45)$ into $(49)$ produces, uniformly in $t \in [0,T]$,
+so Doob's $L^2$ maximal inequality gives $\max_{k \le \ell}\lVert M_k\rVert  \to 0$ in probability. Substituting $(45)$ into $(49)$ produces, uniformly in $t \in [0,T]$,
 
 $$
 u(w_\ell) = u(w_0) + \frac{1}{d}\sum_{k=0}^{\ell - 1}\bigl[-\gamma F_1(u(w_k)) + \gamma^2 F_2(u(w_k))\bigr] + o_{\mathbb{P}}(1). \tag{50}
 $$
 
-The right-hand side is the Euler approximation with step $1/d$ of the integral equation $\mu(t) = \mu_0 + \int_0^t [-\gamma F_1(\mu(s)) + \gamma^2 F_2(\mu(s))]\,ds$ solved by $(47)$. Continuity of $F_1, F_2$ on $\{\|v\|\le R\}$ and Gronwall's inequality then yield $\sup_{t\le T}\|u(w_\ell) - \mu(t)\| \to 0$ in probability. <span style="float: right;">$\square$</span>
+The right-hand side is the Euler approximation with step $1/d$ of the integral equation $\mu(t) = \mu_0 + \int_0^t [-\gamma F_1(\mu(s)) + \gamma^2 F_2(\mu(s))]\,ds$ solved by $(47)$. Continuity of $F_1, F_2$ on $\lbrace \lVert v\rVert \le R\rbrace $ and Gronwall's inequality then yield $\sup_{t\le T}\lVert u(w_\ell) - \mu(t)\rVert  \to 0$ in probability. <span style="float: right;">$\square$</span>
 
 
 
 ### Failure of closure for correlated features
 
-For correlated features $x \sim \mathcal{N}(0, H)$ with $H \neq I_d$, the Gaussian fourth-moment identity becomes $\mathbb{E}[(x^\top v)^2 xx^\top] = (v^\top H v)\,H + 2\,Hvv^\top H$. The one-step drift of the excess risk $R(w) := \tfrac{1}{2}\|w-w_\ast\|_H^2$ becomes
+For correlated features $x \sim \mathcal{N}(0, H)$ with $H \neq I_d$, the Gaussian fourth-moment identity becomes $\mathbb{E}[(x^\top v)^2 xx^\top] = (v^\top H v)\,H + 2\,Hvv^\top H$. The one-step drift of the excess risk $R(w) := \tfrac{1}{2}\lVert w-w_\ast\rVert _H^2$ becomes
 
 $$
 d\,\mathbb{E}[R(w_{k+1}) - R(w_k)\mid \mathcal{F}_k] = -\gamma\,\bigl\langle H^2,\,(w_k-w_\ast)^{\otimes 2}\bigr\rangle + O(d^{-1}).
@@ -1893,9 +1893,9 @@ $$
 \Pr\bigl(|x^\top Bx - \mathbb{E}[x^\top Bx]| \ge t\bigr) \;\le\; 2\exp\Bigl(-\min\Bigl\{\tfrac{t^2 d^{-4\varepsilon}}{\|B\|_F^2},\, \tfrac{t\,d^{-2\varepsilon}}{\|B\|_{\mathrm{op}}}\Bigr\}\Bigr);
 $$
 
-*(iii) conditionally on $x$, $y = \langle x, w_\ast\rangle + \sigma w$ with $w$ centered, unit-variance, and sub-Gaussian with $\|w\|_{\psi_2} \le d^{\varepsilon}$;*
+*(iii) conditionally on $x$, $y = \langle x, w_\ast\rangle + \sigma w$ with $w$ centered, unit-variance, and sub-Gaussian with $\lVert w\rVert _{\psi_2} \le d^{\varepsilon}$;*
 
-*(iv) $\|w_\ast\| \le d^{\varepsilon}$.*
+*(iv) $\lVert w_\ast\rVert  \le d^{\varepsilon}$.*
 
 </div>
 
@@ -1929,7 +1929,7 @@ Every quadratic on $\mathbb{R}^d$ has finite $C^2$ norm, and the central compari
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.7 (Streaming SGD vs. homogenized SGD).** *Under Assumption 9.4, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$ and every deterministic $w_0$ with $\|w_0\| \le 1$, there is a constant $C = C(\|H\|_{\mathrm{op}})$ such that for every $n \le d\log d/C$, the streaming iterates $\{w_k\}_{k=0}^n$ and the homogenized SGD process $\{X_t\}_{t=0}^{n/d}$ (with the same initialization, driven by an independent Brownian motion) satisfy*
+**Theorem 9.7 (Streaming SGD vs. homogenized SGD).** *Under Assumption 9.4, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$ and every deterministic $w_0$ with $\lVert w_0\rVert  \le 1$, there is a constant $C = C(\lVert H\rVert _{\mathrm{op}})$ such that for every $n \le d\log d/C$, the streaming iterates $\lbrace w_k\rbrace _{k=0}^n$ and the homogenized SGD process $\lbrace X_t\rbrace _{t=0}^{n/d}$ (with the same initialization, driven by an independent Brownian motion) satisfy*
 
 $$
 \sup_{0\le k\le n}\bigl|q(w_k) - q(X_{k/d})\bigr| \;<\; \|q\|_{C^2}\cdot e^{Cn/d}\cdot d^{-1/2 + 9\varepsilon}, \tag{54}
@@ -1991,7 +1991,7 @@ $$
 
 If $\mu_H$ converges to a limiting measure $\mu$ (for instance the Marchenko--Pastur law of Section 7), then so do $\mathcal{K}_\gamma$ and $\Psi$, and the limiting risk curve becomes genuinely dimension-free. The spectral-density viewpoint that organized the deterministic average-case analysis of Section 7 reappears here as the high-dimensional limit of streaming SGD.
 
-**Numerical illustration.** The figure below plots streaming SGD on a least-squares problem with diagonal feature covariance $H = \mathrm{diag}(\lambda_1,\ldots,\lambda_d)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$), with $w_0 = 0$, $w_{\ast,i} = 1/\sqrt d$, $\sigma = 0.1$, $\gamma = 0.5$, and $d \in \{50, 200, 800, 3200\}$. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. The dashed black curve is the Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(57)$ at $d = 1024$ (a proxy for the limiting kernel). As $d$ grows, the bands shrink around the deterministic Volterra curve.
+**Numerical illustration.** The figure below plots streaming SGD on a least-squares problem with diagonal feature covariance $H = \mathrm{diag}(\lambda_1,\ldots,\lambda_d)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$), with $w_0 = 0$, $w_{\ast,i} = 1/\sqrt d$, $\sigma = 0.1$, $\gamma = 0.5$, and $d \in \lbrace 50, 200, 800, 3200\rbrace $. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. The dashed black curve is the Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(57)$ at $d = 1024$ (a proxy for the limiting kernel). As $d$ grows, the bands shrink around the deterministic Volterra curve.
 
 ![Streaming SGD with correlated features: concentration around the Volterra limit](figures/sgd_volterra_limit.png)
 
@@ -2071,8 +2071,8 @@ The notes combine ideas that appear in different communities; the table below ma
 
 | Method | Positive definite ($\alpha > 0$) | Positive semidefinite ($\alpha = 0$) |
 |--------|----------------------------------|--------------------------------------|
-| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\|x_0 - x^\ast\|^2/\varepsilon)$ |
-| Chebyshev GD / Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ (CG: at most $m\le d$ steps) | $O(\sqrt{\beta\,\|x_0 - x^\ast\|^2/\varepsilon})$ (CG: at most $m\le d$ steps) |
+| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon)$ |
+| Chebyshev GD / Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ (CG: at most $m\le d$ steps) | $O(\sqrt{\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon})$ (CG: at most $m\le d$ steps) |
 
 
 
