@@ -1286,7 +1286,7 @@ $$
 \mathcal{E}_k \;=\; \min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\,\int_{0}^{\beta}\lambda\,p(\lambda)^2\,d\nu(\lambda), \tag{19}
 $$
 
-where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta]$ --- for example $\nu=\lVert e_0\rVert^2\,\mu_{MP}$ in the Marchenko--Pastur setting --- and $\mathcal{P}_k$ consists of degree at most $k$ polynomials. Note that the constraint set $\mathcal{V}_k:=\{p\in \mathcal{P}_k: p(0)=1\}$ is a finite-dimensional affine space. Strictly speaking, we should stipulate in $(19)$ that the polynomials in question have all real roots. For all examples we will consider the optimal polynomial in $\mathcal{V}_k$ will have all real roots and therefore there is no distinction between the two optimization problems.
+where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta]$ --- for example $\nu=\lVert e_0\rVert^2\,\mu_{MP}$ in the Marchenko--Pastur setting --- and $\mathcal{P}_k$ consists of degree at most $k$ polynomials. Note that the constraint set $\mathcal{V}_k:=\lbrace p\in \mathcal{P}_k: p(0)=1\rbrace$ is a finite-dimensional affine space. Strictly speaking, we should stipulate in $(19)$ that the polynomials in question have all real roots. For all examples we will consider the optimal polynomial in $\mathcal{V}_k$ will have all real roots and therefore there is no distinction between the two optimization problems.
 
 Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $\|p\|^2$ where the norm is induced by the inner product $\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$ where we define the reweighted measure $d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$. Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to this inner product. Note that an orthonormal basis can be analytically constructed by a Gram-Schmidt process. Define now the similarity measure (kernel) on $\mathbb{R}$ by the expression
 
@@ -1545,11 +1545,11 @@ This section in essense asserts that a type of fourth moment of $x$ is bounded b
 1. **Bounded features.** If $\|x\| \le R$ almost surely, then $(25)$ holds.
 2. **Gaussian features.** If $x \sim \mathcal{N}(0, H)$, then Isserlis' formula gives
 $$\mathbb{E}[\|x\|^2\, xx^\top] = (\operatorname{Tr} H)\,H + 2H^2,$$ and therefore $(25)$ holds with $R^2 = \operatorname{Tr} H + 2\|H\|_{\mathrm{op}} \le 3\operatorname{Tr}(H)$.
-3. **Whitened features.** Suppose $x = H^{1/2} z$, where the coordinates of $z$ are i.i.d., centered, have unit variance, and have kurtosis $\kappa = \mathbb{E} z_i^4 < \infty$. Writing $\|x\|^2 = z^\top H z = \sum_{k,l} H_{kl} z_k z_l$ and using independence (so that $\mathbb{E}[z_k z_l z_i z_j]$ vanishes unless its four indices pair up, with $\mathbb{E} z_i^2 = 1$ and $\mathbb{E} z_i^4 = \kappa$) gives
+3. **Whitened features.** Suppose $x = H^{1/2} z$, where the coordinates of $z$ are i.i.d., centered, have unit variance, and have kurtosis $\kappa = \mathbb{E} z_i^4 < \infty$. Then an elementary algebraic manipulations  give
 
-$$\mathbb{E}[\|x\|^2\, xx^\top] = H^{1/2}\bigl[(\operatorname{Tr} H)\,I + 2H + (\kappa-3)\operatorname{diag}(H)\bigr]H^{1/2}.$$
+$$\mathbb{E}[\|x\|^2\, xx^\top] = H^{1/2}\bigl[(\operatorname{Tr} H)\,I + 2H + (\kappa-3)\operatorname{diag}(H)\bigr]H^{1/2},$$
 
-Since $\operatorname{diag}(H) \preceq \|H\|_{\mathrm{op}} I$, this implies $(25)$ with $R^2 = \operatorname{Tr} H + (\kappa - 1)\|H\|_{\mathrm{op}}$.
+and therefore $(25)$ holds with $R^2 = \operatorname{Tr} H + (\kappa - 1)\|H\|_{\mathrm{op}}$.
 
 Taking traces in $(25)$ yields $\operatorname{Tr}(H) = \mathbb{E}\|x\|^2 \le R^2$, and in particular $H \preceq R^2 I$; thus $R^2$ upper bounds the top eigenvalue of $H$, and will play a role analogous to $\beta$ in Section 1.
 
