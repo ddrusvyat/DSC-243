@@ -38,7 +38,9 @@ We will speak both about worst-case rates---depending only on extremal eigenvalu
 - [4. The Krylov Subspace Method and Conjugate Gradient](#sec-4)
 - [6. Sublinear Rates in the Positive Semidefinite Case](#sec-6)
 - [7. Convergence Under Source Conditions and Spectral Structure](#sec-7)
-- [8. Related Literature](#sec-8)
+- [8. Stochastic Gradient Descent for Least Squares](#sec-8)
+- [9. High-Dimensional Limits of Streaming SGD](#sec-9)
+- [10. Related Literature](#sec-10)
 - [Summary](#summary)
 
 ---
@@ -1503,7 +1505,501 @@ Thus we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to th
 
 ---
 
-## 8. Related Literature {#sec-8}
+## 8. Stochastic Gradient Descent for Least Squares {#sec-8}
+
+All the algorithms studied so far---gradient descent, Chebyshev-accelerated gradient descent, and CG---access the matrix $A$ only through matrix-vector products $v\mapsto Av$. For the canonical least squares problem 
+
+$$\min_{x\in \mathbb{R}^d} f(x):=\tfrac{1}{2n}\|Dx-y\|^2,$$ 
+
+each such matrix vector product requires access to every row of $D\in \mathbb{R}^{n\times d}$ and requires $O(nd)$ basic arithmetic operations. When the dataset is large, this can be prohibitively expensive, and the runtime is dominated by data access rather than by the number of iterations.
+
+The natural alternative is **stochastic gradient descent (SGD)**, which at each step replaces the full gradient by a cheap unbiased estimator computed from a single data point, or a small batch. In this section, we analyze the performance of this algorithm. 
+
+### Setup
+
+Let $(x,y) \in \mathbb{R}^d \times \mathbb{R}$ be drawn from a distribution $\mathcal{D}$. The simplest example is when $\mathcal{D}$ is a uniform distribution over finitely many points.
+ and consider the population square loss
+
+$$
+L(w) = \tfrac{1}{2}\,\mathbb{E}\bigl[(y - \langle w, x\rangle)^2\bigr], \qquad w \in \mathbb{R}^d.
+$$
+
+We define the matrix 
+
+$$
+H := \mathbb{E}[xx^\top] \qquad\textrm{and set}\qquad \mu := \lambda_{\min}(H).
+$$
+
+We assume $H \succ 0$ throughout the section. As usual, for a vector $u$, we will use the norm $\|u\|_H^2 := u^\top H u$ induced by $H$. Exactly as in the deterministic least squares problem of Section 1 under the identification $A=H$, the excess population risk is the exact quadratic form 
+
+$$L(w) - L(w_\ast) = \tfrac{1}{2}\|w - w_\ast\|_H^2.$$
+
+We impose a single fourth-moment bound on the feature vectors: there is a constant $R > 0$ satisfying the  condition
+
+$$
+\mathbb{E}\bigl[\|x\|^2\, xx^\top\bigr] \;\preceq\; R^2\, H. \tag{25}
+$$
+
+This section in essense asserts that a type of fourth moment of $x$ is bounded by the second moment. Three standard settings where $(25)$ holds are the following:
+
+1. **Bounded features.** If $\|x\| \le R$ almost surely, then $(25)$ holds.
+2. **Gaussian features.** If $x \sim \mathcal{N}(0, H)$, then Isserlis' formula gives
+$$\mathbb{E}[\|x\|^2\, xx^\top] = (\operatorname{Tr} H)\,H + 2H^2,$$ and therefore $(25)$ holds with $R^2 = \operatorname{Tr} H + 2\|H\|_{\mathrm{op}} \le 3\operatorname{Tr}(H)$.
+3. **Whitened features.** Suppose $x = H^{1/2} z$, where the coordinates of $z$ are i.i.d., centered, have unit variance, and have kurtosis $\kappa = \mathbb{E} z_i^4 < \infty$. Writing $\|x\|^2 = z^\top H z = \sum_{k,l} H_{kl} z_k z_l$ and using independence (so that $\mathbb{E}[z_k z_l z_i z_j]$ vanishes unless its four indices pair up, with $\mathbb{E} z_i^2 = 1$ and $\mathbb{E} z_i^4 = \kappa$) gives
+
+$$\mathbb{E}[\|x\|^2\, xx^\top] = H^{1/2}\bigl[(\operatorname{Tr} H)\,I + 2H + (\kappa-3)\operatorname{diag}(H)\bigr]H^{1/2}.$$
+
+Since $\operatorname{diag}(H) \preceq \|H\|_{\mathrm{op}} I$, this implies $(25)$ with $R^2 = \operatorname{Tr} H + (\kappa - 1)\|H\|_{\mathrm{op}}$.
+
+Taking traces in $(25)$ yields $\operatorname{Tr}(H) = \mathbb{E}\|x\|^2 \le R^2$, and in particular $H \preceq R^2 I$; thus $R^2$ upper bounds the top eigenvalue of $H$, and will play a role analogous to $\beta$ in Section 1.
+
+**Constant-stepsize SGD** iterates
+
+$$
+w_t = w_{t-1} + \gamma\,(y_t - \langle w_{t-1}, x_t\rangle)\,x_t, \qquad t=1,2,\ldots, \tag{26}
+$$
+
+where $(x_t,y_t)$ are i.i.d. copies of $(x,y)$ and the stepsize satisfies $0 < \gamma < 1/R^2$. A single iterate $w_t$ oscillates around $w_\ast$ rather than converging to it, so it is customary to report the **tail average**
+
+$$
+\overline{w}_{t:T} \;:=\; \frac{1}{T - t}\sum_{s=t}^{T-1} w_s, \qquad 0 \le t < T.
+$$
+
+The cutoff $t$ discards a burn-in phase during which the iterates are still contracting toward $w_\ast$; averaging over $[t,T)$ then suppresses the variance.
+
+### The asymptotic noise level
+
+The rate of the variance term is governed by the covariance of the stochastic gradient at the optimum. Define
+
+$$
+\Sigma := \mathbb{E}\bigl[(y - \langle w_\ast, x\rangle)^2\, xx^\top\bigr],
+\quad
+\sigma_{\mathrm{MLE}}^2 := \tfrac{1}{2}\operatorname{Tr}(H^{-1}\Sigma),
+\quad
+\rho_{\mathrm{misspec}} := \frac{d\,\lVert H^{-1/2}\Sigma H^{-1/2}\rVert_{\mathrm{op}}}{\operatorname{Tr}(H^{-1}\Sigma)}.
+$$
+
+If $\operatorname{Tr}(H^{-1}\Sigma)=0$ we interpret the variance term below as zero. The quantity $\sigma_{\mathrm{MLE}}^2/T$ is the Cramér--Rao lower bound on the asymptotic excess risk attainable by any procedure based on $T$ i.i.d. samples from $\mathcal{D}$, and the misspecification parameter $\rho_{\mathrm{misspec}}$ takes values in $[1,d]$ and measures how far the problem is from well specified; it equals $1$ in the additive-noise model below.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 8.1 (Tail-averaged constant-stepsize SGD).** *Under assumption $(25)$ and with stepsize $0 < \gamma < 1/R^2$, the tail-averaged SGD iterates of $(26)$ satisfy*
+
+$$
+\mathbb{E}[L(\overline w_{t:T})] - L(w_\ast)
+\;\leq\;
+\Bigg(\underbrace{\sqrt{\tfrac{1}{2}\,e^{-\gamma \mu t}\,R^2\,\|w_0-w_\ast\|^2}}_{\text{bias}}
+\;+\;
+\underbrace{\sqrt{\Big(1 + \tfrac{\gamma R^2}{1-\gamma R^2}\,\rho_{\mathrm{misspec}}\Big)\,\tfrac{\sigma_{\mathrm{MLE}}^2}{T-t}}}_{\text{variance}}\Bigg)^{2}. \tag{27}
+$$
+
+</div>
+
+The bound $(27)$ displays the classical bias--variance tradeoff of stochastic least squares. The bias contracts at the linear rate $e^{-\gamma \mu t}$---exactly the GD rate of Corollary 2.2 with $R^2$ in place of $\beta$---and decays with the *burn-in length* $t$. The variance, in contrast, is independent of the initialization and decays only as $1/(T-t)$ with the *averaging window* $T-t$, matching the statistically optimal rate. Choosing $t$ to be a constant fraction of $T$ (say $t = T/2$) therefore makes the bias negligible and recovers the $O(\sigma_{\mathrm{MLE}}^2/T)$ rate of the MLE.
+
+*Remark.* In the well-specified additive-noise model $y = \langle w_\ast, x\rangle + \eta$, where $\eta$ is independent of $x$ with $\mathbb{E}[\eta]=0$ and $\mathbb{E}[\eta^2]=\sigma^2$, a direct computation gives $\Sigma = \sigma^2 H$, and hence $\sigma_{\mathrm{MLE}}^2 = \tfrac{1}{2}d\sigma^2$ and $\rho_{\mathrm{misspec}} = 1$. After a burn-in that makes the bias negligible, Theorem 8.1 reduces to $\mathbb{E}[L(\overline w_{t:T})] - L(w_\ast) \lesssim d\sigma^2/(T-t)$, matching the statistical lower bound up to a constant factor.
+
+**Numerical illustration.** The figure below separates the two phases predicted by $(27)$ on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, taking $d=20$, $\sigma=0.3$, $w_0 = 0$, and stepsize $\gamma = \tfrac{1}{2}/(d+2)$ (so $\gamma R^2 = \tfrac12$). We plot the median over $60$ trials of the single-iterate risk $L(w_t) - L(w_\ast)$ and the tail-averaged risk $L(\overline w_{t/2:t}) - L(w_\ast)$ (shaded bands show the $10$--$90\%$ interquantile range), together with the Cramér--Rao rate $\sigma_{\mathrm{MLE}}^2/t = d\sigma^2/(2t)$ and the bound $(27)$ specialized to burn-in $s=t/2$. The single iterate decays exponentially until it hits a noise floor on the order of $\gamma d\sigma^2$ and then stops improving, whereas the tail average keeps decaying at the $1/t$ Cramér--Rao rate and matches the statistical lower bound up to a constant factor. The theoretical bound $(27)$ upper-bounds the tail-averaged curve across the entire horizon.
+
+![Tail-averaged constant-stepsize SGD: bias--variance decomposition](figures/sgd_tail_averaging.png)
+
+*Proof.* The first-order optimality condition $\nabla L(w_\ast)=0$ reads $\mathbb{E}[(y-\langle w_\ast, x\rangle)x]=0$. Let $e_t := w_t - w_\ast$ denote the error, $\xi_t := -(y_t - \langle w_\ast, x_t\rangle)x_t$ the gradient noise at the optimum, and $B_t := I - \gamma x_t x_t^\top$ the stochastic contraction. The optimality condition gives $\mathbb{E}[\xi_t] = 0$ and $\mathbb{E}[\xi_t\xi_t^\top] = \Sigma$, and $(26)$ takes the linear form
+
+$$
+e_t \;=\; B_t\, e_{t-1} - \gamma\, \xi_t. \tag{28}
+$$
+
+**Bias--variance decomposition.** Because $(28)$ is linear, we decompose $e_t = b_t + v_t$, where the *bias process* isolates the dependence on the initialization,
+
+$$
+b_t = B_t\, b_{t-1}, \qquad b_0 = w_0 - w_\ast, \tag{29}
+$$
+
+and the zero-mean *variance process* isolates the gradient noise,
+
+$$
+v_t = B_t\, v_{t-1} - \gamma\, \xi_t, \qquad v_0 = 0. \tag{30}
+$$
+
+Write $\overline{b}_{t:T}$ and $\overline{v}_{t:T}$ for the corresponding tail averages, so that $\overline{w}_{t:T} - w_\ast = \overline{b}_{t:T} + \overline{v}_{t:T}$. Minkowski's inequality in $L^2(\mathbb{P})$ then gives
+
+$$
+\mathbb{E}[L(\overline w_{t:T})] - L(w_\ast)
+\;=\; \tfrac{1}{2}\mathbb{E}\|\overline b_{t:T}+\overline v_{t:T}\|_H^2
+\;\leq\;
+\tfrac{1}{2}\Big(\sqrt{\mathbb{E}\|\overline b_{t:T}\|_H^2}+\sqrt{\mathbb{E}\|\overline v_{t:T}\|_H^2}\Big)^2. \tag{31}
+$$
+
+We now bound each of the two summands.
+
+**Bias contraction.** Conditioning on the past in $(29)$ yields
+
+$$
+\mathbb{E}\bigl[\|b_t\|^2\mid b_{t-1}\bigr]
+= \|b_{t-1}\|^2 - 2\gamma\, b_{t-1}^\top H\, b_{t-1} + \gamma^2\, b_{t-1}^\top \mathbb{E}[\|x\|^2 xx^\top]\, b_{t-1}.
+$$
+
+Applying $(25)$ and using $\gamma R^2 < 1$, so that $2\gamma - \gamma^2 R^2 \geq \gamma$, gives $\mathbb{E}\|b_t\|^2 \leq \mathbb{E}\|b_{t-1}\|^2 - \gamma\,\mathbb{E}\|b_{t-1}\|_H^2 \leq (1-\gamma\mu)\mathbb{E}\|b_{t-1}\|^2$, where the second inequality uses $H \succeq \mu I$. Iterating yields the pointwise bound $\mathbb{E}\|b_s\|^2 \leq e^{-\gamma\mu s}\|w_0 - w_\ast\|^2$. Combined with $H \preceq R^2 I$ and Jensen's inequality, this gives
+
+$$
+\mathbb{E}\|\overline b_{t:T}\|_H^2
+\;\leq\; \frac{R^2}{T-t}\sum_{s=t}^{T-1}\mathbb{E}\|b_s\|^2
+\;\leq\; R^2 e^{-\gamma\mu t}\,\|w_0 - w_\ast\|^2. \tag{32}
+$$
+
+**Covariance recursion.** Turning to the variance process $(30)$, set $C_t := \mathbb{E}[v_tv_t^\top]$. Induction from $v_0=0$ gives $\mathbb{E}[v_t]=0$ for all $t$, so the cross terms $\mathbb{E}[B_tv_{t-1}\xi_t^\top]$ vanish by independence and expanding the outer product of $(30)$ produces
+
+$$
+C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\Sigma, \qquad \text{where}\quad \mathcal{M}(C) := \mathbb{E}[(I-\gamma xx^\top)\,C\,(I-\gamma xx^\top)]. \tag{33}
+$$
+
+Since $\mathcal{M}$ is positivity preserving and $C_0=0$, the sequence is PSD-monotone: $0 = C_0 \preceq C_1 \preceq \cdots$. Taking traces in $(33)$ and applying $(25)$ gives $\operatorname{Tr}(C_t) \leq (1-\gamma\mu)\operatorname{Tr}(C_{t-1}) + \gamma^2\operatorname{Tr}(\Sigma)$, so the traces are uniformly bounded. Combined with PSD monotonicity, we conclude that $C_t$ converges in PSD order to a finite limit $C_\infty \succeq 0$ satisfying the fixed-point equation
+
+$$
+HC_\infty + C_\infty H \;=\; \gamma\,\mathcal{S}(C_\infty) + \gamma\,\Sigma, \qquad \text{where}\quad \mathcal{S}(M) := \mathbb{E}[(x^\top M x)\,xx^\top]. \tag{34}
+$$
+
+**Variance averaging in terms of $C_\infty$.** We next bound the variance term in $(31)$ by $\operatorname{Tr}(C_\infty)$. Let $m := T-t$ and $A := I - \gamma H$, noting that $0 \preceq A \preceq I$ by $(25)$. Conditioning on the sigma-field at step $s$ gives $\mathbb{E}[v_r\mid v_s]=A^{r-s}v_s$ for $r \geq s$, and hence $\mathbb{E}[v_rv_s^\top] = A^{r-s}C_s$. Symmetrizing the double sum defining $\mathbb{E}[\overline v_{t:T}\overline v_{t:T}^\top]$ and upper-bounding the (PSD) diagonal gives
+
+$$
+\mathbb{E}[\overline v_{t:T}\overline v_{t:T}^\top]
+\;\preceq\;
+\frac{1}{m^2}\sum_{s=t}^{T-1}\sum_{\tau=0}^{T-1-s}\bigl(A^\tau C_s + C_s A^\tau\bigr).
+$$
+
+Taking the $H$-trace and using that $A$ and $H$ commute, so that every $\operatorname{Tr}(HA^\tau C_s)$ is nonnegative, we can extend the inner sum to all $\tau \geq 0$:
+
+$$
+\mathbb{E}\|\overline v_{t:T}\|_H^2
+\;\leq\;
+\frac{2}{m^2}\sum_{s=t}^{T-1} \operatorname{Tr}\Big(H\Big(\sum_{\tau\ge 0} A^\tau\Big) C_s\Big).
+$$
+
+The geometric series sums to $(I-A)^{-1}=(\gamma H)^{-1}$, and using $C_s \preceq C_\infty$ we conclude
+
+$$
+\tfrac{1}{2}\,\mathbb{E}\|\overline v_{t:T}\|_H^2
+\;\leq\;
+\frac{\operatorname{Tr}(C_\infty)}{\gamma\,(T-t)}. \tag{35}
+$$
+
+**Bounding the stationary covariance.** It remains to control $\operatorname{Tr}(C_\infty)$. Introduce the auxiliary operator $\widetilde{\mathcal{T}}(M) := HM + MH - \gamma HMH$. A direct computation shows $M - AMA = \gamma\widetilde{\mathcal{T}}(M)$, and therefore $\widetilde{\mathcal{T}}$ admits the explicit, positivity-preserving inverse
+
+$$
+\widetilde{\mathcal{T}}^{-1}(M) \;=\; \gamma\sum_{k \ge 0} A^k\, M\, A^k. \tag{36}
+$$
+
+Rewriting $(34)$ as $\widetilde{\mathcal{T}}(C_\infty) = \gamma\mathcal{S}(C_\infty) + \gamma\Sigma - \gamma HC_\infty H$ and dropping the nonnegative last term yields $\widetilde{\mathcal{T}}(C_\infty) \preceq \gamma\mathcal{S}(C_\infty) + \gamma\Sigma$. Applying $\widetilde{\mathcal{T}}^{-1}$ gives
+
+$$
+C_\infty \;\preceq\; \mathcal{P}(C_\infty) + \gamma\,\widetilde{\mathcal{T}}^{-1}\Sigma,
+\qquad \text{where}\quad
+\mathcal{P}(M) := \gamma\,\widetilde{\mathcal{T}}^{-1}\mathcal{S}(M). \tag{37}
+$$
+
+Write $\|\Sigma\|_H := \|H^{-1/2}\Sigma H^{-1/2}\|_{\mathrm{op}}$ for brevity, so that $\Sigma \preceq \|\Sigma\|_H H$. From $(36)$,
+
+$$
+\widetilde{\mathcal{T}}^{-1}H \;=\; \gamma\sum_{k\ge 0}A^{2k}H \;\preceq\; \gamma\sum_{k\ge 0}A^kH \;=\; I,
+$$
+
+so $\widetilde{\mathcal{T}}^{-1}\Sigma \preceq \|\Sigma\|_H\,I$. Moreover $(25)$ gives $\mathcal{S}(I) \preceq R^2 H$, making $\mathcal{P}$ a PSD contraction: if $0 \preceq M \preceq aI$, then
+
+$$
+\mathcal{P}(M) \;\preceq\; a\gamma R^2\,\widetilde{\mathcal{T}}^{-1}H \;\preceq\; a\gamma R^2\, I. \tag{38}
+$$
+
+Iterating $(37)$ and using $C_\infty \preceq \operatorname{Tr}(C_\infty)\,I$ together with $(38)$ shows $\mathcal{P}^{k+1}(C_\infty) \preceq \operatorname{Tr}(C_\infty)(\gamma R^2)^{k+1}I \to 0$ and $\sum_{j\ge 0}\mathcal{P}^j(\widetilde{\mathcal{T}}^{-1}H) \preceq (1-\gamma R^2)^{-1}I$. Passing to the limit yields the crude bound
+
+$$
+C_\infty \;\preceq\; \frac{\gamma\,\|\Sigma\|_H}{1 - \gamma R^2}\, I. \tag{39}
+$$
+
+To sharpen $(39)$ to a trace bound we plug back into $(34)$. Combining $(39)$ with $\mathcal{S}(I) \preceq R^2 H$ gives $\mathcal{S}(C_\infty) \preceq \tfrac{\gamma R^2\|\Sigma\|_H}{1-\gamma R^2}H$. Multiplying $(34)$ by $H^{-1}$ and taking traces, with $\operatorname{Tr}(H^{-1}H)=d$, gives
+
+$$
+2\operatorname{Tr}(C_\infty)
+\;\leq\;
+\gamma\operatorname{Tr}(H^{-1}\Sigma) + \frac{\gamma^2 R^2\, d\,\|\Sigma\|_H}{1-\gamma R^2}.
+$$
+
+Substituting into $(35)$ and recognizing $\sigma_{\mathrm{MLE}}^2 = \tfrac12\operatorname{Tr}(H^{-1}\Sigma)$ and $\rho_{\mathrm{misspec}} = d\|\Sigma\|_H/\operatorname{Tr}(H^{-1}\Sigma)$ yields the final variance bound
+
+$$
+\tfrac{1}{2}\mathbb{E}\|\overline v_{t:T}\|_H^2
+\;\leq\;
+\Big(1 + \frac{\gamma R^2}{1-\gamma R^2}\,\rho_{\mathrm{misspec}}\Big)\frac{\sigma_{\mathrm{MLE}}^2}{T-t}. \tag{40}
+$$
+
+Combining the bias bound $(32)$ and the variance bound $(40)$ with the Minkowski decomposition $(31)$ produces $(27)$. <span style="float: right;">$\square$</span>
+
+Theorem 8.1 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis.
+
+---
+
+## 9. High-Dimensional Limits of Streaming SGD {#sec-9}
+
+The analysis of Section 8 gave a non-asymptotic bound for tail-averaged SGD that depends on $d$ only through the scalar constants $R^2$, $\mu$, $\sigma_{\mathrm{MLE}}^2$, and $\rho_{\mathrm{misspec}}$. In high-dimensional applications the question is not whether SGD converges but how the entire excess-risk curve $t\mapsto L(w_t)-L(w_\ast)$ behaves as $d$ grows. The phenomenon at the center of this section is that, after rescaling the stepsize as $\gamma_k = \gamma/d$ and measuring iterations in **epochs** $t := k/d$, the random curves $t\mapsto L(w_{[td]})$ concentrate as $d\to\infty$ around a *deterministic* limit that depends on the problem only through a few summary statistics and the spectrum of the feature covariance.
+
+We work throughout this section with **streaming** SGD: at each step $(x_k,y_k)\sim\mathcal{D}$ is drawn fresh, so the iterates are those of $(26)$ with stepsize $\gamma/d$ in place of $\gamma$. We write $H := \mathbb{E}[xx^\top]$ for the feature covariance and $L(w) = \tfrac{1}{2}\mathbb{E}[(y-\langle w,x\rangle)^2]$ for the population risk, minimized at $w_\ast$. The theory unfolds in two stages. The first is an autonomous ODE limit valid for isotropic features and, more generally, for any problem in which a finite collection of observables closes up under SGD. The second is a pathwise approximation of the iterates by a continuous-time diffusion---*homogenized SGD*---which works for arbitrary feature covariance and reduces the risk curve to a scalar Volterra equation in the spectrum of $H$.
+
+### The $1/d$ rescaling and the warm-up problem
+
+Consider the additive-noise model of Section 8 with isotropic features: $x \sim \mathcal{N}(0, I_d)$, $\eta \sim \mathcal{N}(0, \sigma^2)$ independent of $x$, and $y = \langle w_\ast, x\rangle + \eta$ with $\|w_\ast\| = 1$. The population risk is
+
+$$
+L(w) = \tfrac{1}{2}\bigl(\sigma^2 + \|w-w_\ast\|^2\bigr), \qquad \nabla L(w) = w - w_\ast. \tag{41}
+$$
+
+Streaming SGD with stepsize $\gamma/d$ takes the form
+
+$$
+w_{k+1} = w_k - \frac{\gamma}{d}\bigl(\langle w_k, x_{k+1}\rangle - y_{k+1}\bigr)\,x_{k+1}, \qquad k = 0,1,2,\ldots \tag{42}
+$$
+
+The factor $1/d$ in the stepsize is the unique choice that keeps the gradient-flow drift and the stochastic noise term *both* of order $1/d$ per step. As a result, one full epoch of $d$ steps changes the excess risk by $O(1)$, and the natural continuous-time parameter is $t := k/d$.
+
+### The autonomous ODE limit on isotropic data
+
+The following lemma computes the one-step change of the excess risk under $(42)$.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma 9.1 (One-step update).** *Let $R(w) := \tfrac{1}{2}\|w-w_\ast\|^2 = L(w) - \tfrac{1}{2}\sigma^2$. The streaming iterates $(42)$ satisfy*
+
+$$
+d\cdot \mathbb{E}\bigl[R(w_{k+1}) - R(w_k)\,\big|\,\mathcal{F}_k\bigr] = -2\gamma\,R(w_k) + \gamma^2\bigl(R(w_k)+\tfrac{\sigma^2}{2}\bigr) + O(d^{-1}), \tag{43}
+$$
+
+*where $\mathcal{F}_k = \sigma((x_j,y_j):1\le j\le k)$ and the $O(d^{-1})$ term is uniform on bounded sets.*
+
+</div>
+
+*Proof.* Set $g_{k+1} := (\langle w_k,x_{k+1}\rangle - y_{k+1})\,x_{k+1}$, so that $w_{k+1}-w_k = -(\gamma/d)\,g_{k+1}$. Using $\mathbb{E}[xx^\top]=I_d$ and $\mathbb{E}[\eta]=0$,
+
+$$
+\mathbb{E}[g_{k+1}\mid\mathcal{F}_k] = w_k - w_\ast, \qquad \mathbb{E}[\|g_{k+1}\|^2\mid\mathcal{F}_k] = (d+2)\|w_k - w_\ast\|^2 + d\sigma^2,
+$$
+
+where the second identity uses the Gaussian fourth-moment computation $\mathbb{E}[(x^\top v)^2\|x\|^2] = (d+2)\|v\|^2$. Expanding $R(w_{k+1}) = \tfrac{1}{2}\|w_k - w_\ast - (\gamma/d)g_{k+1}\|^2$ and taking conditional expectations gives
+
+$$
+\mathbb{E}[R(w_{k+1})-R(w_k)\mid\mathcal{F}_k] = -\tfrac{\gamma}{d}\|w_k-w_\ast\|^2 + \tfrac{\gamma^2}{2d^2}\bigl((d+2)\|w_k-w_\ast\|^2 + d\sigma^2\bigr).
+$$
+
+Multiplying by $d$ and using $R(w_k) = \tfrac{1}{2}\|w_k-w_\ast\|^2$ produces $(43)$. <span style="float: right;">$\square$</span>
+
+After rescaling time by $d$, the conditional drift of $R$ depends only on $R(w_k)$. Setting $\psi_d(t) := \mathbb{E}[R(w_{[td]})]$, the iteration $(43)$ is an Euler approximation with step $1/d$ of the one-dimensional ODE
+
+$$
+\dot\psi = (\gamma^2 - 2\gamma)\,\psi + \tfrac{\gamma^2\sigma^2}{2}, \qquad \psi(0) = R(w_0). \tag{44}
+$$
+
+The ODE is stable iff $\gamma < 2$, and in that regime $\psi(t) \to \psi_\infty := \tfrac{\gamma\sigma^2}{2(2-\gamma)}$ as $t\to\infty$. The function $\psi(t)$ is the candidate dimension-independent limit of the excess risk along streaming SGD.
+
+**Numerical illustration.** The figure below plots the excess-risk trajectory $L(w_{[td]}) - L(w_\ast)$ versus epoch $t$ for streaming SGD on the isotropic Gaussian model with $\sigma = 0.1$, $\gamma = 1$, $w_0 = 0$, and $d \in \{50, 200, 800, 3200\}$. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. As $d$ grows, the bands shrink around the deterministic ODE curve $\psi(t)$ from $(44)$.
+
+![Streaming SGD on isotropic Gaussian regression: concentration around the ODE limit](figures/sgd_high_d_ode_limit.png)
+
+### Autonomous order parameters
+
+The closure in Lemma 9.1 was that the conditional drift of $R$ is a function of $R$ itself. We now isolate this property abstractly. Let $u : \mathbb{R}^d \to \mathbb{R}^r$ be a vector of $r$ continuously differentiable observables, with $r$ held fixed as $d\to\infty$.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Definition 9.2 (Autonomous closure).** *A family of streaming least-squares problems indexed by $d$ admits an **autonomous closure** by observables $u : \mathbb{R}^d \to \mathbb{R}^r$ (with $u_1 = L$) if there exist continuous functions $F_1, F_2 : \mathbb{R}^r \to \mathbb{R}^r$ such that, uniformly on compact sets of $\|w_0\|$ as $d \to \infty$:*
+
+*(i) $L$ is uniformly coercive: $\liminf_{\|w\|\to\infty}\liminf_{d\to\infty} L(w) = +\infty$;*
+
+*(ii) the conditional drift closes up,*
+
+$$
+d\,\mathbb{E}\bigl[u(w_1)-u(w_0)\mid\mathcal{F}_0\bigr] = -\gamma\,F_1(u(w_0)) + \gamma^2\,F_2(u(w_0)) + o(1); \tag{45}
+$$
+
+*(iii) the conditional fluctuations vanish,*
+
+$$
+d\,\mathbb{E}\bigl[\|u(w_1)-u(w_0)\|^2\mid\mathcal{F}_0\bigr] = o(1). \tag{46}
+$$
+
+</div>
+
+The isotropic Gaussian model admits a one-parameter closure $u = L$ with $F_1(u) = 2u - \sigma^2$ and $F_2(u) = u$: $(45)$ is exactly $(43)$, and $(46)$ follows from the same fourth-moment computation. Condition $(46)$ is the key restriction, requiring that the SGD-induced fluctuations of $u$ be negligible compared with its drift on the time scale $t = k/d$.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 9.3 (Autonomous ODE limit).** *Suppose the streaming problem admits an autonomous closure $u : \mathbb{R}^d \to \mathbb{R}^r$ in the sense of Definition 9.2 and that $u(w_0) \to \mu_0$ in probability as $d\to\infty$. Let $\mu : [0,\infty) \to \mathbb{R}^r$ solve*
+
+$$
+\dot\mu = -\gamma\,F_1(\mu) + \gamma^2\,F_2(\mu), \qquad \mu(0) = \mu_0, \tag{47}
+$$
+
+*and assume the solution exists for all time. Then, uniformly on compact sets of $t$,*
+
+$$
+u(w_{[td]}) \;\xrightarrow[d\to\infty]{\mathbb{P}}\; \mu(t). \tag{48}
+$$
+
+</div>
+
+*Proof.* Fix $T,R>0$ and set $\tau_R := \inf\{k : \|u(w_k)\| > R\}$. Coercivity of $L=u_1$ together with $(46)$ forces the iterates to remain bounded uniformly in $d$ for $k \le \tau_R$, so it suffices to prove $(48)$ with both processes stopped at $\tau_R$ and at the analogous ODE stopping time $\tau^\mu_R$, and then send $R \to\infty$. We suppress the stopping in the notation below.
+
+Set $\ell := \lfloor td \rfloor$. The Doob decomposition reads
+
+$$
+u(w_\ell) = u(w_0) + \sum_{k=0}^{\ell - 1}\mathbb{E}\bigl[u(w_{k+1}) - u(w_k)\mid \mathcal{F}_k\bigr] + M_\ell, \tag{49}
+$$
+
+where $M_\ell$ is a martingale. By $(46)$ and independence of the increments,
+
+$$
+\mathbb{E}\|M_\ell\|^2 = \sum_{k=0}^{\ell - 1}\mathbb{E}\|u(w_{k+1}) - u(w_k)\|^2 \;\le\; \tfrac{\ell}{d}\cdot o(1) \;=\; T\cdot o(1),
+$$
+
+so Doob's $L^2$ maximal inequality gives $\max_{k \le \ell}\|M_k\| \to 0$ in probability. Substituting $(45)$ into $(49)$ produces, uniformly in $t \in [0,T]$,
+
+$$
+u(w_\ell) = u(w_0) + \frac{1}{d}\sum_{k=0}^{\ell - 1}\bigl[-\gamma F_1(u(w_k)) + \gamma^2 F_2(u(w_k))\bigr] + o_{\mathbb{P}}(1). \tag{50}
+$$
+
+The right-hand side is the Euler approximation with step $1/d$ of the integral equation $\mu(t) = \mu_0 + \int_0^t [-\gamma F_1(\mu(s)) + \gamma^2 F_2(\mu(s))]\,ds$ solved by $(47)$. Continuity of $F_1, F_2$ on $\{\|v\|\le R\}$ and Gronwall's inequality then yield $\sup_{t\le T}\|u(w_\ell) - \mu(t)\| \to 0$ in probability. <span style="float: right;">$\square$</span>
+
+
+
+### Failure of closure for correlated features
+
+For correlated features $x \sim \mathcal{N}(0, H)$ with $H \neq I_d$, the Gaussian fourth-moment identity becomes $\mathbb{E}[(x^\top v)^2 xx^\top] = (v^\top H v)\,H + 2\,Hvv^\top H$. The one-step drift of the excess risk $R(w) := \tfrac{1}{2}\|w-w_\ast\|_H^2$ becomes
+
+$$
+d\,\mathbb{E}[R(w_{k+1}) - R(w_k)\mid \mathcal{F}_k] = -\gamma\,\bigl\langle H^2,\,(w_k-w_\ast)^{\otimes 2}\bigr\rangle + O(d^{-1}).
+$$
+
+The leading term involves the second spectral moment $\langle H^2, (w-w_\ast)^{\otimes 2}\rangle$, which is *not* a function of $R = \tfrac{1}{2}\langle H, (w-w_\ast)^{\otimes 2}\rangle$. Adding it as an observable does not close the system: its drift involves $\langle H^3,(w-w_\ast)^{\otimes 2}\rangle$, and so on. No finite collection of polynomial observables closes the dynamics. The right framework treats the full $d$-dimensional iterate itself as the order parameter and approximates it by a continuous-time SDE, to which we now turn.
+
+### Homogenized SGD
+
+For the rest of the section we work with streaming least squares under the following data hypothesis, adapted from [Paq+22a].
+
+<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Assumption 9.4 (Streaming data).** *For some fixed $\varepsilon \in (0, 1/20)$:*
+
+*(i) $\mathbb{E}[x] = 0$ and $H := \mathbb{E}[xx^\top]$ has operator norm bounded independently of $d$;*
+
+*(ii) for every deterministic $B \in \mathbb{R}^{d\times d}$ and every $t \ge 0$,*
+
+$$
+\Pr\bigl(|x^\top Bx - \mathbb{E}[x^\top Bx]| \ge t\bigr) \;\le\; 2\exp\Bigl(-\min\Bigl\{\tfrac{t^2 d^{-4\varepsilon}}{\|B\|_F^2},\, \tfrac{t\,d^{-2\varepsilon}}{\|B\|_{\mathrm{op}}}\Bigr\}\Bigr);
+$$
+
+*(iii) conditionally on $x$, $y = \langle x, w_\ast\rangle + \sigma w$ with $w$ centered, unit-variance, and sub-Gaussian with $\|w\|_{\psi_2} \le d^{\varepsilon}$;*
+
+*(iv) $\|w_\ast\| \le d^{\varepsilon}$.*
+
+</div>
+
+Conditions (i)--(iv) are satisfied by isotropic Gaussian features with bounded signal, and more generally by sub-Gaussian feature distributions with bounded covariance. We now define the continuous-time process which approximates streaming SGD in the high-dimensional limit; its drift is the population gradient and its instantaneous covariance matches the *expected* second-moment increment of a single SGD step, with lower-order corrections dropped.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Definition 9.5 (Homogenized SGD).** *Homogenized SGD with stepsize $\gamma$ and feature covariance $H$ is the $\mathbb{R}^d$-valued continuous-time process $(X_t)_{t\ge 0}$ with $X_0 = w_0$ solving*
+
+$$
+dX_t = -\gamma\,\nabla L(X_t)\,dt + \gamma\,\sqrt{\tfrac{2\,L(X_t)\,H}{d}}\;dB_t, \tag{52}
+$$
+
+*where $(B_t)$ is a standard Brownian motion in $\mathbb{R}^d$ and $\sqrt{\,\cdot\,}$ is the PSD matrix square root.*
+
+</div>
+
+For the least-squares risk, $\nabla L(w) = H(w-w_\ast)$, so $(52)$ is a linear SDE with state-dependent Gaussian noise whose intensity is proportional to the current risk: near the optimum the noise vanishes and far from it the noise is large, mirroring the behavior of a single SGD step in expectation. The next definition specifies the class of test functions for which the comparison between SGD and homogenized SGD will hold quantitatively.
+
+<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Definition 9.6 ($C^2$ norm).** *For a twice-differentiable function $q : \mathbb{R}^d \to \mathbb{C}$,*
+
+$$
+\|q\|_{C^2} := \sup_{x \in \mathbb{R}^d}\|\nabla^2 q(x)\|_{\mathrm{op}} + \|\nabla q(0)\| + |q(0)|. \tag{53}
+$$
+
+</div>
+
+Every quadratic on $\mathbb{R}^d$ has finite $C^2$ norm, and the central comparison theorem of [Paq+22a] applies to all such test functions.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 9.7 (Streaming SGD vs. homogenized SGD).** *Under Assumption 9.4, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$ and every deterministic $w_0$ with $\|w_0\| \le 1$, there is a constant $C = C(\|H\|_{\mathrm{op}})$ such that for every $n \le d\log d/C$, the streaming iterates $\{w_k\}_{k=0}^n$ and the homogenized SGD process $\{X_t\}_{t=0}^{n/d}$ (with the same initialization, driven by an independent Brownian motion) satisfy*
+
+$$
+\sup_{0\le k\le n}\bigl|q(w_k) - q(X_{k/d})\bigr| \;<\; \|q\|_{C^2}\cdot e^{Cn/d}\cdot d^{-1/2 + 9\varepsilon}, \tag{54}
+$$
+
+*with overwhelming probability.*
+
+</div>
+
+The estimate $(54)$ is a pathwise comparison: every quadratic statistic of streaming SGD agrees with its homogenized counterpart up to $d^{-1/2 + 9\varepsilon}$, uniformly over exponentially many steps. Since the noise driving $X_t$ is independent of the noise driving $w_k$, $(54)$ is simultaneously a comparison theorem and a concentration-of-measure statement for $q(w_k)$. The proof in [Paq+22a] applies Itô calculus to a family of resolvent test functions and uses sub-exponential martingale concentration.
+
+### The Volterra risk curve
+
+Theorem 9.7 reduces streaming SGD to a $d$-dimensional linear SDE. Although the state space is $d$-dimensional, the *risk* $t\mapsto L(X_t)$ itself satisfies a closed scalar convolution equation determined by the gradient-flow risk curve and the spectrum of $H$.
+
+Let $Y_t$ denote gradient flow on $L$ from $w_0$, i.e. the solution of $\dot Y_t = -\nabla L(Y_t)$ with $Y_0 = w_0$. For least squares this is explicit:
+
+$$
+Y_t - w_\ast = e^{-tH}(w_0 - w_\ast), \qquad L(Y_t) = \tfrac{1}{2}\sigma^2 + \tfrac{1}{2}\bigl\langle H e^{-2tH},\,(w_0 - w_\ast)^{\otimes 2}\bigr\rangle. \tag{55}
+$$
+
+The function $F(t) := L(Y_t)$ decreases monotonically to $\tfrac{1}{2}\sigma^2$ at the rate set by the smallest positive eigenvalue of $H$.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Definition 9.8 (Volterra risk model).** *With $F(t) := L(Y_t)$ and the **memory kernel***
+
+$$
+\mathcal{K}_\gamma(t) := \frac{\gamma^2}{d}\operatorname{Tr}\bigl(H^2\,e^{-2\gamma H t}\bigr), \tag{56}
+$$
+
+*the **Volterra risk model** $\Psi : [0,\infty) \to [0,\infty)$ is the unique solution of*
+
+$$
+\Psi(t) = F(\gamma t) + \int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds. \tag{57}
+$$
+
+</div>
+
+The two terms in $(57)$ correspond to the two terms in $(52)$. The forcing $F(\gamma t)$ is the noiseless gradient-flow risk run at speed $\gamma$. The convolution integral is the cumulative effect of the SGD noise: past risk $\Psi(s)$ drives the diffusion of $(52)$ with intensity $\mathcal{K}_\gamma(t-s)$. Both $F$ and $\mathcal{K}_\gamma$ are deterministic functionals of $(H, w_0, w_\ast, \sigma^2, \gamma)$.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 9.9 (Volterra risk curve).** *Under Assumption 9.4, for every $T > 0$ and every $\varepsilon' > 0$,*
+
+$$
+\sup_{0\le t \le T}\bigl|L(X_t) - \Psi(t)\bigr| \;<\; C(T, \|H\|_{\mathrm{op}})\cdot d^{-1/2 + \varepsilon'}, \tag{58}
+$$
+
+*with overwhelming probability.*
+
+</div>
+
+Combining Theorems 9.7 and 9.9 gives the end-to-end statement: on the epoch scale $t = k/d$, and up to errors of order $d^{-1/2 + O(\varepsilon)}$, the random risk curve $L(w_{[td]})$ of streaming SGD agrees with the deterministic Volterra solution $\Psi(t)$. The whole $d$-dependence of the limit lives in the empirical spectral measure $\mu_H := \tfrac{1}{d}\sum_{i=1}^d \delta_{\lambda_i(H)}$ of the feature covariance, since
+
+$$
+\mathcal{K}_\gamma(t) = \gamma^2 \int_0^\infty \lambda^2 e^{-2\gamma\lambda t}\,\mu_H(d\lambda). \tag{59}
+$$
+
+If $\mu_H$ converges to a limiting measure $\mu$ (for instance the Marchenko--Pastur law of Section 7), then so do $\mathcal{K}_\gamma$ and $\Psi$, and the limiting risk curve becomes genuinely dimension-free. The spectral-density viewpoint that organized the deterministic average-case analysis of Section 7 reappears here as the high-dimensional limit of streaming SGD.
+
+**Numerical illustration.** The figure below plots streaming SGD on a least-squares problem with diagonal feature covariance $H = \mathrm{diag}(\lambda_1,\ldots,\lambda_d)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$), with $w_0 = 0$, $w_{\ast,i} = 1/\sqrt d$, $\sigma = 0.1$, $\gamma = 0.5$, and $d \in \{50, 200, 800, 3200\}$. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. The dashed black curve is the Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(57)$ at $d = 1024$ (a proxy for the limiting kernel). As $d$ grows, the bands shrink around the deterministic Volterra curve.
+
+![Streaming SGD with correlated features: concentration around the Volterra limit](figures/sgd_volterra_limit.png)
+
+The autonomous-ODE reduction of Theorem 9.3 is in the spirit of Ben Arous, Gheissari, and Jagannath [BAGJ22] and goes back, in the neural-network context, to Saad and Solla [SS95]. The homogenized SGD comparison and the Volterra risk curve are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a, Paq+22b], with extensions in Collins-Woodfin and Paquette [CP23]. We have followed the lecture-note synthesis of Paquette [Paq23].
+
+---
+
+## 10. Related Literature {#sec-10}
 
 The results discussed in these notes are largely classical in numerical optimization, Krylov methods, inverse problems, and random matrix theory. The novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
 
@@ -1513,6 +2009,8 @@ The results discussed in these notes are largely classical in numerical optimiza
 - **Source conditions and spectral-decay rates.** The source-condition framework and decay-dependent rates are standard in inverse problems and regularization theory; see [EHN96, Han95].
 - **Marchenko--Pastur asymptotics.** The limiting spectral law is due to [MP67], with modern expositions in [BS10, Ver18].
 - **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behaviour of this density determines the asymptotic exponent.
+- **Stochastic gradient descent for least squares.** The constant-stepsize, tail-averaged SGD analysis in Section 8 follows the Markov-chain/covariance approach of [JKK+18], which establishes minimax optimality of tail-averaged SGD for the linear regression problem.
+- **High-dimensional limits of streaming SGD.** The autonomous-ODE reduction in §9.1--9.2 is an old idea in the physics literature on two-layer neural networks going back to Saad and Solla [SS95], and has been given a rigorous and general formulation by Ben Arous, Gheissari, and Jagannath [BAGJ22]. The homogenized-SGD SDE and the Volterra risk curve of §9.3--9.5 are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a] and were further developed in [Paq+22b, CP23]; the lecture notes [Paq23] provide the expository synthesis we have followed.
 
 <!--
 ### How the present results map to the cited literature
@@ -1557,6 +2055,13 @@ The notes combine ideas that appear in different communities; the table below ma
 - [PvMPP21] Paquette, C., van Merriënboer, B., Paquette, E., and Pedregosa, F. (2021). *Halting Time is Predictable for Large Models: A Universality Property and Average-case Analysis*. arXiv:2006.04299.
 - [CGPSP22] Cunha, L., Gidel, G., Pedregosa, F., Scieur, D., and Paquette, C. (2022). *Only Tails Matter: Average-Case Universality and Robustness in the Convex Regime*. Proceedings of the 39th International Conference on Machine Learning, PMLR 162:4474--4491. arXiv:2206.09901.
 - [Sze39] Szegő, G. (1939). *Orthogonal Polynomials*. American Mathematical Society Colloquium Publications, vol. 23.
+- [JKK+18] Jain, P., Kakade, S. M., Kidambi, R., Netrapalli, P., Pillutla, V. K., and Sidford, A. (2018). *A Markov Chain Theory Approach to Characterizing the Minimax Optimality of Stochastic Gradient Descent (for Least Squares)*. arXiv:1710.09430.
+- [SS95] Saad, D., and Solla, S. A. (1995). *Exact solution for on-line learning in multilayer neural networks*. Physical Review Letters, 74(21):4337--4340.
+- [BAGJ22] Ben Arous, G., Gheissari, R., and Jagannath, A. (2022). *High-dimensional limit theorems for SGD: Effective dynamics and critical scaling*. Communications on Pure and Applied Mathematics, to appear. arXiv:2206.04030.
+- [Paq+22a] Paquette, C., Paquette, E., Adlam, B., and Pennington, J. (2022). *Homogenization of SGD in high-dimensions: exact dynamics and generalization properties*. arXiv:2205.07069.
+- [Paq+22b] Paquette, C., Paquette, E., Adlam, B., and Pennington, J. (2022). *Implicit regularization or implicit conditioning? Exact risk trajectories of SGD in high dimensions*. NeurIPS 2022. arXiv:2206.07252.
+- [CP23] Collins-Woodfin, E., and Paquette, E. (2023). *High-dimensional limit of one-pass SGD on least squares*. arXiv:2304.06847.
+- [Paq23] Paquette, E. (2023). *High-dimensional limits of stochastic gradient descent*. Lecture notes, Stochastic Methods and Computation Summer School, Lehigh University.
 
 ---
 
