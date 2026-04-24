@@ -1631,7 +1631,7 @@ $$
 C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\,\Sigma. \tag{28}
 $$
 
-*Uniform boundedness of $C_t$.* Since $\mathcal M(M) = \mathbb{E}[B_t M B_t^\top]$ is an average of PSD conjugations, it is PSD-monotone, which together with $C_0 = 0$ gives $0 = C_0 \preceq C_1 \preceq C_2 \preceq \cdots$. For the trace bound, note $\operatorname{Tr}(C_t) = \mathbb{E}\lVert v_t\rVert^2$. Expanding the square yields
+ Observe $\operatorname{Tr}(C_t) = \mathbb{E}\lVert v_t\rVert^2$. Expanding the square yields
 
 $$
 \lVert v_t\rVert^2 \;=\; \lVert B_t v_{t-1}\rVert^2 \;-\; 2\gamma\,v_{t-1}^\top B_t^\top \xi_t \;+\; \gamma^2\,\lVert \xi_t\rVert^2.
