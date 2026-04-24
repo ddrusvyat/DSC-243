@@ -13,9 +13,13 @@ ODE limit (44):
     dot psi = (gamma^2 - 2 gamma) psi + (gamma^2 sigma^2)/2,
     psi(0) = (1/2) ||w_0 - w_*||^2.
 
-For several values of d, we run n_trials independent trajectories of R(w_{[td]})
-vs epoch t = k/d and plot the median together with the 10-90% interquantile
-band. As d grows, the bands shrink around the deterministic ODE curve psi(t).
+For several values of gamma we overlay streaming SGD (median + 10-90%
+interquantile band over n_trials independent trajectories at a single
+large d) against the deterministic ODE curve psi(t) and its stationary
+value psi_inf = gamma sigma^2 / (2 (2 - gamma)).  The three regimes
+gamma < 1, gamma = 1, gamma > 1 illustrate the bias-variance trade-off
+in the limiting ODE: the decay rate 2 gamma - gamma^2 is maximized at
+gamma = 1, whereas psi_inf increases monotonically in gamma on (0, 2).
 """
 
 from __future__ import annotations
@@ -73,19 +77,17 @@ def ode_solution(t: np.ndarray, gamma: float, sigma: float, R0: float):
 
 def main():
     sigma = 0.1
-    gamma = 1.0
     n_epochs = 8.0
-    dims = [50, 200, 800, 3200]
+    gammas = [0.5, 1.0, 1.5]
+    d = 400
     n_trials = 30
 
     rng_master = np.random.default_rng(0)
-    colors = plt.cm.viridis(np.linspace(0.15, 0.85, len(dims)))
+    colors = plt.cm.viridis(np.linspace(0.15, 0.80, len(gammas)))
 
-    fig, ax = plt.subplots(figsize=(7.6, 5.4))
+    fig, ax = plt.subplots(figsize=(8.2, 5.6))
 
-    for d, color in zip(dims, colors):
-        # Fix w_* deterministically across dimensions: unit vector along e_1
-        # makes the comparison clean (||w_* - w_0||^2 = 1 in every dimension).
+    for gamma, color in zip(gammas, colors):
         w_star = np.zeros(d)
         w_star[0] = 1.0
         w0 = np.zeros(d)
@@ -100,30 +102,34 @@ def main():
         med = np.median(runs, axis=0)
         lo, hi = np.quantile(runs, [0.1, 0.9], axis=0)
 
-        ax.fill_between(epochs, lo, hi, color=color, alpha=0.18, linewidth=0)
-        ax.plot(
-            epochs, med, "-", color=color, linewidth=1.4,
-            label=f"streaming SGD, $d={d}$",
-        )
-        print(f"  d={d}: {n_steps} steps x {n_trials} trials, R_final median = {med[-1]:.3e}")
+        ax.fill_between(epochs, lo, hi, color=color, alpha=0.28, linewidth=0)
+        ax.plot(epochs, med, "-", color=color, linewidth=1.5,
+                label=rf"streaming SGD, $\gamma={gamma}$")
 
-    t_grid = np.linspace(0, n_epochs, 600)
-    R0 = 0.5  # ||w_0 - w_*||^2 = 1
-    psi = ode_solution(t_grid, gamma, sigma, R0)
-    ax.plot(t_grid, psi, "--", color="black", linewidth=1.7,
-            label=r"ODE limit $\psi(t)$ from (44)")
+        t_grid = np.linspace(0, n_epochs, 600)
+        psi = ode_solution(t_grid, gamma, sigma, 0.5)
+        ax.plot(t_grid, psi, "--", color=color, linewidth=1.5, alpha=0.9,
+                label=rf"ODE limit $\psi(t)$, $\gamma={gamma}$")
+
+        psi_inf = 0.5 * gamma * sigma ** 2 / (2 - gamma)
+        ax.axhline(psi_inf, color=color, linewidth=0.8, linestyle=":", alpha=0.7)
+
+        print(
+            f"  gamma={gamma}, d={d}: {n_steps} steps x {n_trials} trials, "
+            f"R_final median = {med[-1]:.3e}, psi_inf = {psi_inf:.3e}"
+        )
 
     ax.set_xlabel(r"epoch $t = k/d$", fontsize=12)
     ax.set_ylabel(r"excess risk $L(w_{[td]}) - L(w_\ast)$", fontsize=12)
     ax.set_yscale("log")
     ax.set_title(
         rf"Streaming SGD on isotropic Gaussian regression "
-        rf"($\sigma={sigma}$, $\gamma={gamma}$, $w_0=0$, "
+        rf"($\sigma={sigma}$, $w_0=0$, $d={d}$, "
         rf"median and 10-90% band over {n_trials} trials)",
         fontsize=11.5,
     )
     ax.grid(True, which="both", alpha=0.25)
-    ax.legend(fontsize=10, loc="upper right", framealpha=0.95)
+    ax.legend(fontsize=9.5, loc="upper right", framealpha=0.95, ncol=2)
     ax.set_xlim(0, n_epochs)
 
     fig.tight_layout()
