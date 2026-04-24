@@ -1623,7 +1623,7 @@ $$
 \end{aligned}
 $$
 
-where the last line uses $\mathbb{E}[\xi_t]=0$ and $x_tx_t^\top v_{t-1}=(v_{t-1}^\top x_t)x_t$. The last line is linear in $v_{t-1}$. Thus taking the outer expectation over $v_{t-1}$ replaces $v_{t-1}$ by $\mathbb{E}[v_{t-1}]=0$. Therefore using the tower-rule for expectations we deduce $\mathbb{E}\bigl[B_t\,v_{t-1}\xi_t^\top \,\big|\bigr]=0$, as claimed.
+where the last line uses $\mathbb{E}[\xi_t]=0$ and $x_tx_t^\top v_{t-1}=(v_{t-1}^\top x_t)x_t$. The last line is linear in $v_{t-1}$. Thus taking the outer expectation over $v_{t-1}$ replaces $v_{t-1}$ by $\mathbb{E}[v_{t-1}]=0$. Therefore using the tower rule for expectations we deduce $\mathbb{E}[B_t\,v_{t-1}\xi_t^\top]=0$, as claimed.
 
 Define the covariance $C_t:=\mathbb{E}[v_tv^{\top}_t]$  and the linear operator on matrices $\mathcal M(M) := \mathbb{E}[(I-\gamma xx^\top)\,M\,(I-\gamma xx^\top)]$. Then using the equality $\mathbb{E}[\xi_t\xi_t^\top] = \Sigma$, we obtain the key recursion for the covariance
 
@@ -1664,16 +1664,16 @@ $$
 Expanding $\mathcal{M}(C_\infty)$ and rearranging yields
 
 $$
-2\operatorname{Tr}(HC_\infty) \;=\; \gamma\,\operatorname{Tr}(\mathcal{S}(C_\infty)) + \gamma\,\operatorname{Tr}(\Sigma),
+2\operatorname{Tr}(HC_\infty) \;=\; \gamma\,\operatorname{Tr}(\mathbb{E}[(x^\top C_{\infty}x)\,xx^\top]) + \gamma\,\operatorname{Tr}(\Sigma),
 $$
 
-where we have introduced the notation $\mathcal{S}(C) := \mathbb{E}[(x^\top Cx)\,xx^\top]$. The fourth-moment assumption $(25)$ bounds
+The fourth-moment assumption $(25)$ bounds
 
 $$
 \operatorname{Tr}(\mathcal{S}(C)) \;=\; \mathbb{E}\bigl[(x^\top Cx)\lVert x\rVert^2\bigr] \;=\; \operatorname{Tr}\!\bigl(C\,\mathbb{E}[\lVert x\rVert^2 xx^\top]\bigr) \;\leq\; R^2\operatorname{Tr}(HC),
 $$
 
-so $2\operatorname{Tr}(HC_\infty) \le \gamma R^2\operatorname{Tr}(HC_\infty) + \gamma\operatorname{Tr}(\Sigma)$, and rearranging (valid for $\gamma R^2 < 2$) gives $\operatorname{Tr}(HC_\infty) \le \gamma\operatorname{Tr}(\Sigma)/(2-\gamma R^2)$. Since $C_t \preceq C_\infty$ in PSD order and $H \succeq 0$,
+so $2\operatorname{Tr}(HC_\infty) \le \gamma R^2\operatorname{Tr}(HC_\infty) + \gamma\operatorname{Tr}(\Sigma)$, and rearranging  gives $\operatorname{Tr}(HC_\infty) \le \gamma\operatorname{Tr}(\Sigma)/(2-\gamma R^2)$. Since $C_t \preceq C_\infty$ in PSD order and $H \succeq 0$, we deduce
 
 $$
 \mathbb{E}\lVert v_t\rVert_H^2 \;=\; \operatorname{Tr}(HC_t) \;\leq\; \operatorname{Tr}(HC_\infty) \;\leq\; \frac{\gamma\,\operatorname{Tr}(\Sigma)}{2 - \gamma R^2}.
