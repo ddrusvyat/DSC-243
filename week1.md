@@ -1288,13 +1288,13 @@ $$
 
 where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta]$ --- for example $\nu=\lVert e_0\rVert^2\,\mu_{MP}$ in the Marchenko--Pastur setting --- and $\mathcal{P}_k$ consists of degree at most $k$ polynomials. Note that the constraint set $\mathcal{V}_k:=\lbrace p\in \mathcal{P}_k: p(0)=1\rbrace$ is a finite-dimensional affine space. Strictly speaking, we should stipulate in $(19)$ that the polynomials in question have all real roots. For all examples we will consider the optimal polynomial in $\mathcal{V}_k$ will have all real roots and therefore there is no distinction between the two optimization problems.
 
-Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $\lVert p\rVert ^2$ where the norm is induced by the inner product $\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$ where we define the reweighted measure $d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$. Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to this inner product. Note that an orthonormal basis can be analytically constructed by a Gram-Schmidt process. Then writing $p=\sum_{i=0}^k u_i\psi_i$ for unknown coefficient $u_i$ the optimization problem $(19)$ can equivalently be written as 
+Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $$\lVert p\rVert^2$$ where the norm is induced by the inner product $$\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$$ with reweighted measure $$d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$$. Let $$\psi_0,\dots,\psi_k$$ be any orthonormal basis of $$\mathcal{P}_k$$ with respect to this inner product; such a basis can be constructed analytically by Gram--Schmidt. Writing $$p=\sum_{i=0}^k u_i\,\psi_i$$ for unknown coefficients $$u_i$$, the optimization problem $(19)$ is equivalent to
 
 $$
 \min_{u\in \mathbb{R}^{k+1}}\; \lVert u\rVert_2^2 \qquad \textrm{subject to}\qquad \sum_{i=0}^k u_i\psi_i(0)=1,
 $$
 
-which amounts to finding the minimal $\ell_2$-norm vector in a hyperplane. The solution therefore is the rescaled outward normal, whose coordinates are explicitly $u_i=\psi_i(0)/\sum_{i=0}^k \psi_i(0)^2$. Therefore, the optimal polynomial $p$ that solves $(19)$ is
+which amounts to finding the minimum-norm vector in a hyperplane. The solution is the rescaled outward normal, with coordinates $$u_i=\psi_i(0)\big/\sum_{j=0}^k \psi_j(0)^2$$. Therefore, the optimal polynomial $p$ that solves $(19)$ is
 
 $$
 p^{\ast}(t)=\frac{\sum_{i=0}^{k}\psi_i(0)\psi_i(t)}{\sum_{i=0}^k \psi_i(0)^2}.
