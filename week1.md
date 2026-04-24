@@ -1290,10 +1290,15 @@ where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta
 
 Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $\lVert p\rVert ^2$ where the norm is induced by the inner product $\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$ where we define the reweighted measure $d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$. Let $\psi_0,\dots,\psi_k$ be any orthonormal basis of $\mathcal{P}_k$ with respect to this inner product. Note that an orthonormal basis can be analytically constructed by a Gram-Schmidt process. Then writing $p=\sum_{i=0}^k u_i\psi_i$ for unknown coefficient $u_i$ the optimization problem $(19)$ can equivalently be written as 
 
-$$\min_{u\in \mathbb{R}^{k+1}} \|u\|^2_2\qquad \textrm{subject to}\qquad \sum_{i=0}^k u_i\psi_i(0)=1,$$
+$$
+\min_{u\in \mathbb{R}^{k+1}}\; \lVert u\rVert_2^2 \qquad \textrm{subject to}\qquad \sum_{i=0}^k u_i\psi_i(0)=1,
+$$
 
-which amounts to fining the minimal $l_2$-norm vector in a hyperlane. The solution therefore is the rescaled outward normal, whose coordinates are explicitely $u_i=\psi_i(0)/\sum_{i=0}^k \psi_i(0)^2$. Therefore, the optimal polynomial $p$ that solves $(19)$ is 
-$$p^{\ast}(t)=\frac{\sum_{i=0}^{k}\psi_i(0)\psi_i(t)}{\sum_{i=0}^k \psi_i(0)^2}.$$
+which amounts to finding the minimal $\ell_2$-norm vector in a hyperplane. The solution therefore is the rescaled outward normal, whose coordinates are explicitly $u_i=\psi_i(0)/\sum_{i=0}^k \psi_i(0)^2$. Therefore, the optimal polynomial $p$ that solves $(19)$ is
+
+$$
+p^{\ast}(t)=\frac{\sum_{i=0}^{k}\psi_i(0)\psi_i(t)}{\sum_{i=0}^k \psi_i(0)^2}.
+$$
 
 
 
@@ -1607,7 +1612,7 @@ $$
 v_t v_t^\top \;=\; B_t\,v_{t-1}v_{t-1}^\top\,B_t^\top \;-\; \gamma\,B_t v_{t-1}\xi_t^\top \;-\; \gamma\,\xi_t v_{t-1}^\top B_t^\top \;+\; \gamma^2\,\xi_t\xi_t^\top.
 $$
 
-The two cross terms have zero mean: conditioning on $v_{t-1}$ and integrating over the independent data $(x_t,y_t)$, $\mathbb{E}[B_t v_{t-1}\xi_t^\top\mid v_{t-1}]$ is a deterministic linear function of $v_{t-1}$, which in turn has mean zero by induction from $v_0 = 0$, so the full expectation vanishes. Writing $\mathcal M(M) := \mathbb{E}[(I-\gamma xx^\top)\,M\,(I-\gamma xx^\top)]$ for the variance-update map and using $\mathbb{E}[\xi_t\xi_t^\top] = \Sigma$, we obtain the covariance recursion
+We calimd that the two cross terms have zero mean. Indeed, conditioning on $v_{t-1}$ and integrating over the independent data $(x_t,y_t)$, shows that $\mathbb{E}[B_t v_{t-1}\xi_t^\top\mid v_{t-1}]$ is a deterministic linear function of $v_{t-1}$, which in turn has mean zero by induction from $v_0 = 0$, so the full expectation vanishes. Writing $\mathcal M(M) := \mathbb{E}[(I-\gamma xx^\top)\,M\,(I-\gamma xx^\top)]$ for the variance-update map and using $\mathbb{E}[\xi_t\xi_t^\top] = \Sigma$, we obtain the covariance recursion
 
 $$
 C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\,\Sigma.
