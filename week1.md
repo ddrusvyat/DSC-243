@@ -1673,7 +1673,7 @@ $$
 \mathbb{E}\bigl[(x^\top Cx)\lVert x\rVert^2\bigr] \;=\; \operatorname{Tr}\!\bigl(C\,\mathbb{E}[\lVert x\rVert^2 xx^\top]\bigr) \;\leq\; R^2\operatorname{Tr}(HC),
 $$
 
-so $2\operatorname{Tr}(HC_\infty) \le \gamma R^2\operatorname{Tr}(HC_\infty) + \gamma\operatorname{Tr}(\Sigma)$, and rearranging (valid for $\gamma R^2 < 2$) gives $\operatorname{Tr}(HC_\infty) \le \gamma\operatorname{Tr}(\Sigma)/(2-\gamma R^2)$. Since $C_t \preceq C_\infty$ in PSD order and $H \succeq 0$,
+so $2\operatorname{Tr}(HC_\infty) \le \gamma R^2\operatorname{Tr}(HC_\infty) + \gamma\operatorname{Tr}(\Sigma)$, and rearranging gives $\operatorname{Tr}(HC_\infty) \le \gamma\operatorname{Tr}(\Sigma)/(2-\gamma R^2)$. Since $C_t \preceq C_\infty$ in PSD order and $H \succeq 0$, we deduce
 
 $$
 \mathbb{E}\lVert v_t\rVert_H^2 \;=\; \operatorname{Tr}(HC_t) \;\leq\; \operatorname{Tr}(HC_\infty) \;\leq\; \frac{\gamma\,\operatorname{Tr}(\Sigma)}{2 - \gamma R^2}.
