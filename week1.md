@@ -1557,12 +1557,12 @@ Because this recursion is linear, we decompose $e_t = b_t + v_t$ into the *bias 
 
 $$
 \begin{aligned}
-b_t &= B_t\,b_{t-1}, & b_0 &= w_0 - w_\ast,\\
-v_t &= B_t\,v_{t-1} - \gamma\,\xi_t, & v_0 &= 0.
+b_0 &= w_0 - w_\ast, &\qquad b_t &= B_t\,b_{t-1} &&\text{for all } t\geq 1,\\
+v_0 &= 0,            &\qquad v_t &= B_t\,v_{t-1} - \gamma\,\xi_t &&\text{for all } t\geq 1.
 \end{aligned}
 $$
 
-Adding the two recursions gives $b_t + v_t = B_t(b_{t-1} + v_{t-1}) - \gamma\,\xi_t$ with $b_0 + v_0 = w_0 - w_\ast = e_0$, so by induction $e_t = b_t + v_t$ as claimed. Note that $b_t$ depends only on the features $x_1,\ldots,x_t$ (through the contractions $B_s$) and the fixed initial error, while $v_t$ is a zero-mean sum of the gradient-noise terms $\xi_1,\ldots,\xi_t$.
+Adding the two recursions gives $b_t + v_t = B_t(b_{t-1} + v_{t-1}) - \gamma\,\xi_t$ with $b_0 + v_0 = w_0 - w_\ast = e_0$, so by induction $e_t = b_t + v_t$ as claimed. Note that $b_t$ depends only on the features $x_1,\ldots,x_t$ (through the contractions $B_s$) and the fixed initial error, while $v_t$ depends on the gradient-noise terms $\xi_1,\ldots,\xi_t$. Note that since $v_0=0$ and $\mathbb{E}[\xi_t]=0$, induction immediately gives $\mathbb{E}[v_t]=0$ for all $t$.
 
 Since $L(w) - L(w_\ast) = \tfrac{1}{2}\lVert w-w_\ast\rVert_H^2$, Minkowski's inequality gives
 
@@ -1612,31 +1612,62 @@ $$
 v_t v_t^\top \;=\; B_t\,v_{t-1}v_{t-1}^\top\,B_t^\top \;-\; \gamma\,B_t v_{t-1}\xi_t^\top \;-\; \gamma\,\xi_t v_{t-1}^\top B_t^\top \;+\; \gamma^2\,\xi_t\xi_t^\top.
 $$
 
-We calimd that the two cross terms have zero mean. Indeed, conditioning on $v_{t-1}$ and integrating over the independent data $(x_t,y_t)$, shows that $\mathbb{E}[B_t v_{t-1}\xi_t^\top\mid v_{t-1}]$ is a deterministic linear function of $v_{t-1}$, which in turn has mean zero by induction from $v_0 = 0$, so the full expectation vanishes. Writing $\mathcal M(M) := \mathbb{E}[(I-\gamma xx^\top)\,M\,(I-\gamma xx^\top)]$ for the variance-update map and using $\mathbb{E}[\xi_t\xi_t^\top] = \Sigma$, we obtain the covariance recursion
+We claim that the two cross terms have zero mean. The key facts are that $v_{t-1}$ depends only on $(x_1,\xi_1),\dots,(x_{t-1},\xi_{t-1})$ and is therefore independent of the fresh data $(x_t,y_t)$, and that $\mathbb{E}[\xi_t] = \nabla L(w_\ast) = 0$ by definition of $w_\ast$. Conditioning on $v_{t-1}$ and taking the expectation over $(x_t,y_t)$ gives
 
 $$
-C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\,\Sigma.
+\begin{aligned}
+\mathbb{E}\bigl[B_t\,v_{t-1}\xi_t^\top \,\big|\, v_{t-1}\bigr]
+&= \mathbb{E}\bigl[(I-\gamma x_tx_t^\top)\,v_{t-1}\,\xi_t^\top \,\big|\, v_{t-1}\bigr] \\
+&= v_{t-1}\,\mathbb{E}[\xi_t]^\top - \gamma\,\mathbb{E}\bigl[x_tx_t^\top v_{t-1}\,\xi_t^\top \,\big|\, v_{t-1}\bigr] \\
+&= -\gamma\,\mathbb{E}\bigl[(v_{t-1}^\top x_t)\,x_t\,\xi_t^\top \,\big|\, v_{t-1}\bigr],
+\end{aligned}
 $$
 
-*Uniform boundedness of $C_t$.* Since $\mathcal M(M) = \mathbb{E}[B_t M B_t^\top]$ is an average of PSD conjugations, it preserves the PSD cone and is monotone in PSD order; together with $C_0 = 0$ this gives $0 = C_0 \preceq C_1 \preceq C_2 \preceq \cdots$. Applied at $M = I$,
+where the last line uses $\mathbb{E}[\xi_t]=0$ and $x_tx_t^\top v_{t-1}=(v_{t-1}^\top x_t)x_t$. The last line is linear in $v_{t-1}$. Thus taking the outer expectation over $v_{t-1}$ replaces $v_{t-1}$ by $\mathbb{E}[v_{t-1}]=0$. Therefore using the tower-rule for expectations we deduce $\mathbb{E}\bigl[B_t\,v_{t-1}\xi_t^\top \,\big|\bigr]=0$, as claimed.
+
+Define the covariance $C_t:=\mathbb{E}[v_tv^{\top}_t]$  and the linear operator on matrices $\mathcal M(M) := \mathbb{E}[(I-\gamma xx^\top)\,M\,(I-\gamma xx^\top)]$. Then using the equality $\mathbb{E}[\xi_t\xi_t^\top] = \Sigma$, we obtain the key recursion for the covariance
 
 $$
-\mathcal{M}(I) \;=\; \mathbb{E}[(I-\gamma xx^\top)^2] \;=\; I - 2\gamma H + \gamma^2\,\mathbb{E}[\lVert x\rVert^2 xx^\top] \;\preceq\; I - \gamma(2-\gamma R^2)H \;\preceq\; (1-\gamma\mu)\,I,
+C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\,\Sigma. \tag{28}
 $$
 
-where the first $\preceq$ uses $(25)$ and the second uses $2-\gamma R^2 \ge 1$ (from $\gamma R^2 < 1$) and $H \succeq \mu I$. Taking traces in the covariance recursion and using self-adjointness of $\mathcal M$, $\operatorname{Tr}(\mathcal M(C)) = \operatorname{Tr}(\mathcal M(I)\,C) \le (1-\gamma\mu)\operatorname{Tr}(C)$ for $C \succeq 0$, so
+*Uniform boundedness of $C_t$.* Since $\mathcal M(M) = \mathbb{E}[B_t M B_t^\top]$ is an average of PSD conjugations, it is PSD-monotone, which together with $C_0 = 0$ gives $0 = C_0 \preceq C_1 \preceq C_2 \preceq \cdots$. For the trace bound, note $\operatorname{Tr}(C_t) = \mathbb{E}\lVert v_t\rVert^2$. Expanding the square yields
 
 $$
-\operatorname{Tr}(C_t) \;\leq\; (1-\gamma\mu)\operatorname{Tr}(C_{t-1}) + \gamma^2\operatorname{Tr}(\Sigma) \;\Longrightarrow\; \operatorname{Tr}(C_t) \;\leq\; \frac{\gamma\operatorname{Tr}(\Sigma)}{\mu} \quad\text{for all }t\ge 0.
+\lVert v_t\rVert^2 \;=\; \lVert B_t v_{t-1}\rVert^2 \;-\; 2\gamma\,v_{t-1}^\top B_t^\top \xi_t \;+\; \gamma^2\,\lVert \xi_t\rVert^2.
 $$
 
-Combined with PSD monotonicity, $C_t \uparrow C_\infty \succeq 0$ in the PSD order. Passing to the limit in the recursion and using the identity $\mathcal{M}(C) = C - \gamma(HC + CH) + \gamma^2\,\mathcal{S}(C)$ with $\mathcal{S}(M) := \mathbb{E}[(x^\top M x)\,xx^\top]$ (obtained by expanding $(I-\gamma xx^\top)C(I-\gamma xx^\top)$ and using $(xx^\top)C(xx^\top) = (x^\top Cx)\,xx^\top$) yields the Lyapunov equation
+Now we take expectations term by term. For the first term, condition on $v_{t-1}$; since $v_{t-1}$ is independent of $x_t$, the exact same computation as in the bias step (with $v_{t-1}$ replacing $b_{t-1}$) gives the one-step contraction
 
 $$
-H C_\infty + C_\infty H \;=\; \gamma\,\mathcal{S}(C_\infty) + \gamma\,\Sigma.
+\mathbb{E}\bigl[\lVert B_t v_{t-1}\rVert^2 \,\big|\, v_{t-1}\bigr] \;\leq\; (1-\gamma\mu)\,\lVert v_{t-1}\rVert^2,
 $$
 
-*Bounding the $H$-weighted trace.* Taking traces in the Lyapunov equation gives $2\operatorname{Tr}(HC_\infty) = \gamma\operatorname{Tr}(\mathcal{S}(C_\infty)) + \gamma\operatorname{Tr}(\Sigma)$. The fourth-moment assumption $(25)$ bounds
+so by the tower rule $\mathbb{E}\lVert B_t v_{t-1}\rVert^2 \le (1-\gamma\mu)\mathbb{E}\lVert v_{t-1}\rVert^2$. The second (cross) term has zero mean as we have already seen. For the third term, $\mathbb{E}\lVert\xi_t\rVert^2 = \operatorname{Tr}(\mathbb{E}[\xi_t\xi_t^\top]) = \operatorname{Tr}(\Sigma)$. Combining these three bounds yields
+
+$$
+\mathbb{E}\lVert v_t\rVert^2 \;\leq\; (1-\gamma\mu)\,\mathbb{E}\lVert v_{t-1}\rVert^2 \;+\; \gamma^2\operatorname{Tr}(\Sigma),
+$$
+
+and iterating gives
+
+$$
+\operatorname{Tr}(C_t) \;=\; \mathbb{E}\lVert v_t\rVert^2 \;\leq\; \frac{\gamma\operatorname{Tr}(\Sigma)}{\mu} \qquad\text{for all }t\ge 0.
+$$
+
+Since $\mathcal{M}$ maps positive semidefinite matrices to positive semidefinite matrices, $C_t$ lies in the compact set of PSD matrices with trace bounded by $\gamma\operatorname{Tr}(\Sigma)/\mu$. Therefore the sequence admits a limit point $C_\infty \succeq 0$. Since $\operatorname{Tr}(C_t)$ is nondecreasing, taking the trace and the limit in $(28)$ we deduce that $C_{\infty}$ satisfies
+
+$$
+\operatorname{Tr}(C_\infty) \;=\; \operatorname{Tr}(\mathcal{M}(C_\infty)) + \gamma^2\operatorname{Tr}(\Sigma).
+$$
+
+Expanding $\mathcal{M}(C_\infty)$ and rearranging yields
+
+$$
+2\operatorname{Tr}(HC_\infty) \;=\; \gamma\,\operatorname{Tr}(\mathcal{S}(C_\infty)) + \gamma\,\operatorname{Tr}(\Sigma),
+$$
+
+where we have introduced the notation $\mathcal{S}(C) := \mathbb{E}[(x^\top Cx)\,xx^\top]$. The fourth-moment assumption $(25)$ bounds
 
 $$
 \operatorname{Tr}(\mathcal{S}(C)) \;=\; \mathbb{E}\bigl[(x^\top Cx)\lVert x\rVert^2\bigr] \;=\; \operatorname{Tr}\!\bigl(C\,\mathbb{E}[\lVert x\rVert^2 xx^\top]\bigr) \;\leq\; R^2\operatorname{Tr}(HC),
@@ -1656,7 +1687,7 @@ Combining the bias and variance bounds with the Minkowski decomposition yields $
 
 The bound $(27)$ decomposes the excess risk into a **bias** term that contracts at the geometric rate $e^{-\gamma\mu t}$---exactly the rate GD with stepsize $\gamma$ would achieve on a $\mu$-strongly-convex quadratic---and a **noise floor** $\gamma\operatorname{Tr}(\Sigma)/(2(2-\gamma R^2))$ that is independent of $t$ and proportional to the stepsize. A smaller $\gamma$ lowers the floor but slows the contraction, while a larger $\gamma$ contracts faster to a correspondingly higher floor: a classical bias--variance trade-off that no single constant stepsize can avoid.
 
-**Numerical illustration.** The figure below makes the two phases of $(27)$ visible on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, for which $H = I$, $\mu = 1$, $R^2 = d+2$, and $\operatorname{Tr}(\Sigma) = d\sigma^2$. Taking $d=20$, $\sigma=0.3$, $w_0=0$, and stepsizes $\gamma R^2 \in \{0.2,0.5,0.8\}$, we plot the median over $80$ trials of the single-iterate excess risk $L(w_t)-L(w_\ast)$ together with its $10$--$90\%$ interquantile band, the full Theorem 8.1 bound $(27)$ (dashed), and the predicted noise floor $\gamma\operatorname{Tr}(\Sigma)/(2(2-\gamma R^2))$ (dotted). Each run contracts exponentially at rate $e^{-\gamma\mu t}$ until it reaches the stepsize-dependent floor, around which it then oscillates stationarily; smaller $\gamma$ gives a lower floor but a slower approach, and the bound $(27)$ tracks both phases tightly.
+**Numerical illustration.** The figure below makes the two phases of $(27)$ visible on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, for which $H = I$, $\mu = 1$, $R^2 = d+2$, and $\operatorname{Tr}(\Sigma) = d\sigma^2$. Taking $d=20$, $\sigma=0.3$, $w_0=0$, and stepsizes $\gamma R^2 \in \{0.2,0.5,0.8\}$, we plot the median over $80$ trials of the single-iterate excess risk $L(w_t)-L(w_\ast)$ together with its $10$--$90\%$ interquantile band, and the predicted noise floor $\gamma\operatorname{Tr}(\Sigma)/(2(2-\gamma R^2))$ (dotted). Each run contracts exponentially at rate $e^{-\gamma\mu t}$ until it reaches the stepsize-dependent floor, around which it then oscillates; smaller $\gamma$ gives a lower floor but a slower approach.
 
 ![Last-iterate constant-stepsize SGD: exponential contraction to a stepsize-dependent noise floor](figures/sgd_last_iterate.png)
 
@@ -1677,35 +1708,35 @@ $$
 \;\leq\;
 \Bigg(\underbrace{\sqrt{\tfrac{1}{2}\,e^{-\gamma \mu t}\,R^2\,\|w_0-w_\ast\|^2}}_{\text{bias}}
 \;+\;
-\underbrace{\sqrt{\Big(1 + \tfrac{\gamma R^2}{1-\gamma R^2}\,\rho_{\mathrm{misspec}}\Big)\,\tfrac{\sigma_{\mathrm{MLE}}^2}{T-t}}}_{\text{variance}}\Bigg)^{2}. \tag{28}
+\underbrace{\sqrt{\Big(1 + \tfrac{\gamma R^2}{1-\gamma R^2}\,\rho_{\mathrm{misspec}}\Big)\,\tfrac{\sigma_{\mathrm{MLE}}^2}{T-t}}}_{\text{variance}}\Bigg)^{2}. \tag{29}
 $$
 
 </div>
 
-The bound $(28)$ displays the classical bias--variance tradeoff of stochastic least squares. The bias contracts at the linear rate $e^{-\gamma \mu t}$---exactly the GD rate of Corollary 2.2 with $R^2$ in place of $\beta$---and decays with the *burn-in length* $t$. The variance, in contrast, is independent of the initialization and decays only as $1/(T-t)$ with the *averaging window* $T-t$, matching the statistically optimal rate. Choosing $t$ to be a constant fraction of $T$ (say $t = T/2$) therefore makes the bias negligible and recovers the $O(\sigma_{\mathrm{MLE}}^2/T)$ rate of the MLE.
+The bound $(29)$ displays the classical bias--variance tradeoff of stochastic least squares. The bias contracts at the linear rate $e^{-\gamma \mu t}$---exactly the GD rate of Corollary 2.2 with $R^2$ in place of $\beta$---and decays with the *burn-in length* $t$. The variance, in contrast, is independent of the initialization and decays only as $1/(T-t)$ with the *averaging window* $T-t$, matching the statistically optimal rate. Choosing $t$ to be a constant fraction of $T$ (say $t = T/2$) therefore makes the bias negligible and recovers the $O(\sigma_{\mathrm{MLE}}^2/T)$ rate of the MLE.
 
 *Remark.* In the well-specified additive-noise model $y = \langle w_\ast, x\rangle + \eta$, where $\eta$ is independent of $x$ with $\mathbb{E}[\eta]=0$ and $\mathbb{E}[\eta^2]=\sigma^2$, a direct computation gives $\Sigma = \sigma^2 H$, and hence $\sigma_{\mathrm{MLE}}^2 = \tfrac{1}{2}d\sigma^2$ and $\rho_{\mathrm{misspec}} = 1$. After a burn-in that makes the bias negligible, Theorem 8.2 reduces to $\mathbb{E}[L(\overline w_{t:T})] - L(w_\ast) \lesssim d\sigma^2/(T-t)$, matching the statistical lower bound up to a constant factor.
 
-**Numerical illustration.** The figure below separates the two phases predicted by $(28)$ on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, taking $d=20$, $\sigma=0.3$, $w_0 = 0$, and stepsize $\gamma = \tfrac{1}{2}/(d+2)$ (so $\gamma R^2 = \tfrac12$). We plot the median over $60$ trials of the single-iterate risk $L(w_t) - L(w_\ast)$ and the tail-averaged risk $L(\overline w_{t/2:t}) - L(w_\ast)$ (shaded bands show the $10$--$90\%$ interquantile range), together with the Cramér--Rao rate $\sigma_{\mathrm{MLE}}^2/t = d\sigma^2/(2t)$ and the bound $(28)$ specialized to burn-in $s=t/2$. The single iterate decays exponentially until it hits a noise floor on the order of $\gamma d\sigma^2$ and then stops improving, whereas the tail average keeps decaying at the $1/t$ Cramér--Rao rate and matches the statistical lower bound up to a constant factor. The theoretical bound $(28)$ upper-bounds the tail-averaged curve across the entire horizon.
+**Numerical illustration.** The figure below separates the two phases predicted by $(29)$ on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, taking $d=20$, $\sigma=0.3$, $w_0 = 0$, and stepsize $\gamma = \tfrac{1}{2}/(d+2)$ (so $\gamma R^2 = \tfrac12$). We plot the median over $60$ trials of the single-iterate risk $L(w_t) - L(w_\ast)$ and the tail-averaged risk $L(\overline w_{t/2:t}) - L(w_\ast)$ (shaded bands show the $10$--$90\%$ interquantile range), together with the Cramér--Rao rate $\sigma_{\mathrm{MLE}}^2/t = d\sigma^2/(2t)$ and the bound $(29)$ specialized to burn-in $s=t/2$. The single iterate decays exponentially until it hits a noise floor on the order of $\gamma d\sigma^2$ and then stops improving, whereas the tail average keeps decaying at the $1/t$ Cramér--Rao rate and matches the statistical lower bound up to a constant factor. The theoretical bound $(29)$ upper-bounds the tail-averaged curve across the entire horizon.
 
 ![Tail-averaged constant-stepsize SGD: bias--variance decomposition](figures/sgd_tail_averaging.png)
 
 *Proof.* The first-order optimality condition $\nabla L(w_\ast)=0$ reads $\mathbb{E}[(y-\langle w_\ast, x\rangle)x]=0$. Let $e_t := w_t - w_\ast$ denote the error, $\xi_t := -(y_t - \langle w_\ast, x_t\rangle)x_t$ the gradient noise at the optimum, and $B_t := I - \gamma x_t x_t^\top$ the stochastic contraction. The optimality condition gives $\mathbb{E}[\xi_t] = 0$ and $\mathbb{E}[\xi_t\xi_t^\top] = \Sigma$, and $(26)$ takes the linear form
 
 $$
-e_t \;=\; B_t\, e_{t-1} - \gamma\, \xi_t. \tag{29}
+e_t \;=\; B_t\, e_{t-1} - \gamma\, \xi_t. \tag{30}
 $$
 
-**Bias--variance decomposition.** Because $(29)$ is linear, we decompose $e_t = b_t + v_t$, where the *bias process* isolates the dependence on the initialization,
+**Bias--variance decomposition.** Because $(30)$ is linear, we decompose $e_t = b_t + v_t$, where the *bias process* isolates the dependence on the initialization,
 
 $$
-b_t = B_t\, b_{t-1}, \qquad b_0 = w_0 - w_\ast, \tag{30}
+b_t = B_t\, b_{t-1}, \qquad b_0 = w_0 - w_\ast, \tag{31}
 $$
 
 and the zero-mean *variance process* isolates the gradient noise,
 
 $$
-v_t = B_t\, v_{t-1} - \gamma\, \xi_t, \qquad v_0 = 0. \tag{31}
+v_t = B_t\, v_{t-1} - \gamma\, \xi_t, \qquad v_0 = 0. \tag{32}
 $$
 
 Write $\overline{b}_{t:T}$ and $\overline{v}_{t:T}$ for the corresponding tail averages, so that $\overline{w}_{t:T} - w_\ast = \overline{b}_{t:T} + \overline{v}_{t:T}$. Minkowski's inequality in $L^2(\mathbb{P})$ then gives
@@ -1714,12 +1745,12 @@ $$
 \mathbb{E}[L(\overline w_{t:T})] - L(w_\ast)
 \;=\; \tfrac{1}{2}\mathbb{E}\|\overline b_{t:T}+\overline v_{t:T}\|_H^2
 \;\leq\;
-\tfrac{1}{2}\Big(\sqrt{\mathbb{E}\|\overline b_{t:T}\|_H^2}+\sqrt{\mathbb{E}\|\overline v_{t:T}\|_H^2}\Big)^2. \tag{32}
+\tfrac{1}{2}\Big(\sqrt{\mathbb{E}\|\overline b_{t:T}\|_H^2}+\sqrt{\mathbb{E}\|\overline v_{t:T}\|_H^2}\Big)^2. \tag{33}
 $$
 
 We now bound each of the two summands.
 
-**Bias contraction.** Conditioning on the past in $(30)$ yields
+**Bias contraction.** Conditioning on the past in $(31)$ yields
 
 $$
 \mathbb{E}\bigl[\|b_t\|^2\mid b_{t-1}\bigr]
@@ -1731,22 +1762,22 @@ Applying $(25)$ and using $\gamma R^2 < 1$, so that $2\gamma - \gamma^2 R^2 \geq
 $$
 \mathbb{E}\|\overline b_{t:T}\|_H^2
 \;\leq\; \frac{R^2}{T-t}\sum_{s=t}^{T-1}\mathbb{E}\|b_s\|^2
-\;\leq\; R^2 e^{-\gamma\mu t}\,\|w_0 - w_\ast\|^2. \tag{33}
+\;\leq\; R^2 e^{-\gamma\mu t}\,\|w_0 - w_\ast\|^2. \tag{34}
 $$
 
-**Covariance recursion.** Turning to the variance process $(31)$, set $C_t := \mathbb{E}[v_tv_t^\top]$. Induction from $v_0=0$ gives $\mathbb{E}[v_t]=0$ for all $t$, so the cross terms $\mathbb{E}[B_tv_{t-1}\xi_t^\top]$ vanish by independence and expanding the outer product of $(31)$ produces
+**Covariance recursion.** Turning to the variance process $(32)$, set $C_t := \mathbb{E}[v_tv_t^\top]$. Induction from $v_0=0$ gives $\mathbb{E}[v_t]=0$ for all $t$, so the cross terms $\mathbb{E}[B_tv_{t-1}\xi_t^\top]$ vanish by independence and expanding the outer product of $(32)$ produces
 
 $$
-C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\Sigma, \qquad \text{where}\quad \mathcal{M}(C) := \mathbb{E}[(I-\gamma xx^\top)\,C\,(I-\gamma xx^\top)]. \tag{34}
+C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\Sigma, \qquad \text{where}\quad \mathcal{M}(C) := \mathbb{E}[(I-\gamma xx^\top)\,C\,(I-\gamma xx^\top)]. \tag{35}
 $$
 
-Since $\mathcal{M}$ is positivity preserving and $C_0=0$, the sequence is PSD-monotone: $0 = C_0 \preceq C_1 \preceq \cdots$. Taking traces in $(34)$ and applying $(25)$ gives $\operatorname{Tr}(C_t) \leq (1-\gamma\mu)\operatorname{Tr}(C_{t-1}) + \gamma^2\operatorname{Tr}(\Sigma)$, so the traces are uniformly bounded. Combined with PSD monotonicity, we conclude that $C_t$ converges in PSD order to a finite limit $C_\infty \succeq 0$ satisfying the fixed-point equation
+Since $\mathcal{M}$ is positivity preserving and $C_0=0$, the sequence is PSD-monotone: $0 = C_0 \preceq C_1 \preceq \cdots$. Taking traces in $(35)$ and applying $(25)$ gives $\operatorname{Tr}(C_t) \leq (1-\gamma\mu)\operatorname{Tr}(C_{t-1}) + \gamma^2\operatorname{Tr}(\Sigma)$, so the traces are uniformly bounded. Combined with PSD monotonicity, we conclude that $C_t$ converges in PSD order to a finite limit $C_\infty \succeq 0$ satisfying the fixed-point equation
 
 $$
-HC_\infty + C_\infty H \;=\; \gamma\,\mathcal{S}(C_\infty) + \gamma\,\Sigma, \qquad \text{where}\quad \mathcal{S}(M) := \mathbb{E}[(x^\top M x)\,xx^\top]. \tag{35}
+HC_\infty + C_\infty H \;=\; \gamma\,\mathcal{S}(C_\infty) + \gamma\,\Sigma, \qquad \text{where}\quad \mathcal{S}(M) := \mathbb{E}[(x^\top M x)\,xx^\top]. \tag{36}
 $$
 
-**Variance averaging in terms of $C_\infty$.** We next bound the variance term in $(32)$ by $\operatorname{Tr}(C_\infty)$. Let $m := T-t$ and $A := I - \gamma H$, noting that $0 \preceq A \preceq I$ by $(25)$. Conditioning on the sigma-field at step $s$ gives $\mathbb{E}[v_r\mid v_s]=A^{r-s}v_s$ for $r \geq s$, and hence $\mathbb{E}[v_rv_s^\top] = A^{r-s}C_s$. Symmetrizing the double sum defining $\mathbb{E}[\overline v_{t:T}\overline v_{t:T}^\top]$ and upper-bounding the (PSD) diagonal gives
+**Variance averaging in terms of $C_\infty$.** We next bound the variance term in $(33)$ by $\operatorname{Tr}(C_\infty)$. Let $m := T-t$ and $A := I - \gamma H$, noting that $0 \preceq A \preceq I$ by $(25)$. Conditioning on the sigma-field at step $s$ gives $\mathbb{E}[v_r\mid v_s]=A^{r-s}v_s$ for $r \geq s$, and hence $\mathbb{E}[v_rv_s^\top] = A^{r-s}C_s$. Symmetrizing the double sum defining $\mathbb{E}[\overline v_{t:T}\overline v_{t:T}^\top]$ and upper-bounding the (PSD) diagonal gives
 
 $$
 \mathbb{E}[\overline v_{t:T}\overline v_{t:T}^\top]
@@ -1767,24 +1798,24 @@ The geometric series sums to $(I-A)^{-1}=(\gamma H)^{-1}$, and using $C_s \prece
 $$
 \tfrac{1}{2}\,\mathbb{E}\|\overline v_{t:T}\|_H^2
 \;\leq\;
-\frac{\operatorname{Tr}(C_\infty)}{\gamma\,(T-t)}. \tag{36}
+\frac{\operatorname{Tr}(C_\infty)}{\gamma\,(T-t)}. \tag{37}
 $$
 
 **Bounding the stationary covariance.** It remains to control $\operatorname{Tr}(C_\infty)$. Introduce the auxiliary operator $\widetilde{\mathcal{T}}(M) := HM + MH - \gamma HMH$. A direct computation shows $M - AMA = \gamma\widetilde{\mathcal{T}}(M)$, and therefore $\widetilde{\mathcal{T}}$ admits the explicit, positivity-preserving inverse
 
 $$
-\widetilde{\mathcal{T}}^{-1}(M) \;=\; \gamma\sum_{k \ge 0} A^k\, M\, A^k. \tag{37}
+\widetilde{\mathcal{T}}^{-1}(M) \;=\; \gamma\sum_{k \ge 0} A^k\, M\, A^k. \tag{38}
 $$
 
-Rewriting $(35)$ as $\widetilde{\mathcal{T}}(C_\infty) = \gamma\mathcal{S}(C_\infty) + \gamma\Sigma - \gamma HC_\infty H$ and dropping the nonnegative last term yields $\widetilde{\mathcal{T}}(C_\infty) \preceq \gamma\mathcal{S}(C_\infty) + \gamma\Sigma$. Applying $\widetilde{\mathcal{T}}^{-1}$ gives
+Rewriting $(36)$ as $\widetilde{\mathcal{T}}(C_\infty) = \gamma\mathcal{S}(C_\infty) + \gamma\Sigma - \gamma HC_\infty H$ and dropping the nonnegative last term yields $\widetilde{\mathcal{T}}(C_\infty) \preceq \gamma\mathcal{S}(C_\infty) + \gamma\Sigma$. Applying $\widetilde{\mathcal{T}}^{-1}$ gives
 
 $$
 C_\infty \;\preceq\; \mathcal{P}(C_\infty) + \gamma\,\widetilde{\mathcal{T}}^{-1}\Sigma,
 \qquad \text{where}\quad
-\mathcal{P}(M) := \gamma\,\widetilde{\mathcal{T}}^{-1}\mathcal{S}(M). \tag{38}
+\mathcal{P}(M) := \gamma\,\widetilde{\mathcal{T}}^{-1}\mathcal{S}(M). \tag{39}
 $$
 
-Write $\lVert \Sigma\rVert _H := \lVert H^{-1/2}\Sigma H^{-1/2}\rVert _{\mathrm{op}}$ for brevity, so that $\Sigma \preceq \lVert \Sigma\rVert _H H$. From $(37)$,
+Write $\lVert \Sigma\rVert _H := \lVert H^{-1/2}\Sigma H^{-1/2}\rVert _{\mathrm{op}}$ for brevity, so that $\Sigma \preceq \lVert \Sigma\rVert _H H$. From $(38)$,
 
 $$
 \widetilde{\mathcal{T}}^{-1}H \;=\; \gamma\sum_{k\ge 0}A^{2k}H \;\preceq\; \gamma\sum_{k\ge 0}A^kH \;=\; I,
@@ -1793,16 +1824,16 @@ $$
 so $\widetilde{\mathcal{T}}^{-1}\Sigma \preceq \lVert \Sigma\rVert _H\,I$. Moreover $(25)$ gives $\mathcal{S}(I) \preceq R^2 H$, making $\mathcal{P}$ a PSD contraction: if $0 \preceq M \preceq aI$, then
 
 $$
-\mathcal{P}(M) \;\preceq\; a\gamma R^2\,\widetilde{\mathcal{T}}^{-1}H \;\preceq\; a\gamma R^2\, I. \tag{39}
+\mathcal{P}(M) \;\preceq\; a\gamma R^2\,\widetilde{\mathcal{T}}^{-1}H \;\preceq\; a\gamma R^2\, I. \tag{40}
 $$
 
-Iterating $(38)$ and using $C_\infty \preceq \operatorname{Tr}(C_\infty)\,I$ together with $(39)$ shows $\mathcal{P}^{k+1}(C_\infty) \preceq \operatorname{Tr}(C_\infty)(\gamma R^2)^{k+1}I \to 0$ and $\sum_{j\ge 0}\mathcal{P}^j(\widetilde{\mathcal{T}}^{-1}H) \preceq (1-\gamma R^2)^{-1}I$. Passing to the limit yields the crude bound
+Iterating $(39)$ and using $C_\infty \preceq \operatorname{Tr}(C_\infty)\,I$ together with $(40)$ shows $\mathcal{P}^{k+1}(C_\infty) \preceq \operatorname{Tr}(C_\infty)(\gamma R^2)^{k+1}I \to 0$ and $\sum_{j\ge 0}\mathcal{P}^j(\widetilde{\mathcal{T}}^{-1}H) \preceq (1-\gamma R^2)^{-1}I$. Passing to the limit yields the crude bound
 
 $$
-C_\infty \;\preceq\; \frac{\gamma\,\|\Sigma\|_H}{1 - \gamma R^2}\, I. \tag{40}
+C_\infty \;\preceq\; \frac{\gamma\,\|\Sigma\|_H}{1 - \gamma R^2}\, I. \tag{41}
 $$
 
-To sharpen $(40)$ to a trace bound we plug back into $(35)$. Combining $(40)$ with $\mathcal{S}(I) \preceq R^2 H$ gives $\mathcal{S}(C_\infty) \preceq \tfrac{\gamma R^2\lVert \Sigma\rVert _H}{1-\gamma R^2}H$. Multiplying $(35)$ by $H^{-1}$ and taking traces, with $\operatorname{Tr}(H^{-1}H)=d$, gives
+To sharpen $(41)$ to a trace bound we plug back into $(36)$. Combining $(41)$ with $\mathcal{S}(I) \preceq R^2 H$ gives $\mathcal{S}(C_\infty) \preceq \tfrac{\gamma R^2\lVert \Sigma\rVert _H}{1-\gamma R^2}H$. Multiplying $(36)$ by $H^{-1}$ and taking traces, with $\operatorname{Tr}(H^{-1}H)=d$, gives
 
 $$
 2\operatorname{Tr}(C_\infty)
@@ -1810,15 +1841,15 @@ $$
 \gamma\operatorname{Tr}(H^{-1}\Sigma) + \frac{\gamma^2 R^2\, d\,\|\Sigma\|_H}{1-\gamma R^2}.
 $$
 
-Substituting into $(36)$ and recognizing $\sigma_{\mathrm{MLE}}^2 = \tfrac12\operatorname{Tr}(H^{-1}\Sigma)$ and $\rho_{\mathrm{misspec}} = d\lVert \Sigma\rVert _H/\operatorname{Tr}(H^{-1}\Sigma)$ yields the final variance bound
+Substituting into $(37)$ and recognizing $\sigma_{\mathrm{MLE}}^2 = \tfrac12\operatorname{Tr}(H^{-1}\Sigma)$ and $\rho_{\mathrm{misspec}} = d\lVert \Sigma\rVert _H/\operatorname{Tr}(H^{-1}\Sigma)$ yields the final variance bound
 
 $$
 \tfrac{1}{2}\mathbb{E}\|\overline v_{t:T}\|_H^2
 \;\leq\;
-\Big(1 + \frac{\gamma R^2}{1-\gamma R^2}\,\rho_{\mathrm{misspec}}\Big)\frac{\sigma_{\mathrm{MLE}}^2}{T-t}. \tag{41}
+\Big(1 + \frac{\gamma R^2}{1-\gamma R^2}\,\rho_{\mathrm{misspec}}\Big)\frac{\sigma_{\mathrm{MLE}}^2}{T-t}. \tag{42}
 $$
 
-Combining the bias bound $(33)$ and the variance bound $(41)$ with the Minkowski decomposition $(32)$ produces $(28)$. <span style="float: right;">$\square$</span>
+Combining the bias bound $(34)$ and the variance bound $(42)$ with the Minkowski decomposition $(33)$ produces $(29)$. <span style="float: right;">$\square$</span>
 
 Theorem 8.1 is the classical last-iterate bound for constant-stepsize SGD on least squares and dates back to [RM51,Pol87,KY03]; the streamlined proof via the bias--variance decomposition and a Lyapunov equation for the stationary noise covariance is standard and appears, with variants, in e.g. [BM11, BM13, DB15, JKK+18]. Theorem 8.2 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis.
 
@@ -1835,27 +1866,27 @@ We work throughout this section with **streaming** SGD: at each step $(x_k,y_k)\
 Consider the additive-noise model of Section 8 with isotropic features: $x \sim \mathcal{N}(0, I_d)$, $\eta \sim \mathcal{N}(0, \sigma^2)$ independent of $x$, and $y = \langle w_\ast, x\rangle + \eta$ with $\lVert w_\ast\rVert  = 1$. The population risk is
 
 $$
-L(w) = \tfrac{1}{2}\bigl(\sigma^2 + \|w-w_\ast\|^2\bigr), \qquad \nabla L(w) = w - w_\ast. \tag{42}
+L(w) = \tfrac{1}{2}\bigl(\sigma^2 + \|w-w_\ast\|^2\bigr), \qquad \nabla L(w) = w - w_\ast. \tag{43}
 $$
 
 Streaming SGD with stepsize $\gamma/d$ takes the form
 
 $$
-w_{k+1} = w_k - \frac{\gamma}{d}\bigl(\langle w_k, x_{k+1}\rangle - y_{k+1}\bigr)\,x_{k+1}, \qquad k = 0,1,2,\ldots \tag{43}
+w_{k+1} = w_k - \frac{\gamma}{d}\bigl(\langle w_k, x_{k+1}\rangle - y_{k+1}\bigr)\,x_{k+1}, \qquad k = 0,1,2,\ldots \tag{44}
 $$
 
 The factor $1/d$ in the stepsize is the unique choice that keeps the gradient-flow drift and the stochastic noise term *both* of order $1/d$ per step. As a result, one full epoch of $d$ steps changes the excess risk by $O(1)$, and the natural continuous-time parameter is $t := k/d$.
 
 ### The autonomous ODE limit on isotropic data
 
-The following lemma computes the one-step change of the excess risk under $(43)$.
+The following lemma computes the one-step change of the excess risk under $(44)$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma 9.1 (One-step update).** *Let $R(w) := \tfrac{1}{2}\lVert w-w_\ast\rVert ^2 = L(w) - \tfrac{1}{2}\sigma^2$. The streaming iterates $(43)$ satisfy*
+**Lemma 9.1 (One-step update).** *Let $R(w) := \tfrac{1}{2}\lVert w-w_\ast\rVert ^2 = L(w) - \tfrac{1}{2}\sigma^2$. The streaming iterates $(44)$ satisfy*
 
 $$
-d\cdot \mathbb{E}\bigl[R(w_{k+1}) - R(w_k)\,\big|\,\mathcal{F}_k\bigr] = -2\gamma\,R(w_k) + \gamma^2\bigl(R(w_k)+\tfrac{\sigma^2}{2}\bigr) + O(d^{-1}), \tag{44}
+d\cdot \mathbb{E}\bigl[R(w_{k+1}) - R(w_k)\,\big|\,\mathcal{F}_k\bigr] = -2\gamma\,R(w_k) + \gamma^2\bigl(R(w_k)+\tfrac{\sigma^2}{2}\bigr) + O(d^{-1}), \tag{45}
 $$
 
 *where $\mathcal{F}_k = \sigma((x_j,y_j):1\le j\le k)$ and the $O(d^{-1})$ term is uniform on bounded sets.*
@@ -1874,17 +1905,17 @@ $$
 \mathbb{E}[R(w_{k+1})-R(w_k)\mid\mathcal{F}_k] = -\tfrac{\gamma}{d}\|w_k-w_\ast\|^2 + \tfrac{\gamma^2}{2d^2}\bigl((d+2)\|w_k-w_\ast\|^2 + d\sigma^2\bigr).
 $$
 
-Multiplying by $d$ and using $R(w_k) = \tfrac{1}{2}\lVert w_k-w_\ast\rVert ^2$ produces $(44)$. <span style="float: right;">$\square$</span>
+Multiplying by $d$ and using $R(w_k) = \tfrac{1}{2}\lVert w_k-w_\ast\rVert ^2$ produces $(45)$. <span style="float: right;">$\square$</span>
 
-After rescaling time by $d$, the conditional drift of $R$ depends only on $R(w_k)$. Setting $\psi_d(t) := \mathbb{E}[R(w_{[td]})]$, the iteration $(44)$ is an Euler approximation with step $1/d$ of the one-dimensional ODE
+After rescaling time by $d$, the conditional drift of $R$ depends only on $R(w_k)$. Setting $\psi_d(t) := \mathbb{E}[R(w_{[td]})]$, the iteration $(45)$ is an Euler approximation with step $1/d$ of the one-dimensional ODE
 
 $$
-\dot\psi = (\gamma^2 - 2\gamma)\,\psi + \tfrac{\gamma^2\sigma^2}{2}, \qquad \psi(0) = R(w_0). \tag{45}
+\dot\psi = (\gamma^2 - 2\gamma)\,\psi + \tfrac{\gamma^2\sigma^2}{2}, \qquad \psi(0) = R(w_0). \tag{46}
 $$
 
 The ODE is stable iff $\gamma < 2$, and in that regime $\psi(t) \to \psi_\infty := \tfrac{\gamma\sigma^2}{2(2-\gamma)}$ as $t\to\infty$. The function $\psi(t)$ is the candidate dimension-independent limit of the excess risk along streaming SGD.
 
-**Numerical illustration.** The figure below overlays the excess-risk trajectory $L(w_{[td]}) - L(w_\ast)$ versus epoch $t$ for streaming SGD on the isotropic Gaussian model with $\sigma = 0.1$, $w_0 = 0$, $d = 400$, and three stepsizes $\gamma \in \lbrace 0.5, 1.0, 1.5\rbrace $. For each $\gamma$ the solid curve is the median over $30$ independent SGD trials, the shaded ribbon is the corresponding $10$–$90\%$ interquantile band, the dashed curve is the ODE limit $\psi(t)$ from $(45)$, and the dotted horizontal line marks its stationary value $\psi_\infty = \gamma\sigma^2/(2(2-\gamma))$. In every case the band tracks its ODE limit closely, and the three regimes illustrate the bias–variance trade-off predicted by $(45)$: the decay rate $2\gamma-\gamma^2$ is maximized at $\gamma=1$, while the stationary risk $\psi_\infty$ is monotone increasing in $\gamma$ on $(0,2)$.
+**Numerical illustration.** The figure below overlays the excess-risk trajectory $L(w_{[td]}) - L(w_\ast)$ versus epoch $t$ for streaming SGD on the isotropic Gaussian model with $\sigma = 0.1$, $w_0 = 0$, $d = 400$, and three stepsizes $\gamma \in \lbrace 0.5, 1.0, 1.5\rbrace $. For each $\gamma$ the solid curve is the median over $30$ independent SGD trials, the shaded ribbon is the corresponding $10$–$90\%$ interquantile band, the dashed curve is the ODE limit $\psi(t)$ from $(46)$, and the dotted horizontal line marks its stationary value $\psi_\infty = \gamma\sigma^2/(2(2-\gamma))$. In every case the band tracks its ODE limit closely, and the three regimes illustrate the bias–variance trade-off predicted by $(46)$: the decay rate $2\gamma-\gamma^2$ is maximized at $\gamma=1$, while the stationary risk $\psi_\infty$ is monotone increasing in $\gamma$ on $(0,2)$.
 
 ![Streaming SGD on isotropic Gaussian regression: concentration around the ODE limit](figures/sgd_high_d_ode_limit.png)
 
@@ -1901,56 +1932,56 @@ The closure in Lemma 9.1 was that the conditional drift of $R$ is a function of 
 *(ii) the conditional drift closes up,*
 
 $$
-d\,\mathbb{E}\bigl[u(w_1)-u(w_0)\mid\mathcal{F}_0\bigr] = -\gamma\,F_1(u(w_0)) + \gamma^2\,F_2(u(w_0)) + o(1); \tag{46}
+d\,\mathbb{E}\bigl[u(w_1)-u(w_0)\mid\mathcal{F}_0\bigr] = -\gamma\,F_1(u(w_0)) + \gamma^2\,F_2(u(w_0)) + o(1); \tag{47}
 $$
 
 *(iii) the conditional fluctuations vanish,*
 
 $$
-d\,\mathbb{E}\bigl[\|u(w_1)-u(w_0)\|^2\mid\mathcal{F}_0\bigr] = o(1). \tag{47}
+d\,\mathbb{E}\bigl[\|u(w_1)-u(w_0)\|^2\mid\mathcal{F}_0\bigr] = o(1). \tag{48}
 $$
 
 </div>
 
-The isotropic Gaussian model admits a one-parameter closure $u = L$ with $F_1(u) = 2u - \sigma^2$ and $F_2(u) = u$: $(46)$ is exactly $(44)$, and $(47)$ follows from the same fourth-moment computation. Condition $(47)$ is the key restriction, requiring that the SGD-induced fluctuations of $u$ be negligible compared with its drift on the time scale $t = k/d$.
+The isotropic Gaussian model admits a one-parameter closure $u = L$ with $F_1(u) = 2u - \sigma^2$ and $F_2(u) = u$: $(47)$ is exactly $(45)$, and $(48)$ follows from the same fourth-moment computation. Condition $(48)$ is the key restriction, requiring that the SGD-induced fluctuations of $u$ be negligible compared with its drift on the time scale $t = k/d$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 9.3 (Autonomous ODE limit).** *Suppose the streaming problem admits an autonomous closure $u : \mathbb{R}^d \to \mathbb{R}^r$ in the sense of Definition 9.2 and that $u(w_0) \to \mu_0$ in probability as $d\to\infty$. Let $\mu : [0,\infty) \to \mathbb{R}^r$ solve*
 
 $$
-\dot\mu = -\gamma\,F_1(\mu) + \gamma^2\,F_2(\mu), \qquad \mu(0) = \mu_0, \tag{48}
+\dot\mu = -\gamma\,F_1(\mu) + \gamma^2\,F_2(\mu), \qquad \mu(0) = \mu_0, \tag{49}
 $$
 
 *and assume the solution exists for all time. Then, uniformly on compact sets of $t$,*
 
 $$
-u(w_{[td]}) \;\xrightarrow[d\to\infty]{\mathbb{P}}\; \mu(t). \tag{49}
+u(w_{[td]}) \;\xrightarrow[d\to\infty]{\mathbb{P}}\; \mu(t). \tag{50}
 $$
 
 </div>
 
-*Proof.* Fix $T,R>0$ and set $\tau_R := \inf\lbrace k : \lVert u(w_k)\rVert  > R\rbrace $. Coercivity of $L=u_1$ together with $(47)$ forces the iterates to remain bounded uniformly in $d$ for $k \le \tau_R$, so it suffices to prove $(49)$ with both processes stopped at $\tau_R$ and at the analogous ODE stopping time $\tau^\mu_R$, and then send $R \to\infty$. We suppress the stopping in the notation below.
+*Proof.* Fix $T,R>0$ and set $\tau_R := \inf\lbrace k : \lVert u(w_k)\rVert  > R\rbrace $. Coercivity of $L=u_1$ together with $(48)$ forces the iterates to remain bounded uniformly in $d$ for $k \le \tau_R$, so it suffices to prove $(50)$ with both processes stopped at $\tau_R$ and at the analogous ODE stopping time $\tau^\mu_R$, and then send $R \to\infty$. We suppress the stopping in the notation below.
 
 Set $\ell := \lfloor td \rfloor$. The Doob decomposition reads
 
 $$
-u(w_\ell) = u(w_0) + \sum_{k=0}^{\ell - 1}\mathbb{E}\bigl[u(w_{k+1}) - u(w_k)\mid \mathcal{F}_k\bigr] + M_\ell, \tag{50}
+u(w_\ell) = u(w_0) + \sum_{k=0}^{\ell - 1}\mathbb{E}\bigl[u(w_{k+1}) - u(w_k)\mid \mathcal{F}_k\bigr] + M_\ell, \tag{51}
 $$
 
-where $M_\ell$ is a martingale. By $(47)$ and independence of the increments,
+where $M_\ell$ is a martingale. By $(48)$ and independence of the increments,
 
 $$
 \mathbb{E}\|M_\ell\|^2 = \sum_{k=0}^{\ell - 1}\mathbb{E}\|u(w_{k+1}) - u(w_k)\|^2 \;\le\; \tfrac{\ell}{d}\cdot o(1) \;=\; T\cdot o(1),
 $$
 
-so Doob's $L^2$ maximal inequality gives $\max_{k \le \ell}\lVert M_k\rVert  \to 0$ in probability. Substituting $(46)$ into $(50)$ produces, uniformly in $t \in [0,T]$,
+so Doob's $L^2$ maximal inequality gives $\max_{k \le \ell}\lVert M_k\rVert  \to 0$ in probability. Substituting $(47)$ into $(51)$ produces, uniformly in $t \in [0,T]$,
 
 $$
-u(w_\ell) = u(w_0) + \frac{1}{d}\sum_{k=0}^{\ell - 1}\bigl[-\gamma F_1(u(w_k)) + \gamma^2 F_2(u(w_k))\bigr] + o_{\mathbb{P}}(1). \tag{51}
+u(w_\ell) = u(w_0) + \frac{1}{d}\sum_{k=0}^{\ell - 1}\bigl[-\gamma F_1(u(w_k)) + \gamma^2 F_2(u(w_k))\bigr] + o_{\mathbb{P}}(1). \tag{52}
 $$
 
-The right-hand side is the Euler approximation with step $1/d$ of the integral equation $\mu(t) = \mu_0 + \int_0^t [-\gamma F_1(\mu(s)) + \gamma^2 F_2(\mu(s))]\,ds$ solved by $(48)$. Continuity of $F_1, F_2$ on $\lbrace \lVert v\rVert \le R\rbrace $ and Gronwall's inequality then yield $\sup_{t\le T}\lVert u(w_\ell) - \mu(t)\rVert  \to 0$ in probability. <span style="float: right;">$\square$</span>
+The right-hand side is the Euler approximation with step $1/d$ of the integral equation $\mu(t) = \mu_0 + \int_0^t [-\gamma F_1(\mu(s)) + \gamma^2 F_2(\mu(s))]\,ds$ solved by $(49)$. Continuity of $F_1, F_2$ on $\lbrace \lVert v\rVert \le R\rbrace $ and Gronwall's inequality then yield $\sup_{t\le T}\lVert u(w_\ell) - \mu(t)\rVert  \to 0$ in probability. <span style="float: right;">$\square$</span>
 
 
 

@@ -11,12 +11,8 @@ which we compute exactly from each iterate (no Monte-Carlo noise in the loss).
 For several stepsizes gamma (chosen via gamma * R^2 in a range below 1) we run
 constant-stepsize SGD from w_0 = 0 and plot the median over n_trials of the
 single-iterate risk L(w_t) - L(w_*), together with a 10--90% interquantile band.
-Overlaid are:
-  * the horizontal noise floor   gamma * Tr(Sigma) / (2 * (2 - gamma R^2))
-    predicted by Theorem 8.1;
-  * the full Theorem 8.1 upper bound
-      ( sqrt( 0.5 * exp(-gamma mu t) * R^2 * ||w_0 - w_*||^2 )
-        + sqrt( gamma * Tr(Sigma) / (2 * (2 - gamma R^2)) ) )^2.
+Overlaid is the horizontal noise floor gamma * Tr(Sigma) / (2 * (2 - gamma R^2))
+predicted by Theorem 8.1.
 
 The curves exhibit the two phases predicted by (27): an initial exponential
 contraction at rate e^{-gamma mu t} followed by stationary oscillation around
@@ -66,24 +62,6 @@ def run_sgd_trial(
     return gaps
 
 
-def theorem_bound(
-    t_grid: np.ndarray,
-    gamma: float,
-    mu: float,
-    R2: float,
-    tr_Sigma: float,
-    w0_minus_wstar_sq: float,
-) -> np.ndarray:
-    """
-    Right-hand side of (27):
-        ( sqrt( 0.5 e^{-gamma mu t} R^2 ||w_0 - w_*||^2 )
-          + sqrt( gamma Tr(Sigma) / (2 (2 - gamma R^2)) ) )^2.
-    """
-    bias = np.sqrt(0.5 * np.exp(-gamma * mu * t_grid) * R2 * w0_minus_wstar_sq)
-    floor = np.sqrt(gamma * tr_Sigma / (2.0 * (2.0 - gamma * R2)))
-    return (bias + floor) ** 2
-
-
 def noise_floor(gamma: float, R2: float, tr_Sigma: float) -> float:
     """Theorem 8.1 noise floor gamma Tr(Sigma) / (2 (2 - gamma R^2))."""
     return gamma * tr_Sigma / (2.0 * (2.0 - gamma * R2))
@@ -112,7 +90,6 @@ def main() -> None:
 
     fig, ax = plt.subplots(figsize=(8.2, 5.6))
     iters = np.arange(T_max + 1)
-    t_ref = np.linspace(1.0, T_max, 400)
 
     for gamma_rate, color in zip(gamma_rates, colors):
         gamma = gamma_rate / R2
@@ -125,7 +102,6 @@ def main() -> None:
         med = np.median(runs, axis=0)
         lo, hi = np.quantile(runs, [0.1, 0.9], axis=0)
         floor = noise_floor(gamma, R2, tr_Sigma)
-        ref_thm = theorem_bound(t_ref, gamma, mu, R2, tr_Sigma, w0_diff_sq)
 
         ax.fill_between(
             iters, lo, hi, color=color, alpha=0.18, linewidth=0,
@@ -133,9 +109,6 @@ def main() -> None:
         ax.plot(
             iters, med, "-", color=color, linewidth=1.6,
             label=rf"SGD median, $\gamma R^2 = {gamma_rate}$",
-        )
-        ax.plot(
-            t_ref, ref_thm, "--", color=color, linewidth=1.1, alpha=0.85,
         )
         ax.axhline(
             floor, color=color, linestyle=":", linewidth=1.1, alpha=0.85,
@@ -146,8 +119,6 @@ def main() -> None:
             f"floor = {floor:.3e}, empirical median at T = {med[-1]:.3e}"
         )
 
-    # Legend proxies for the theoretical references (one entry each).
-    ax.plot([], [], "--", color="0.25", linewidth=1.1, label="Theorem 8.1 bound (27)")
     ax.plot([], [], ":", color="0.25", linewidth=1.1, label="noise floor $\\gamma\\,\\mathrm{Tr}(\\Sigma)/(2(2-\\gamma R^2))$")
 
     ax.set_xlabel(r"iteration $t$", fontsize=12)
