@@ -100,7 +100,7 @@ def theorem_bound(
 def main():
     d = 20
     sigma = 0.3
-    T_max = 20_000
+    T_max = 5_000
     n_trials = 60
     rng = np.random.default_rng(7)
 
@@ -149,32 +149,32 @@ def main():
         iters[mask], si_lo[mask], si_hi[mask],
         color=color_single, alpha=0.15, linewidth=0,
     )
-    ax.loglog(
+    ax.semilogy(
         iters[mask], si_med[mask], "-", color=color_single, linewidth=1.8,
-        label=r"single iterate $L(w_t)-L(w_\ast)$",
+        label=r"last iterate $L(w_t)-L(w_\ast)$",
     )
 
     ax.fill_between(
         iters[mask], ta_lo[mask], ta_hi[mask],
         color=color_tail, alpha=0.15, linewidth=0,
     )
-    ax.loglog(
+    ax.semilogy(
         iters[mask], ta_med[mask], "-", color=color_tail, linewidth=1.8,
         label=r"tail average $L(\overline{w}_{t/2:t})-L(w_\ast)$",
     )
 
     # Reference lines over a smooth grid.
-    t_ref = np.logspace(np.log10(lo), np.log10(T_max), 400)
+    t_ref = np.linspace(lo, T_max, 400)
     ref_CR = sigma_MLE_sq / t_ref
     ref_thm = theorem_bound(
         t_ref, gamma, mu, R2, sigma_MLE_sq, rho_misspec, w0_diff_sq,
     )
 
-    ax.loglog(
+    ax.semilogy(
         t_ref, ref_CR, ":", color="black", linewidth=1.3,
-        label=r"Cramer--Rao  $\sigma_{\mathrm{MLE}}^2/t$",
+        label=r"lower bound  $\sigma_{\mathrm{MLE}}^2/t$",
     )
-    ax.loglog(
+    ax.semilogy(
         t_ref, ref_thm, "--", color="0.35", linewidth=1.3,
         label=r"Theorem 8.1 bound (burn-in $=t/2$)",
     )
