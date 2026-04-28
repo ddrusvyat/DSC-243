@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Matplotlib local cache (used by scripts/animate_gd_vs_sgd.py to avoid
+# re-scanning system fonts on each run).
+.matplotlib_cache/
+
+# LaTeX build artifacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz

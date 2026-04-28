@@ -13,7 +13,7 @@ We run constant-stepsize SGD from w_0 = 0 and compare at each horizon t:
   (b) Tail average        L(bar w_{t/2:t})  - L(w_*)
 against
   (c) Cramer-Rao rate     sigma_MLE^2 / t = d sigma^2 / (2 t)
-  (d) Theorem 8.1 bound   (with burn-in s = t/2).
+  (d) Theorem 8.2 bound   (with burn-in s = t/2).
 
 The single iterate decays exponentially at first and then plateaus at a noise
 floor proportional to gamma * d sigma^2. The tail average, by contrast, keeps
@@ -89,12 +89,12 @@ def theorem_bound(
     w0_minus_wstar_sq: float,
 ):
     """
-    Evaluate the right-hand side of (27) with burn-in s = t/2 at each t in t_grid.
+    Evaluate the right-hand side of (32) with burn-in s = t/2 at each t in t_grid.
     """
-    bias = np.sqrt(0.5 * np.exp(-gamma * mu * t_grid / 2.0) * R2 * w0_minus_wstar_sq)
+    bias = np.exp(-gamma * mu * t_grid / 2.0) * R2 * w0_minus_wstar_sq
     var_mult = 1.0 + (gamma * R2) / (1.0 - gamma * R2) * rho_misspec
-    variance = np.sqrt(var_mult * sigma_MLE_sq / (t_grid - t_grid // 2))
-    return (bias + variance) ** 2
+    variance = 2.0 * var_mult * sigma_MLE_sq / (t_grid - t_grid // 2)
+    return bias + variance
 
 
 def main():
@@ -176,7 +176,7 @@ def main():
     )
     ax.semilogy(
         t_ref, ref_thm, "--", color="0.35", linewidth=1.3,
-        label=r"Theorem 8.1 bound (burn-in $=t/2$)",
+        label=r"Theorem 8.2 bound (burn-in $=t/2$)",
     )
 
     ax.set_xlabel(r"iteration / sample size $t$", fontsize=12)

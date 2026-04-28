@@ -11,8 +11,10 @@ which we compute exactly from each iterate (no Monte-Carlo noise in the loss).
 For several stepsizes gamma (chosen via gamma * R^2 in a range below 1) we run
 constant-stepsize SGD from w_0 = 0 and plot the median over n_trials of the
 single-iterate risk L(w_t) - L(w_*), together with a 10--90% interquantile band.
-Overlaid is the horizontal noise floor gamma * Tr(Sigma) / (2 * (2 - gamma R^2))
-predicted by Theorem 8.1.
+Overlaid is the horizontal asymptotic noise floor
+gamma * Tr(Sigma) / (2 * (2 - gamma R^2)),
+which is the stationary excess risk of constant-stepsize SGD on this model
+(and lies a factor of two below the looser upper bound in Theorem 8.1).
 
 The curves exhibit the two phases predicted by (27): an initial exponential
 contraction at rate e^{-gamma mu t} followed by stationary oscillation around
@@ -63,7 +65,7 @@ def run_sgd_trial(
 
 
 def noise_floor(gamma: float, R2: float, tr_Sigma: float) -> float:
-    """Theorem 8.1 noise floor gamma Tr(Sigma) / (2 (2 - gamma R^2))."""
+    """Asymptotic noise floor gamma Tr(Sigma) / (2 (2 - gamma R^2))."""
     return gamma * tr_Sigma / (2.0 * (2.0 - gamma * R2))
 
 
