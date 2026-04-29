@@ -15,6 +15,7 @@ title: Course Overview
 
 - [Course summary](#course-summary)
 - [Pre-requisites](#pre-requisites)
+- [Notes](#notes)
 - [Course outline](#course-outline)
 - [Grading policy](#grading-policy)
 - [Textbooks and references](#textbooks-and-references)
@@ -28,6 +29,10 @@ This course develops the foundations of the modern optimization methods that for
 - Introductory course on optimization (DSC 211 or equivalent)
 - Comfort with advanced linear algebra and multivariate calculus
 
+## Notes
+
+The notes for the course are being developed. Here is the latest draft: [notes](week1.html).
+
 ## Course outline
 
 {::nomarkdown}
@@ -36,12 +41,12 @@ This course develops the foundations of the modern optimization methods that for
 <tr><th>Week(s)</th><th>Topics</th><th>Lecture notes and HW</th></tr>
 </thead>
 <tbody>
-<tr><td>1–3</td><td><ul><li>Gradient descent</li><li>Acceleration by Chebyshev stepsizes</li><li>Conjugate Gradient method</li><li>Improved rates under source and spectral conditions</li></ul></td><td><a href="week1.html">Week 1 Notes</a><br><a href="homework1.pdf">HW1</a></td></tr>
-<tr><td>4–5</td><td><ul><li>Proximal gradient descent and accelerated gradient descent for convex optimization</li><li>Lower complexity bounds for convex optimization</li><li>Mirror descent and accelerated mirror descent</li><li>Optimization of relatively smooth functions</li></ul></td><td></td></tr>
-<tr><td>6</td><td><ul><li>Mirror descent for nonsmooth convex functions</li><li>Frank-Wolfe algorithm as subgradient method in the dual</li></ul></td><td></td></tr>
-<tr><td>7</td><td><ul><li>Smoothing algorithms</li><li>Monotone operators and variational inequalities</li><li>Extragradient and Chambolle-Pock algorithms</li></ul></td><td></td></tr>
-<tr><td>8</td><td><ul><li>Stochastic gradient method</li><li>Coordinate descent</li><li>Variance reduction: SVRG, SPIDER, STORM</li><li>Adaptive algorithms: ADAGRAD, ADAM, RMSPROP</li></ul></td><td></td></tr>
-<tr><td>9–10</td><td><ul><li>SGD and STORM for nonconvex stochastic optimization</li><li>Polyak–Łojasiewicz condition and convergence of gradient systems</li><li>Examples in deep learning, sampling, control, and reinforcement learning</li></ul></td><td></td></tr>
+<tr><td>1–3</td><td><ul><li>Gradient descent</li><li>Acceleration by Chebyshev stepsizes</li><li>Conjugate Gradient method</li></ul></td><td><a href="homework1.pdf">HW1</a></td></tr>
+<tr><td>4–5</td><td><ul><li>Improved rates under source and spectral conditions</li><li>Average case analysis</li><li>Stochastic gradient method</li><li>Acceleration by averaging</li></ul></td><td><a href="homework2.pdf">HW2</a></td></tr>
+<tr><td>6</td><td>TBA</td><td></td></tr>
+<tr><td>7</td><td>TBA</td><td></td></tr>
+<tr><td>8</td><td>TBA</td><td></td></tr>
+<tr><td>9–10</td><td>TBA</td><td></td></tr>
 </tbody>
 </table>
 {:/nomarkdown}
