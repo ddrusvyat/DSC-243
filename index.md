@@ -38,11 +38,11 @@ The notes for the course are being developed. Here is the latest draft: [notes](
 {::nomarkdown}
 <table>
 <thead>
-<tr><th>Week(s)</th><th>Topics</th><th>Lecture notes and HW</th></tr>
+<tr><th>Week(s)</th><th>Topics</th><th>Homework</th></tr>
 </thead>
 <tbody>
 <tr><td>1–3</td><td><ul><li>Gradient descent</li><li>Acceleration by Chebyshev stepsizes</li><li>Conjugate Gradient method</li></ul></td><td><a href="homework1.pdf">HW1</a></td></tr>
-<tr><td>4–5</td><td><ul><li>Improved rates under source and spectral conditions</li><li>Average case analysis</li><li>Stochastic gradient method</li><li>Acceleration by averaging</li></ul></td><td><a href="homework2.pdf">HW2</a></td></tr>
+<tr><td>4–5</td><td><ul><li>Improved rates under source and spectral conditions</li><li>Average case analysis</li><li>Stochastic gradient method</li><li>Acceleration of SGD by averaging</li></ul></td><td><a href="homework2.pdf">HW2</a></td></tr>
 <tr><td>6</td><td>TBA</td><td></td></tr>
 <tr><td>7</td><td>TBA</td><td></td></tr>
 <tr><td>8</td><td>TBA</td><td></td></tr>
