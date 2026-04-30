@@ -5,7 +5,7 @@ math:
   engine: mathjax
 ---
 
-# Week 1-3: Convex Quadratics
+# Lecture note
 
 [← Back to course page](./)
 
@@ -13,22 +13,7 @@ math:
 
 ## Overview
 
-In this chapter we study optimization algorithms for the **convex quadratic 
-problems**. This is the most basic and fundamental problem in numerical 
-optimization. Surprisingly, many of the phenomena that hold for 
-minimizing convex quadratics have direct analogues for highly nonlinear 
-and complex models (e.g. deep learning). Since the objective function 
-is a convex quadratic, this setting allows us to develop sharp 
-intuition for convergence behavior using only basic linear algebraic 
-tools. Moving beyond quadratics will require combining linear 
-algebra with analytic techniques---more on this later.
-We cover three algorithms of increasing sophistication:
-
-1. **Gradient descent** with a fixed stepsize
-2. **Chebyshev-accelerated gradient descent**
-3. **Conjugate Gradient method**
-
-We will speak both about worst-case rates---depending only on extremal eigenvalues---and more refined guarantees that take into account the interaction between initialization and the spectral behavior of the eigenvalues.
+In these these notes we study optimization algorithms for the  **convex quadratic optiization problem**. This is the most basic and fundamental problem in numerical optimization. Surprisingly, many of the phenomena that hold for minimizing convex quadratics have direct analogues for highly nonlinear and complex models (e.g. deep learning). Since the objective function is a convex quadratic, this setting allows us to develop sharp intuition for convergence behavior using only basic linear algebraic tools. We will speak both about worst-case convergence rates of algorithms---depending only on extremal eigenvalues---and more refined guarantees that take into account the interaction between initialization and the shape of the entire spectrum.
 
 ### Contents
 
