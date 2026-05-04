@@ -1557,7 +1557,7 @@ $$
 \mathbb{E}[L(w_t)] - L(w_\ast) \;=\; \tfrac{1}{2}\mathbb{E}\lVert e_t\rVert_H^2 \;\leq\; \mathbb{E}\lVert b_t\rVert_H^2 \;+\; \mathbb{E}\lVert v_t\rVert_H^2,
 $$
 
-so it suffices to bound the two pieces.
+so it suffices to bound the two terms on the right.
 
 **Bias contraction.** Conditioning on the past in the bias recursion and expanding the square yields
 
@@ -1673,9 +1673,7 @@ The bound $(27)$ decomposes the excess risk into a **bias** term that contracts 
 ![Last-iterate constant-stepsize SGD: exponential contraction to a stepsize-dependent noise floor](figures/sgd_last_iterate.png)
 
 
-Even though the function values along the last iterate do not converge to the minimal values, we will see now that surprisingly, the function values do converge when measured along the *average iterate*.
-
-To simultaneously reduce both the bias and the floor, it is customary to report the **tail average**
+Even though the function values along the last iterate do not converge to the minimal values, we will see now that surprisingly, the function values do converge when measured along the *average iterate*. More precisely, define the **tail average**
 
 $$
 \overline{w}_{t:T} \;:=\; \frac{1}{T - t}\sum_{s=t}^{T-1} w_s, \qquad 0 \le t < T.
@@ -1699,22 +1697,17 @@ $$
 
 The bound $(32)$ displays the classical bias--variance tradeoff of stochastic least squares. The bias contracts at the linear rate $e^{-\gamma \mu t}$---exactly the GD rate of Corollary 2.2 with $R^2$ in place of $\beta$---and decays with the *burn-in length* $t$. The variance, in contrast, is independent of the initialization and decays only as $1/(T-t)$ with the *averaging window* $T-t$, matching the statistically optimal rate. Choosing $t$ to be a constant fraction of $T$ (say $t = T/2$) therefore makes the bias negligible and recovers the $O(\sigma_{\mathrm{MLE}}^2/T)$ rate of the MLE.
 
-*Remark.* In the well-specified additive-noise model $y = \langle w_\ast, x\rangle + \eta$, where $\eta$ is independent of $x$ with $\mathbb{E}[\eta]=0$ and $\mathbb{E}[\eta^2]=\sigma^2$, a direct computation gives $\Sigma = \sigma^2 H$, and hence $\sigma_{\mathrm{MLE}}^2 = \tfrac{1}{2}d\sigma^2$ and $\rho_{\mathrm{misspec}} = 1$. After a burn-in that makes the bias negligible, Theorem 8.2 reduces to $\mathbb{E}[L(\overline w_{t:T})] - L(w_\ast) \lesssim d\sigma^2/(T-t)$, matching the statistical lower bound up to a constant factor.
+*Remark.* In the well-specified additive-noise model $y = \langle w_\ast, x\rangle + \eta$, where $\eta$ is independent of $x$ with $\mathbb{E}[\eta]=0$ and $\mathbb{E}[\eta^2]=\sigma^2$, a direct computation gives $\Sigma = \sigma^2 H$, and hence $\sigma_{\mathrm{MLE}}^2 = \tfrac{1}{2}d\sigma^2$ and $\rho_{\mathrm{misspec}} = 1$. After a burn-in that makes the bias negligible, Theorem 8.2 reduces to $\mathbb{E}[L(\overline w_{t:T})] - L(w_\ast) \lesssim d\sigma^2/(T-t)$.
 
-**Numerical illustration.** The figure below separates the two phases predicted by $(32)$ on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, taking $d=20$, $\sigma=0.3$, $w_0 = 0$, and stepsize $\gamma = \tfrac{1}{2}/(d+2)$ (so $\gamma R^2 = \tfrac12$). We plot the median over $60$ trials of the last-iterate risk $L(w_t) - L(w_\ast)$ and the tail-averaged risk $L(\overline w_{t/2:t}) - L(w_\ast)$ (shaded bands show the $10$--$90\%$ interquantile range), together with the lower-bound rate $\sigma_{\mathrm{MLE}}^2/t = d\sigma^2/(2t)$ and the bound $(32)$ specialized to burn-in $s=t/2$. The last iterate decays exponentially until it hits a noise floor on the order of $\gamma d\sigma^2$ and then stops improving, whereas the tail average keeps decaying at the $1/t$ lower-bound rate and matches the statistical lower bound up to a constant factor. The theoretical bound $(32)$ upper-bounds the tail-averaged curve across the entire horizon.
+**Numerical illustration.** The figure below separates the two phases predicted by $(32)$ on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, taking $d=20$, $\sigma=0.3$, $w_0 = 0$, and stepsize $\gamma = \tfrac{1}{2}/(d+2)$ (so $\gamma R^2 = \tfrac12$). We plot the median over $60$ trials of the last-iterate risk $L(w_t) - L(w_\ast)$ and the tail-averaged risk $L(\overline w_{t/2:t}) - L(w_\ast)$ (shaded bands show the $10$--$90\%$ interquantile range), together with the lower-bound rate $\sigma_{\mathrm{MLE}}^2/t = d\sigma^2/(2t)$ and the bound $(32)$ specialized to burn-in $s=t/2$. The last iterate decays exponentially until it hits a noise floor on the order of $\gamma d\sigma^2$ and then stops improving, whereas the tail average keeps decaying at the $1/t$ rate. The theoretical bound $(32)$ upper-bounds the tail-averaged curve across the entire horizon.
 
 ![Tail-averaged constant-stepsize SGD: bias--variance decomposition](figures/sgd_tail_averaging.png)
 
-The animation below visualizes the same comparison in two dimensions, on a fresh least-squares instance with $H = \mathrm{diag}(1, 0.25)$, $w_\ast = (2,-1)$, $w_0 = (-2.5, 2)$, $\sigma = 0.6$, stepsize $\gamma R^2 = 0.5$, and $T = 2000$ iterations (the viewport is zoomed onto $w_\ast$ and only every $100$th iterate is shown). All three methods run in the streaming setting of Theorems 8.1 and 8.2:
-* **GD (blue)** descends on the population objective via the exact gradient step $w \mapsto w - \gamma H(w-w_\ast)$.
-* **SGD (red)** draws a fresh sample $x_t \sim \mathcal{N}(0,H)$, $y_t = \langle w_\ast, x_t\rangle + \eta_t$ at each iteration and steps along $-\gamma(\langle w, x_t\rangle - y_t)\,x_t$, displaying the *last* iterate $w_t$.
-* **Tail-averaged SGD (green)** displays the running tail average $\overline w_{t/2:t} = \tfrac{1}{t-\lfloor t/2\rfloor}\sum_{s=\lfloor t/2\rfloor}^{t-1} w_s$ of the SGD trajectory.
+The animation below further visualizes the same comparison in two dimensions, on a fresh least-squares instance with $H = \mathrm{diag}(1, 0.25)$, $w_\ast = (2,-1)$, $w_0 = (-2.5, 2)$, $\sigma = 0.6$, stepsize $\gamma R^2 = 0.5$, and $T = 2000$ iterations (the viewport is zoomed onto $w_\ast$ and only every $100$th iterate is shown). All three methods run in the streaming setting of Theorems 8.1 and 8.2. Let us make the following observations, consistant with Theorems 8.1 and 8.2.
 
-In a fixed viewport around the full trajectory, three things happen, each predicted by Theorems 8.1 and 8.2:
-
-* GD glides smoothly down the contour ellipses and converges to $w_\ast$ at the geometric rate $e^{-\gamma\mu t}$ --- the deterministic bias picture of Theorem 8.1 with the noise terms turned off.
+* GD glides smoothly down the contour ellipses and converges to $w_\ast$ at the geometric rate $e^{-\gamma\mu t}$.
 * SGD's last iterate contracts at the same geometric rate while it is far from $w_\ast$, but once it reaches a stepsize-dependent neighbourhood it is dominated by the gradient noise and oscillates around $w_\ast$ forever, never improving --- this is precisely the noise floor in Theorem 8.1.
-* The tail-averaged green curve smooths out the SGD oscillations and continues to drift toward $w_\ast$ as more iterates are absorbed into the average. By the end of the run it has tightened around $w_\ast$: its excess risk shrinks like $1/(T-t)$ rather than plateauing, exactly as Theorem 8.2 predicts. Tail averaging trades the $e^{-\gamma\mu t}$ exponential bias decay of the last iterate for the $1/(T-t)$ variance decay of the average, and the variance term wins for any reasonable choice of burn-in.
+* The tail-averaged green curve smooths out the SGD oscillations and continues to drift toward $w_\ast$ as more iterates are absorbed into the average. By the end of the run it has tightened around $w_\ast$: its excess risk shrinks like $1/(T-t)$ rather than plateauing, exactly as Theorem 8.2 predicts.
 
 ![GD, SGD, and tail-averaged SGD on a 2-D least-squares problem](figures/gd_vs_sgd.gif)
 
@@ -1911,7 +1904,64 @@ $$
 
 The same calculation with the order of $\Phi$ and $\widetilde{\mathcal{T}}$ reversed gives $\Phi\bigl(\widetilde{\mathcal{T}}(M)\bigr) = M$, so $\Phi = \widetilde{\mathcal{T}}^{-1}$, completing the proof. <span style="float: right;">$\square$</span>
 
-Theorem 8.1 is the classical last-iterate bound for constant-stepsize SGD on least squares and dates back to [RM51,Pol87,KY03]; the streamlined proof via the bias--variance decomposition and a Lyapunov equation for the stationary noise covariance is standard and appears, with variants, in e.g. [BM11, BM13, DB15, JKK+18]. Theorem 8.2 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis.
+### Mini-batches, saturation, and the critical batch size
+
+In practice each step of $(26)$ is replaced by an average over a small **mini-batch** of $B$ samples. This raises an immediate question: how does the bound of Theorem 8.2 change with $B$, and how large should $B$ be? The answer is essentially read off the variance term, and uncovers the phenomenon of **batch saturation**: once the noise has been driven below the remaining optimization bias, additional samples per step buy nothing. To keep the formulas readable we fix the stepsize at $\gamma R^2 = \tfrac{1}{2}$ throughout this section, so that $\gamma R^2/(1-\gamma R^2) = 1$ and the variance prefactor of $(32)$ collapses to $2(1+\rho_{\mathrm{misspec}})$.
+
+For an integer $B \geq 1$, the mini-batch variant of $(26)$ takes the step
+
+$$
+w_t \;=\; w_{t-1} + \frac{\gamma}{B}\sum_{j=1}^{B}\bigl(y_{t,j}-\langle w_{t-1},x_{t,j}\rangle\bigr)\,x_{t,j},
+$$
+
+with $(x_{t,j},y_{t,j})$ independent copies of $(x,y)$. Setting
+
+$$
+\widehat H_t \;:=\; \frac{1}{B}\sum_{j=1}^{B} x_{t,j}x_{t,j}^{\top}, \qquad \overline\xi_t \;:=\; -\frac{1}{B}\sum_{j=1}^{B}\bigl(y_{t,j}-\langle w_\ast,x_{t,j}\rangle\bigr)\,x_{t,j},
+$$
+
+the error $w_t - w_\ast$ obeys the same linear recursion as in $(28)$, with $xx^\top$ replaced by the empirical average $\widehat H_t$ and the noise covariance scaled by $1/B$:
+
+$$
+w_t - w_\ast \;=\; (I-\gamma\widehat H_t)\,(w_{t-1}-w_\ast) \;-\; \gamma\,\overline\xi_t, \qquad \mathbb{E}[\widehat H_t] = H, \qquad \mathbb{E}[\overline\xi_t\overline\xi_t^\top] = \tfrac{1}{B}\,\Sigma.
+$$
+
+A short calculation, expanding $\widehat H_t^2$ and using independence, shows that the fourth-moment bound $\mathbb{E}[\widehat H_t^2] \preceq R^2 H$ continues to hold with the same constant $R^2$ as in $(25)$. Tracking the $1/B$ factor through the bias--variance proof of Theorem 8.2, and writing $\overline w_{t:T}^{(B)}$ for the resulting tail average, then gives the **mini-batch tail-averaged bound**
+
+$$
+\mathbb{E}[L(\overline w_{t:T}^{(B)})] - L(w_\ast) \;\leq\; \underbrace{R^2\,e^{-\gamma\mu t}\,\|w_0-w_\ast\|^2}_{\text{bias}} \;+\; \underbrace{2(1+\rho_{\mathrm{misspec}})\,\frac{\sigma_{\mathrm{MLE}}^2}{B(T-t)}}_{\text{variance}}.
+$$
+
+The bias depends only on the number of *parameter updates* $t$, while the variance scales as $1/(B(T-t))$ in the total number of *averaged samples*. The two natural ways of using this bound correspond to the two natural resources in stochastic optimization: parallel time and sample budget.
+
+**Fixed-update regime.** Suppose first that the parallel wall-clock budget $T$ is held fixed, so that a batch of $B$ samples is processed at the same cost as a single sample. The bias is then independent of $B$, while the variance decreases as $1/B$ until it falls below the bias. Equating the two terms at burn-in $t=T/2$ identifies the **critical batch size**
+
+$$
+B_{\mathrm{crit}}(T) \;\approx\; \frac{(1+\rho_{\mathrm{misspec}})\,\sigma_{\mathrm{MLE}}^2}{T\,e^{-\gamma\mu T/2}\,R^2\,\|w_0-w_\ast\|^2}.
+$$
+
+For $B \ll B_{\mathrm{crit}}(T)$, doubling the batch roughly halves the excess risk; for $B \gg B_{\mathrm{crit}}(T)$ the variance is already negligible and the curve flattens at the deterministic bias level. This is batch saturation.
+
+**Fixed-sample regime.** Suppose now that the total number of samples $N=BT$ is held fixed and the tail window is $t=T/2$, so that $B(T-t) = N/2$. The variance term then collapses to an $O(\sigma_{\mathrm{MLE}}^2/N)$ statistical floor that does not depend on $B$ at all, and only the bias depends on $B$, through $T = N/B$:
+
+$$
+\mathbb{E}[L(\overline w_{T/2:T}^{(B)})] - L(w_\ast) \;\leq\; R^2\,\exp\!\Big(-\tfrac{\gamma\mu N}{2B}\Big)\,\|w_0-w_\ast\|^2 \;+\; \frac{4(1+\rho_{\mathrm{misspec}})\,\sigma_{\mathrm{MLE}}^2}{N}.
+$$
+
+The largest useful batch is the largest $B$ for which the bias is still on the order of the statistical floor, namely
+
+$$
+B \;\lesssim\; \frac{\gamma\mu\,N}{\log\!\Big(\tfrac{R^2\,\|w_0-w_\ast\|^2\,N}{(1+\rho_{\mathrm{misspec}})\,\sigma_{\mathrm{MLE}}^2}\Big)}.
+$$
+
+Below this threshold the algorithm is **statistically limited** and any further reduction in error requires more samples; above it the algorithm is **optimization limited**, because too few updates have been spent removing the bias.
+
+**Numerical illustration.** The figure below illustrates both regimes on the same well-specified isotropic Gaussian model used in Theorems 8.1 and 8.2, with $d=20$ and $\sigma=0.3$. For each batch size $B \in \{1,2,4,\ldots,512\}$ we run constant-stepsize mini-batch SGD with burn-in $t=T/2$ and report the median, with a $10$--$90\%$ interquantile band, of the tail-averaged excess risk $L(\overline w_{T/2:T}^{(B)})-L(w_\ast)$ over $45$ trials. The left panel fixes the number of updates at $T=250$ and shows the fixed-update regime: the variance decays like $1/B$ until the curve flattens at the deterministic bias level around the predicted $B_{\mathrm{crit}}\approx 41$. The right panel fixes the total sample budget at $N=8192$ and shows the fixed-sample regime: the risk is essentially flat for moderate $B$, since the variance depends only on $N$, but rises sharply once $B$ is so large that $T=N/B$ is too small to absorb the bias.
+
+![Mini-batch tail-averaged SGD: batch saturation and critical batch size](figures/sgd_minibatch_saturation.png)
+
+Theorem 8.1 is the classical last-iterate bound for constant-stepsize SGD on least squares and dates back to [RM51,Pol87,KY03]; the streamlined proof via the bias--variance decomposition and a Lyapunov equation for the stationary noise covariance is standard and appears, with variants, in e.g. [BM11, BM13, DB15, JKK+18]. Theorem 8.2 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis. The mini-batch generalization above and the resulting critical-batch-size analysis are most commonly associated with the empirical study of Shallue, Lee, Antognini, Sohl-Dickstein, Frostig, and Dahl [SLAS+19] and the noise-scale analysis of McCandlish, Kaplan, Amodei, and the OpenAI Dota Team [MKA+18].
+
 
 ---
 
@@ -1967,11 +2017,19 @@ $$
 
 Multiplying by $d$ and using $R(w_k) = \tfrac{1}{2}\lVert w_k-w_\ast\rVert ^2$ produces $(45)$. <span style="float: right;">$\square$</span>
 
-After rescaling time by $d$, the conditional drift of $R$ depends only on $R(w_k)$. Setting $\psi_d(t) := \mathbb{E}[R(w_{[td]})]$, the iteration $(45)$ is an Euler approximation with step $1/d$ of the one-dimensional ODE
+The right-hand side of $(45)$ depends on the iterate only through the scalar $R(w_k)$, so the dynamics close on this single observable. Taking outer expectation in $(45)$ and writing $\psi_d(t) := \mathbb{E}[R(w_{[td]})]$ for the iterate-averaged risk indexed by *epoch time* $t = k/d$ gives
 
 $$
-\dot\psi = (\gamma^2 - 2\gamma)\,\psi + \tfrac{\gamma^2\sigma^2}{2}, \qquad \psi(0) = R(w_0). \tag{46}
+\psi_d\!\bigl(t + \tfrac{1}{d}\bigr) - \psi_d(t) \;=\; \tfrac{1}{d}\Bigl(-2\gamma\,\psi_d(t) + \gamma^2\bigl(\psi_d(t)+\tfrac{\sigma^2}{2}\bigr) + O(d^{-1})\Bigr) \qquad \text{at } t = k/d.
 $$
+
+Dividing by the time increment $1/d$, the left-hand side is the forward Euler difference quotient for the time derivative $\dot\psi_d(t)$ with step $\Delta t = 1/d$. As $d\to\infty$ this step shrinks to zero and the right-hand side converges to a continuous drift in $\psi$, so the limiting curve $\psi$ solves the one-dimensional ODE
+
+$$
+\dot\psi \;=\; (\gamma^2 - 2\gamma)\,\psi + \tfrac{\gamma^2\sigma^2}{2}, \qquad \psi(0) = R(w_0). \tag{46}
+$$
+
+In other words, one step of streaming SGD acts as one Euler step of $(46)$ on the time grid $t_k = k/d$, with a vanishing $O(d^{-1})$ truncation error per step.
 
 The ODE is stable iff $\gamma < 2$, and in that regime $\psi(t) \to \psi_\infty := \tfrac{\gamma\sigma^2}{2(2-\gamma)}$ as $t\to\infty$. The function $\psi(t)$ is the candidate dimension-independent limit of the excess risk along streaming SGD.
 
@@ -2023,25 +2081,63 @@ $$
 
 *Proof.* Fix $T,R>0$ and set $\tau_R := \inf\lbrace k : \lVert u(w_k)\rVert  > R\rbrace $. Coercivity of $L=u_1$ together with $(48)$ forces the iterates to remain bounded uniformly in $d$ for $k \le \tau_R$, so it suffices to prove $(50)$ with both processes stopped at $\tau_R$ and at the analogous ODE stopping time $\tau^\mu_R$, and then send $R \to\infty$. We suppress the stopping in the notation below.
 
-Set $\ell := \lfloor td \rfloor$. The Doob decomposition reads
+Set $\ell := \lfloor td\rfloor$, so that $\ell$ is the iteration index corresponding to epoch time $t$. We decompose each one-step increment of $u$ into its predictable drift and a martingale difference,
 
 $$
-u(w_\ell) = u(w_0) + \sum_{k=0}^{\ell - 1}\mathbb{E}\bigl[u(w_{k+1}) - u(w_k)\mid \mathcal{F}_k\bigr] + M_\ell, \tag{51}
+u(w_{k+1}) - u(w_k) \;=\; \underbrace{\mathbb{E}\bigl[u(w_{k+1}) - u(w_k)\mid \mathcal{F}_k\bigr]}_{\text{predictable drift}} \;+\; \underbrace{\bigl(u(w_{k+1}) - \mathbb{E}[u(w_{k+1})\mid\mathcal{F}_k]\bigr)}_{=:\,\Delta M_{k+1}},
 $$
 
-where $M_\ell$ is a martingale. By $(48)$ and independence of the increments,
+and sum from $k=0$ to $\ell-1$. The drift terms accumulate into a *predictable* sum, the martingale differences $\Delta M_{k+1}$ accumulate into the martingale $M_\ell := \sum_{k=0}^{\ell-1}\Delta M_{k+1}$, and the result is the Doob decomposition
 
 $$
-\mathbb{E}\|M_\ell\|^2 = \sum_{k=0}^{\ell - 1}\mathbb{E}\|u(w_{k+1}) - u(w_k)\|^2 \;\le\; \tfrac{\ell}{d}\cdot o(1) \;=\; T\cdot o(1),
+u(w_\ell) \;=\; u(w_0) \;+\; \sum_{k=0}^{\ell - 1}\mathbb{E}\bigl[u(w_{k+1}) - u(w_k)\mid \mathcal{F}_k\bigr] \;+\; M_\ell. \tag{51}
 $$
 
-so Doob's $L^2$ maximal inequality gives $\max_{k \le \ell}\lVert M_k\rVert  \to 0$ in probability. Substituting $(47)$ into $(51)$ produces, uniformly in $t \in [0,T]$,
+The martingale differences $\Delta M_{k+1}$ are conditionally mean zero and pairwise orthogonal in $L^2$, since $\mathbb{E}[\Delta M_j^\top \Delta M_k] = 0$ whenever $j \neq k$. Together with the elementary bound $\mathbb{E}\|\Delta M_{k+1}\|^2 \leq \mathbb{E}\|u(w_{k+1}) - u(w_k)\|^2$ and assumption $(48)$, this gives
 
 $$
-u(w_\ell) = u(w_0) + \frac{1}{d}\sum_{k=0}^{\ell - 1}\bigl[-\gamma F_1(u(w_k)) + \gamma^2 F_2(u(w_k))\bigr] + o_{\mathbb{P}}(1). \tag{52}
+\mathbb{E}\|M_\ell\|^2 \;=\; \sum_{k=0}^{\ell-1}\mathbb{E}\|\Delta M_{k+1}\|^2 \;\le\; \sum_{k=0}^{\ell-1}\mathbb{E}\|u(w_{k+1})-u(w_k)\|^2 \;\le\; \frac{\ell}{d}\cdot o(1) \;\le\; T\cdot o(1),
 $$
 
-The right-hand side is the Euler approximation with step $1/d$ of the integral equation $\mu(t) = \mu_0 + \int_0^t [-\gamma F_1(\mu(s)) + \gamma^2 F_2(\mu(s))]\,ds$ solved by $(49)$. Continuity of $F_1, F_2$ on $\lbrace \lVert v\rVert \le R\rbrace $ and Gronwall's inequality then yield $\sup_{t\le T}\lVert u(w_\ell) - \mu(t)\rVert  \to 0$ in probability. <span style="float: right;">$\square$</span>
+where in the last step we used $\ell \le Td$ and the uniform $o(1/d)$ bound from $(48)$. Doob's $L^2$ maximal inequality $\mathbb{E}[\max_{k\le\ell}\|M_k\|^2] \le 4\,\mathbb{E}\|M_\ell\|^2$ then upgrades this to a uniform bound on the path of $M$, and we conclude
+
+$$
+\max_{k\le\ell}\|M_k\| \;\xrightarrow[d\to\infty]{\mathbb{P}}\; 0 \qquad \text{uniformly in } t\in[0,T].
+$$
+
+For the predictable sum we use the closure relation $(47)$ to replace $\mathbb{E}[u(w_{k+1})-u(w_k)\mid \mathcal{F}_k]$ by $\tfrac{1}{d}(-\gamma\,F_1(u(w_k)) + \gamma^2\,F_2(u(w_k))) + o(1/d)$. The accumulated $o(1/d)$ remainders sum to at most $T\cdot o(1)$, and substituting into $(51)$ we obtain, uniformly in $t\in[0,T]$,
+
+$$
+u(w_\ell) \;=\; u(w_0) \;+\; \frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[-\gamma\,F_1(u(w_k)) + \gamma^2\,F_2(u(w_k))\bigr] \;+\; o_{\mathbb{P}}(1). \tag{52}
+$$
+
+Identify each term of the sum with the value of the integrand at time $t_k := k/d$ on a uniform grid of mesh $\Delta t = 1/d$. The discrete sum on the right of $(52)$ is then exactly the **forward-Euler scheme** for the integral equation
+
+$$
+\mu(t) \;=\; \mu_0 \;+\; \int_0^t \bigl[-\gamma\,F_1(\mu(s)) + \gamma^2\,F_2(\mu(s))\bigr]\,ds,
+$$
+
+which is the integrated form of the ODE $(49)$.
+
+It remains to bound the discrete-versus-continuous error $e_\ell := u(w_\ell) - \mu(t_\ell)$ uniformly in $t = t_\ell \le T$, where $t_k := k/d$. Write $G(v) := -\gamma\,F_1(v) + \gamma^2\,F_2(v)$ for the drift and let $L_G$ denote a Lipschitz constant for $G$ on $\{\|v\|\le R\}$; uniqueness of the solution $\mu$ of $(49)$ on $[0,T]$ implicitly requires this local Lipschitz property. Splitting the integral $\int_0^{t_\ell} G(\mu(s))\,ds$ into the mesh sum $\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}} G(\mu(s))\,ds$ and adding and subtracting $\tfrac{1}{d}\,G(\mu(t_k))$ in each summand decomposes the error into three explicit pieces:
+
+$$
+e_\ell \;=\; e_0 \;+\; \underbrace{\frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G(u(w_k)) - G(\mu(t_k))\bigr]}_{\text{accumulated Lipschitz contraction}} \;-\; \underbrace{\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}\bigl[G(\mu(s)) - G(\mu(t_k))\bigr]\,ds}_{\text{Euler truncation error}} \;+\; o_{\mathbb{P}}(1).
+$$
+
+The initial error $\|e_0\| = \|u(w_0) - \mu_0\| \xrightarrow{\mathbb{P}} 0$ by assumption. The Euler truncation error is deterministic and small: on each interval of length $1/d$ the bound $\|\mu(s) - \mu(t_k)\| \le \|G\|_\infty/d$ (since $\dot\mu = G(\mu)$) and Lipschitz continuity of $G$ give $\|G(\mu(s)) - G(\mu(t_k))\| \le L_G\,\|G\|_\infty/d$, so the total over $\ell \le Td$ intervals is $O(1/d) \to 0$. The remaining $o_{\mathbb{P}}(1)$ packages the martingale piece $M_\ell$ together with the accumulated $o(1/d)$ remainders from $(47)$, and is uniform in $\ell\le Td$. Together with the Lipschitz bound $\|G(u(w_k)) - G(\mu(t_k))\| \le L_G\,\|e_k\|$ on the second sum, this gives
+
+$$
+\max_{\ell \le \lfloor Td\rfloor}\|e_\ell\| \;\le\; \|e_0\| + \frac{L_G}{d}\sum_{k=0}^{\ell-1}\|e_k\| \;+\; \delta_d, \qquad \delta_d \;\xrightarrow{\mathbb{P}}\; 0.
+$$
+
+The discrete Gronwall inequality (applied on the grid of mesh $\Delta t = 1/d$ with rate $L_G$ for time horizon $T$) then yields
+
+$$
+\sup_{t\le T}\|u(w_{[td]}) - \mu(t)\| \;\le\; \bigl(\|e_0\| + \delta_d\bigr)\,e^{L_G T} \;\xrightarrow{d\to\infty}\; 0 \quad \text{in probability}.
+$$
+
+This establishes $(50)$ on the stopped processes. Sending $R\to\infty$ removes the stopping, since the deterministic limit $\mu$ stays in a fixed bounded set on $[0,T]$ and the convergence above forces $u(w_{[td]})$ into the same bounded set with probability tending to one. <span style="float: right;">$\square$</span>
 
 
 
