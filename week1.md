@@ -1636,7 +1636,7 @@ $$
 \operatorname{Tr}(C_t) \;=\; \mathbb{E}\lVert v_t\rVert^2 \;\leq\; \frac{\gamma\,\operatorname{Tr}(\Sigma)}{\mu} \qquad\text{for all }t\ge 0.
 $$
 
-Since $\mathcal{M}$ maps positive semidefinite matrices to positive semidefinite matrices, $C_t$ lies in the compact set of PSD matrices with trace bounded by $\gamma\operatorname{Tr}(\Sigma)/\mu$. Therefore the sequence admits a limit point $C_\infty \succeq 0$. Since $\operatorname{Tr}(C_t)$ is nondecreasing, taking the trace and the limit in $(31)$ we deduce that $C_{\infty}$ satisfies
+Since $\mathcal{M}$ maps positive semidefinite matrices to positive semidefinite matrices, $C_t$ lies in the compact set of PSD matrices with trace bounded by $\gamma\operatorname{Tr}(\Sigma)/\mu$. Moreover, the sequence $\{C_t\}$ is monotone in the PSD order: subtracting consecutive copies of $(31)$ gives $C_{t+1} - C_t = \mathcal{M}(C_t - C_{t-1})$, so by induction starting from $C_1 - C_0 = \gamma^2\Sigma \succeq 0$ and using that $\mathcal{M}$ preserves PSD order, every consecutive difference is PSD and $C_t \preceq C_{t+1}$. In particular $\operatorname{Tr}(C_t)$ is nondecreasing. Therefore the sequence admits a limit point $C_\infty \succeq 0$, and taking the trace and the limit in $(31)$ we deduce that $C_{\infty}$ satisfies
 
 $$
 \operatorname{Tr}(C_\infty) \;=\; \operatorname{Tr}(\mathcal{M}(C_\infty)) + \gamma^2\operatorname{Tr}(\Sigma).
