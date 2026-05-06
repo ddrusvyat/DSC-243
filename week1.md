@@ -1990,10 +1990,10 @@ A natural question is whether one can do better by exploiting the row geometry. 
 
 **Input:** $D \in \mathbb{R}^{n\times d}$ with nonzero rows $d_1, \ldots, d_n$, $\;y \in \mathbb{R}^n$, $\;w_0 \in \mathbb{R}^d$
 
-1. Set $p_i = \lVert d_i\rVert^2 / \lVert D\rVert_F^2$ for $i = 1, \ldots, n$
-2. **For** $t = 0, 1, 2, \ldots$ do:
-3. $\qquad$ sample $i_t \in \{1, \ldots, n\}$ with probability $p_{i_t}$
-4. $\qquad w_{t+1} = w_t \;+\; \dfrac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t}$
+Set $p_i = \lVert d_i\rVert^2 / \lVert D\rVert_F^2$ for $i = 1, \ldots, n$
+**For** $t = 0, 1, 2, \ldots$ do:
+$\qquad$ sample $i_t \in \{1, \ldots, n\}$ with probability $p_{i_t}$
+$\qquad w_{t+1} = w_t \;+\; \dfrac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t}$
 
 </div>
 
@@ -2041,7 +2041,15 @@ $$\underbrace{\frac{\sigma_{\min}^2(D)}{n\,\max_i\lVert d_i\rVert^2}}_{\text{SGD
 
 Note that we are only comparing upper-bounds on performance. Nonetheless, the comparison is meaningful. The difference between the two bound is whether the *worst* or the *average* squared row norm appears in the denominator. The two coincide when all row norms are equal; the Kaczmarz rate dominates by the row-norm spread $\max_i\lVert d_i\rVert^2 / \overline{\lVert d\rVert^2}$, which can be arbitrarily large when the rows are scaled very differently. Behind the gain is a small algorithmic shift: Kaczmarz draws rows with norm-weighted probability rather than uniformly, and uses the row-adaptive stepsize $1/\lVert d_{i_t}\rVert^2$ rather than the global $1/\max_i\lVert d_i\rVert^2$. Together these two adjustments swap $\max_i\lVert d_i\rVert^2$ for $\overline{\lVert d\rVert^2}$ in the per-step contraction.
 
-**Numerical illustration.** The figure below compares uniform-sampling SGD with stepsize $\gamma = 1/\max_i\lVert d_i\rVert^2$ and randomized Kaczmarz on a synthetic interpolation least-squares instance with $n=500$, $d=50$, and rows $d_i \sim \mathcal{N}(0, I_d)$ rescaled so that the row norms span a multiplicative range of $8$. The right-hand side is $y = D w_\ast$ for a random unit vector $w_\ast$, and both algorithms start from $w_0 = 0$. Solid curves are the median of $\lVert w_t - w_\ast\rVert^2$ over $25$ trials and the shaded ribbon is the corresponding $10$--$90\%$ interquantile band; dashed reference lines have the predicted exponential slopes $\mu/R^2$ and $\sigma_{\min}^2(D)/\lVert D\rVert_F^2$. Both algorithms exhibit linear convergence, but the Kaczmarz contraction is roughly $6\times$ steeper, exactly matching the row-norm spread $\max_i\lVert d_i\rVert^2/\overline{\lVert d\rVert^2}$ predicted above.
+**Remark (why not just solve a smaller linear subsystem?).** A natural alternative to Kaczmarz is to pick a small subset of $m \geq d$ rows of $D$ and solve the reduced system $D_S w = y_S$ directly. Deterministic row selection is delicate: an arbitrary $d$-row submatrix can have a much smaller minimum singular value than $D$ itself, and finding a *well-conditioned* subset is hard in general (the column-subset-selection problem). The randomized version --- random row sampling --- leads to a different class of techniques called **sketching**. The two techniques are largely complementary. 
+
+**Remark (why not rescale rows and run standard SGD?).** Another tempting reduction is to renormalize each equation, $\tilde d_i := d_i/\lVert d_i\rVert$ and $\tilde y_i := y_i/\lVert d_i\rVert$, so that the rescaled system $\tilde D w = \tilde y$ has unit-norm rows. The rescaling also changes the stepsize prescribed by Theorem 8.1: the smallest valid $R^2$ is now $\tilde R^2 = \max_i\lVert\tilde d_i\rVert^2 = 1$, so the optimal stepsize on the rescaled problem is $\gamma = 1/\tilde R^2 = 1$ rather than the smaller $1/\max_i\lVert d_i\rVert^2$ used on the original. With this prescribed stepsize, standard SGD on $\tilde D w = \tilde y$ produces the update
+
+$$w_{t+1} = w_t + (\tilde y_{i_t} - \langle \tilde d_{i_t}, w_t\rangle)\,\tilde d_{i_t} \;=\; w_t + \frac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t},$$
+
+which is the Kaczmarz projection step. Indeed, this is exactly Algorithm 2 applied to the rescaled system $(\tilde D,\tilde y)$, since the norm-weighted distribution $p_i = \lVert\tilde d_i\rVert^2/\lVert\tilde D\rVert_F^2$ collapses to uniform when all rows have unit norm. So the question is *which system one applies the projection update to*: the original $(D,y)$, where the norm-weighted distribution favors long rows, or the rescaled $(\tilde D,\tilde y)$, where every row is sampled equally. The two are different algorithms, and Theorem 8.5 gives correspondingly different rates: $\sigma_{\min}^2(D)/\lVert D\rVert_F^2$ on the original, $\sigma_{\min}^2(\tilde D)/n$ on the rescaled. The rescaling can either improve or degrade $\sigma_{\min}$, so neither variant dominates the other in general.
+
+**Numerical illustration.** The figure below compares the three algorithms above --- uniform-sampling SGD on $D$ with stepsize $\gamma = 1/\max_i\lVert d_i\rVert^2$, uniform-sampling SGD on the row-rescaled system $\tilde D, \tilde y$ with stepsize $\gamma = 1$, and randomized Kaczmarz --- on a synthetic interpolation least-squares instance with $n=500$, $d=50$, and rows $d_i \sim \mathcal{N}(0, I_d)$ rescaled so that the row norms span a multiplicative range of $8$. The right-hand side is $y = D w_\ast$ for a random unit vector $w_\ast$, and all three algorithms start from $w_0 = 0$. Solid curves are the median of $\lVert w_t - w_\ast\rVert^2$ over $25$ trials and the shaded ribbons are the corresponding $10$--$90\%$ interquantile bands. All three curves exhibit linear convergence, with Kaczmarz roughly $6\times$ steeper than the original-scale SGD --- exactly the row-norm spread $\max_i\lVert d_i\rVert^2/\overline{\lVert d\rVert^2}$. On this isotropic example rescaled SGD is in fact slightly faster still, since the rescaling here improves the conditioning of the gram matrix; on other instances the ranking of the green and blue curves can flip.
 
 ![Randomized Kaczmarz vs uniform-sampling SGD on an interpolation least-squares problem](figures/kaczmarz_vs_sgd.png)
 
@@ -2427,6 +2435,8 @@ The notes combine ideas that appear in different communities; the table below ma
 - [SV09] Strohmer, T., and Vershynin, R. (2009). *A randomized Kaczmarz algorithm with exponential convergence*. Journal of Fourier Analysis and Applications, 15(2):262--278.
 - [NSW16] Needell, D., Srebro, N., and Ward, R. (2016). *Stochastic gradient descent, weighted sampling, and the randomized Kaczmarz algorithm*. Mathematical Programming, 155(1):549--573.
 - [GR15] Gower, R. M., and Richtárik, P. (2015). *Randomized iterative methods for linear systems*. SIAM Journal on Matrix Analysis and Applications, 36(4):1660--1690.
+- [Mah11] Mahoney, M. W. (2011). *Randomized algorithms for matrices and data*. Foundations and Trends in Machine Learning, 3(2):123--224.
+- [Woo14] Woodruff, D. P. (2014). *Sketching as a tool for numerical linear algebra*. Foundations and Trends in Theoretical Computer Science, 10(1--2):1--157.
 - [SS95] Saad, D., and Solla, S. A. (1995). *Exact solution for on-line learning in multilayer neural networks*. Physical Review Letters, 74(21):4337--4340.
 - [BAGJ22] Ben Arous, G., Gheissari, R., and Jagannath, A. (2022). *High-dimensional limit theorems for SGD: Effective dynamics and critical scaling*. Communications on Pure and Applied Mathematics, to appear. arXiv:2206.04030.
 - [Paq+22a] Paquette, C., Paquette, E., Adlam, B., and Pennington, J. (2022). *Homogenization of SGD in high-dimensions: exact dynamics and generalization properties*. arXiv:2205.07069.
