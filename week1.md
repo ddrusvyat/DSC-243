@@ -1618,6 +1618,8 @@ $$
 C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\,\Sigma. \tag{31}
 $$
 
+We next show that the sequence $\{C_t\}$ is monotone in the PSD order. To see this, subtracting consecutive copies of $(31)$ gives $C_{t+1} - C_t = \mathcal{M}(C_t - C_{t-1})$. Therefore, by induction starting from $C_1 - C_0 = \gamma^2\Sigma \succeq 0$ and using that $\mathcal{M}$ preserves PSD order, every consecutive difference is PSD and therefore $C_t \preceq C_{t+1}$, as claimed.
+
 Taking traces in $(31)$ and using the identity $\operatorname{Tr}((xx^\top)\,C\,(xx^\top)) = (x^\top Cx)\,\lVert x\rVert^2$ to simplify the resulting fourth-order term gives
 
 $$
@@ -1636,7 +1638,7 @@ $$
 \operatorname{Tr}(C_t) \;=\; \mathbb{E}\lVert v_t\rVert^2 \;\leq\; \frac{\gamma\,\operatorname{Tr}(\Sigma)}{\mu} \qquad\text{for all }t\ge 0.
 $$
 
-Since $\mathcal{M}$ maps positive semidefinite matrices to positive semidefinite matrices, $C_t$ lies in the compact set of PSD matrices with trace bounded by $\gamma\operatorname{Tr}(\Sigma)/\mu$. Moreover, the sequence $\{C_t\}$ is monotone in the PSD order: subtracting consecutive copies of $(31)$ gives $C_{t+1} - C_t = \mathcal{M}(C_t - C_{t-1})$, so by induction starting from $C_1 - C_0 = \gamma^2\Sigma \succeq 0$ and using that $\mathcal{M}$ preserves PSD order, every consecutive difference is PSD and $C_t \preceq C_{t+1}$. In particular $\operatorname{Tr}(C_t)$ is nondecreasing. Therefore the sequence admits a limit point $C_\infty \succeq 0$, and taking the trace and the limit in $(31)$ we deduce that $C_{\infty}$ satisfies
+Taking into account that $C_t$ is nondecreasing in PSD order, we see that $C_t$ lies in the compact set of PSD matrices with trace bounded by $\gamma\operatorname{Tr}(\Sigma)/\mu$.  Therefore the sequence admits a limit point $C_\infty \succeq 0$, and taking the trace and the limit in $(31)$ we deduce that $C_{\infty}$ satisfies
 
 $$
 \operatorname{Tr}(C_\infty) \;=\; \operatorname{Tr}(\mathcal{M}(C_\infty)) + \gamma^2\operatorname{Tr}(\Sigma).
@@ -1958,8 +1960,96 @@ Below this threshold the algorithm is **statistically limited** and any further 
 
 Theorem 8.1 is the classical last-iterate bound for constant-stepsize SGD on least squares and dates back to [RM51,Pol87,KY03]; the streamlined proof via the bias--variance decomposition and a Lyapunov equation for the stationary noise covariance is standard and appears, with variants, in e.g. [BM11, BM13, DB15, JKK+18]. Theorem 8.2 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis. The mini-batch generalization above and the resulting critical-batch-size analysis are most commonly associated with the empirical study of Shallue, Lee, Antognini, Sohl-Dickstein, Frostig, and Dahl [SLAS+19] and the noise-scale analysis of McCandlish, Kaplan, Amodei, and the OpenAI Dota Team [MKA+18].
 
+---
+
+### Interpolation and the randomized Kaczmarz algorithm
+
+Theorems 8.1 and 8.2 expressed the excess risk as a bias plus a noise floor, with the noise floor governed by the residual $y - \langle w_\ast, x\rangle$ at the minimizer. **Interpolation** is the limiting regime in which this residual vanishes:
+
+$$y \;=\; \langle w_\ast, x\rangle \qquad \text{almost surely,}$$
+
+equivalently $\Sigma = \mathbb{E}[(y - \langle w_\ast, x\rangle)^2 xx^\top] = 0$ and $\sigma_{\mathrm{MLE}}^2 = 0$, so the noise floors in $(27)$ and $(32)$ disappear. Theorem 8.1 then specializes to a clean linear-rate statement.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Corollary 8.4 (SGD on interpolation problems).** *Suppose $y = \langle w_\ast, x\rangle$ almost surely, $H \succeq \mu I$ for some $\mu > 0$, and assumption $(25)$ holds. Then for any $0 < \gamma < 1/R^2$, the constant-stepsize iterates $(26)$ satisfy*
+
+$$\mathbb{E}[L(w_t)] - L(w_\ast) \;\leq\; e^{-\gamma\mu t}\,R^2\,\lVert w_0 - w_\ast\rVert^2.$$
+
+</div>
+
+This is a sharp departure from the noisy regime: in interpolation, *constant-stepsize* SGD --- with no averaging, no decreasing stepsize, and no batch growth --- already achieves linear convergence, contracting at the per-step rate $\gamma\mu$, optimized to $\mu/R^2$ at $\gamma = 1/R^2$.
+
+A canonical example is the **discrete consistent linear system**: given $D \in \mathbb{R}^{n\times d}$ with rows $d_1,\ldots,d_n$ and $y \in \mathbb{R}^n$ satisfying $y = D w_\ast$ for some $w_\ast$, Corollary 8.4 governs the constant-stepsize SGD iteration in which $(x,y) = (d_i, y_i)$ is sampled uniformly from $\{1,\ldots,n\}$. In this setup $H = D^\top D / n$, $\mu = \sigma_{\min}^2(D)/n$, and the smallest valid $R^2$ in $(25)$ is $\max_i \lVert d_i\rVert^2$, so the optimal stepsize $\gamma = 1/R^2$ yields the SGD rate $\sigma_{\min}^2(D)/(n\,\max_i\lVert d_i\rVert^2)$.
+
+A natural question is whether one can do better by exploiting the row geometry. The classical **randomized Kaczmarz** algorithm of Strohmer and Vershynin [SV09] does exactly this: it samples rows with norm-weighted probability and uses a row-adaptive stepsize that performs an exact orthogonal projection at each step.
+
+<div style="background-color: #f8f8f8; border: 1px solid #ccc; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px; font-size: 0.97em;" markdown="1">
+
+**Algorithm 2** (Randomized Kaczmarz)
+
+**Input:** $D \in \mathbb{R}^{n\times d}$ with nonzero rows $d_1, \ldots, d_n$, $\;y \in \mathbb{R}^n$, $\;w_0 \in \mathbb{R}^d$
+
+1. Set $p_i = \lVert d_i\rVert^2 / \lVert D\rVert_F^2$ for $i = 1, \ldots, n$
+2. **For** $t = 0, 1, 2, \ldots$ do:
+3. $\qquad$ sample $i_t \in \{1, \ldots, n\}$ with probability $p_{i_t}$
+4. $\qquad w_{t+1} = w_t \;+\; \dfrac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t}$
+
+</div>
+
+Each update can be geometrically understood as an orthogonal projection: $w_{t+1}$ is the closest point to $w_t$ in the affine hyperplane $\{w \in \mathbb{R}^d : \langle d_{i_t}, w\rangle = y_{i_t}\}$.
+
+To make the geometry concrete, consider the 2D consistent system with $n=5$ unit-norm rows $d_1,\ldots,d_5 \in \mathbb{R}^2$ and right-hand side $y_i = \langle d_i, w_\ast\rangle$, so that the lines $\ell_i = \{w \in \mathbb{R}^2 : \langle d_i, w\rangle = y_i\}$ all pass through the common point $w_\ast$. Starting from a fixed $w_0$, each Kaczmarz step picks one of the five lines (uniformly, since $\lVert d_i\rVert = 1$) and replaces $w_t$ by its orthogonal projection onto that line. The animation below shows the first $14$ iterations: at each step the chosen line $\ell_{i_t}$ is drawn in red and the dashed arrow traces the projection from $w_t$ to $w_{t+1}$.
+
+![Randomized Kaczmarz on a 2D consistent linear system](figures/kaczmarz_2d.gif)
+
+ The following theorem captures the classical convergence guarantee.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 8.5 (Strohmer-Vershynin).** *Assume $D \in \mathbb{R}^{n\times d}$ has linearly independent columns and that $y = D w_\ast$. The randomized Kaczmarz iterates of Algorithm 2 satisfy*
+
+$$\mathbb{E}\,\lVert w_t - w_\ast\rVert^2 \;\leq\; \Big(1 - \frac{\sigma_{\min}^2(D)}{\lVert D\rVert_F^2}\Big)^t\,\lVert w_0 - w_\ast\rVert^2.$$
+
+</div>
+
+*Proof.* Subtract $w_\ast$ from both sides of the Kaczmarz update and use the equality $y_{i_t} = \langle d_{i_t}, w_\ast\rangle$ to rewrite the residual as $y_{i_t} - \langle d_{i_t}, w_t\rangle = -\langle d_{i_t},\,w_t - w_\ast\rangle$, giving
+
+$$w_{t+1} - w_\ast \;=\; (w_t - w_\ast) \;-\; \frac{\langle d_{i_t},\,w_t - w_\ast\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t}.$$
+
+Squaring and expanding yields the estimate
+
+$$\lVert w_{t+1} - w_\ast\rVert^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; 2\,\frac{\langle d_{i_t},\,w_t - w_\ast\rangle^2}{\lVert d_{i_t}\rVert^2} \;+\; \frac{\langle d_{i_t},\,w_t - w_\ast\rangle^2}{\lVert d_{i_t}\rVert^4}\,\lVert d_{i_t}\rVert^2,$$
+
+Combining the cross term and the last term, we therefore arrive at the expression
+
+$$\lVert w_{t+1} - w_\ast\rVert^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{\langle d_{i_t},\, w_t - w_\ast\rangle^2}{\lVert d_{i_t}\rVert^2}.$$
+
+Taking conditional expectation over $i_t \sim p$, we obtain
+
+$$\mathbb{E}\bigl[\lVert w_{t+1}-w_\ast\rVert^2 \,\big|\, w_t\bigr] \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{1}{\lVert D\rVert_F^2}\sum_{i=1}^n \langle d_i,\,w_t - w_\ast\rangle^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{\lVert D(w_t - w_\ast)\rVert^2}{\lVert D\rVert_F^2}.$$
+
+Linear independence of the columns of $D$ yields $\lVert Du\rVert^2 \geq \sigma_{\min}^2(D)\,\lVert u\rVert^2$ for every $u \in \mathbb{R}^d$, so
+
+$$\mathbb{E}\bigl[\lVert w_{t+1}-w_\ast\rVert^2 \,\big|\, w_t\bigr] \;\leq\; \Big(1 - \frac{\sigma_{\min}^2(D)}{\lVert D\rVert_F^2}\Big)\,\lVert w_t - w_\ast\rVert^2.$$
+
+Iterating this one-step contraction from $t=0$ produces the claim. <span style="float: right;">$\square$</span>
+
+**Comparison with SGD.** Writing $\overline{\lVert d\rVert^2} := \tfrac{1}{n}\sum_i\lVert d_i\rVert^2$ for the average squared row norm, the Kaczmarz rate of Theorem 8.5 reads $\sigma_{\min}^2(D)/\lVert D\rVert_F^2 = \sigma_{\min}^2(D)/(n\,\overline{\lVert d\rVert^2})$. Lining this up with the SGD rate derived above, we obtain the comparison
+
+$$\underbrace{\frac{\sigma_{\min}^2(D)}{n\,\max_i\lVert d_i\rVert^2}}_{\text{SGD (uniform sampling)}} \;\leq\; \underbrace{\frac{\sigma_{\min}^2(D)}{n\,\overline{\lVert d\rVert^2}}}_{\text{Kaczmarz}},$$
+
+Note that we are only comparing upper-bounds on performance. Nonetheless, the comparison is meaningful. The difference between the two bound is whether the *worst* or the *average* squared row norm appears in the denominator. The two coincide when all row norms are equal; the Kaczmarz rate dominates by the row-norm spread $\max_i\lVert d_i\rVert^2 / \overline{\lVert d\rVert^2}$, which can be arbitrarily large when the rows are scaled very differently. Behind the gain is a small algorithmic shift: Kaczmarz draws rows with norm-weighted probability rather than uniformly, and uses the row-adaptive stepsize $1/\lVert d_{i_t}\rVert^2$ rather than the global $1/\max_i\lVert d_i\rVert^2$. Together these two adjustments swap $\max_i\lVert d_i\rVert^2$ for $\overline{\lVert d\rVert^2}$ in the per-step contraction.
+
+**Numerical illustration.** The figure below compares uniform-sampling SGD with stepsize $\gamma = 1/\max_i\lVert d_i\rVert^2$ and randomized Kaczmarz on a synthetic interpolation least-squares instance with $n=500$, $d=50$, and rows $d_i \sim \mathcal{N}(0, I_d)$ rescaled so that the row norms span a multiplicative range of $8$. The right-hand side is $y = D w_\ast$ for a random unit vector $w_\ast$, and both algorithms start from $w_0 = 0$. Solid curves are the median of $\lVert w_t - w_\ast\rVert^2$ over $25$ trials and the shaded ribbon is the corresponding $10$--$90\%$ interquantile band; dashed reference lines have the predicted exponential slopes $\mu/R^2$ and $\sigma_{\min}^2(D)/\lVert D\rVert_F^2$. Both algorithms exhibit linear convergence, but the Kaczmarz contraction is roughly $6\times$ steeper, exactly matching the row-norm spread $\max_i\lVert d_i\rVert^2/\overline{\lVert d\rVert^2}$ predicted above.
+
+![Randomized Kaczmarz vs uniform-sampling SGD on an interpolation least-squares problem](figures/kaczmarz_vs_sgd.png)
+
+The Kaczmarz method itself, in its deterministic cyclic form, dates back to Kaczmarz [Kac37]. The randomized variant of Algorithm 2 and the geometric rate of Theorem 8.5 are due to Strohmer and Vershynin [SV09]; the connection between Kaczmarz and importance-sampled SGD on interpolation problems was articulated by Needell, Srebro, and Ward [NSW16], and the broader family of randomized iterative methods (block, sketch-and-project, and accelerated variants) is unified by Gower and Richtárik [GR15].
 
 ---
+
+
 
 ## 9. High-Dimensional Limits of Streaming SGD {#sec-9}
 
@@ -2280,6 +2370,7 @@ The results discussed in these notes are largely classical in numerical optimiza
 - **Marchenko--Pastur asymptotics.** The limiting spectral law is due to [MP67], with modern expositions in [BS10, Ver18].
 - **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behaviour of this density determines the asymptotic exponent.
 - **Stochastic gradient descent for least squares.** The constant-stepsize, tail-averaged SGD analysis in Section 8 follows the Markov-chain/covariance approach of [JKK+18], which establishes minimax optimality of tail-averaged SGD for the linear regression problem.
+- **Interpolation and randomized Kaczmarz.** The randomized Kaczmarz algorithm of Theorem 8.5 is due to Strohmer and Vershynin [SV09], building on the classical cyclic method of Kaczmarz [Kac37]; the connection between Kaczmarz and importance-sampled SGD on interpolation least squares was articulated by Needell, Srebro, and Ward [NSW16], and the broader family of randomized iterative methods is unified by Gower and Richtárik [GR15].
 - **High-dimensional limits of streaming SGD.** The autonomous-ODE reduction in §9.1--9.2 is an old idea in the physics literature on two-layer neural networks going back to Saad and Solla [SS95], and has been given a rigorous and general formulation by Ben Arous, Gheissari, and Jagannath [BAGJ22]. The homogenized-SGD SDE and the Volterra risk curve of §9.3--9.5 are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a] and were further developed in [Paq+22b, CP23]; the lecture notes [Paq23] provide the expository synthesis we have followed.
 
 <!--
@@ -2332,6 +2423,10 @@ The notes combine ideas that appear in different communities; the table below ma
 - [BM13] Bach, F., and Moulines, E. (2013). *Non-strongly-convex smooth stochastic approximation with convergence rate $O(1/n)$*. NeurIPS 2013. arXiv:1306.2119.
 - [DB15] Défossez, A., and Bach, F. (2015). *Averaged least-mean-squares: bias-variance trade-offs and optimal sampling distributions*. AISTATS 2015. arXiv:1412.6603.
 - [JKK+18] Jain, P., Kakade, S. M., Kidambi, R., Netrapalli, P., Pillutla, V. K., and Sidford, A. (2018). *A Markov Chain Theory Approach to Characterizing the Minimax Optimality of Stochastic Gradient Descent (for Least Squares)*. arXiv:1710.09430.
+- [Kac37] Kaczmarz, S. (1937). *Angenäherte Auflösung von Systemen linearer Gleichungen*. Bulletin International de l'Académie Polonaise des Sciences et des Lettres A, 35:355--357.
+- [SV09] Strohmer, T., and Vershynin, R. (2009). *A randomized Kaczmarz algorithm with exponential convergence*. Journal of Fourier Analysis and Applications, 15(2):262--278.
+- [NSW16] Needell, D., Srebro, N., and Ward, R. (2016). *Stochastic gradient descent, weighted sampling, and the randomized Kaczmarz algorithm*. Mathematical Programming, 155(1):549--573.
+- [GR15] Gower, R. M., and Richtárik, P. (2015). *Randomized iterative methods for linear systems*. SIAM Journal on Matrix Analysis and Applications, 36(4):1660--1690.
 - [SS95] Saad, D., and Solla, S. A. (1995). *Exact solution for on-line learning in multilayer neural networks*. Physical Review Letters, 74(21):4337--4340.
 - [BAGJ22] Ben Arous, G., Gheissari, R., and Jagannath, A. (2022). *High-dimensional limit theorems for SGD: Effective dynamics and critical scaling*. Communications on Pure and Applied Mathematics, to appear. arXiv:2206.04030.
 - [Paq+22a] Paquette, C., Paquette, E., Adlam, B., and Pennington, J. (2022). *Homogenization of SGD in high-dimensions: exact dynamics and generalization properties*. arXiv:2205.07069.
