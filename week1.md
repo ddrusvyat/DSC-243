@@ -1618,7 +1618,7 @@ $$
 C_t \;=\; \mathcal{M}(C_{t-1}) + \gamma^2\,\Sigma. \tag{31}
 $$
 
-We next show that the sequence $\{C_t\}$ is monotone in the PSD order. To see this, subtracting consecutive copies of $(31)$ gives $C_{t+1} - C_t = \mathcal{M}(C_t - C_{t-1})$. Therefore, by induction starting from $C_1 - C_0 = \gamma^2\Sigma \succeq 0$ and using that $\mathcal{M}$ preserves PSD order, every consecutive difference is PSD and therefore $C_t \preceq C_{t+1}$, as claimed.
+We next show that the sequence $\lbrace C_t\rbrace$ is monotone in the PSD order. To see this, subtracting consecutive copies of $(31)$ gives $C_{t+1} - C_t = \mathcal{M}(C_t - C_{t-1})$. Therefore, by induction starting from $C_1 - C_0 = \gamma^2\Sigma \succeq 0$ and using that $\mathcal{M}$ preserves PSD order, every consecutive difference is PSD and therefore $C_t \preceq C_{t+1}$, as claimed.
 
 Taking traces in $(31)$ and using the identity $\operatorname{Tr}((xx^\top)\,C\,(xx^\top)) = (x^\top Cx)\,\lVert x\rVert^2$ to simplify the resulting fourth-order term gives
 
@@ -1670,7 +1670,7 @@ Combining the bias and variance bounds yields $(27)$. <span style="float: right;
 
 The bound $(27)$ decomposes the excess risk into a **bias** term that contracts at the geometric rate $e^{-\gamma\mu t}$---exactly the rate GD with stepsize $\gamma$ would achieve on a $\mu$-strongly-convex quadratic---and a **noise floor** $\gamma\operatorname{Tr}(\Sigma)/(2-\gamma R^2)$ that is independent of $t$ and proportional to the stepsize. A smaller $\gamma$ lowers the floor but slows the contraction, while a larger $\gamma$ contracts faster to a correspondingly higher floor: a classical bias--variance trade-off that no single constant stepsize can avoid.
 
-**Numerical illustration.** The figure below makes the two phases of $(27)$ visible on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, for which $H = I$, $\mu = 1$, $R^2 = d+2$, and $\operatorname{Tr}(\Sigma) = d\sigma^2$. Taking $d=20$, $\sigma=0.3$, $w_0=0$, and stepsizes $\gamma R^2 \in \{0.2,0.5,0.8\}$, we plot the median over $80$ trials of the single-iterate excess risk $L(w_t)-L(w_\ast)$ together with its $10$--$90\%$ interquantile band, and the asymptotic noise floor $\gamma\operatorname{Tr}(\Sigma)/(2(2-\gamma R^2))$ (dotted), which is the stationary excess risk of SGD on this model and which the bound $(27)$ tracks up to a factor of two. Each run contracts exponentially at rate $e^{-\gamma\mu t}$ until it reaches the stepsize-dependent floor, around which it then oscillates; smaller $\gamma$ gives a lower floor but a slower approach.
+**Numerical illustration.** The figure below makes the two phases of $(27)$ visible on the well-specified isotropic Gaussian model $x \sim \mathcal{N}(0, I_d)$, $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2)$, for which $H = I$, $\mu = 1$, $R^2 = d+2$, and $\operatorname{Tr}(\Sigma) = d\sigma^2$. Taking $d=20$, $\sigma=0.3$, $w_0=0$, and stepsizes $\gamma R^2 \in \lbrace 0.2,0.5,0.8\rbrace$, we plot the median over $80$ trials of the single-iterate excess risk $L(w_t)-L(w_\ast)$ together with its $10$--$90\%$ interquantile band, and the asymptotic noise floor $\gamma\operatorname{Tr}(\Sigma)/(2(2-\gamma R^2))$ (dotted), which is the stationary excess risk of SGD on this model and which the bound $(27)$ tracks up to a factor of two. Each run contracts exponentially at rate $e^{-\gamma\mu t}$ until it reaches the stepsize-dependent floor, around which it then oscillates; smaller $\gamma$ gives a lower floor but a slower approach.
 
 ![Last-iterate constant-stepsize SGD: exponential contraction to a stepsize-dependent noise floor](figures/sgd_last_iterate.png)
 
@@ -1764,7 +1764,7 @@ $$
 \frac{2\,\operatorname{Tr}(C_\infty)}{\gamma\,(T-t)}. \tag{35}
 $$
 
-**Bounding the stationary covariance.** Recall that the sequence $\{C_t\}$ is monotone is PSD order. Combined with the trace bound $\operatorname{Tr}(C_t) \le \gamma\operatorname{Tr}(\Sigma)/\mu$ from Theorem 8.1, this yields full convergence in $\mathbb{R}^{d\times d}$ to some $C_{\infty}$. To see this, for any $u \in \mathbb{R}^d$, the scalar $u^\top C_t u$ is nondecreasing and bounded, hence convergent. The polarizatin identity then extends this to convergence of every bilinear form $u^\top C_t v$, and taking $u, v$ to be standard basis vectors shows that $C_t$ converges entrywise to a limit $C_\infty \succeq 0$. Continuity of the linear map $\mathcal{M}$ then lets us pass to the limit in $(31)$ to obtain the matrix fixed-point 
+**Bounding the stationary covariance.** Recall that the sequence $\lbrace C_t\rbrace$ is monotone is PSD order. Combined with the trace bound $\operatorname{Tr}(C_t) \le \gamma\operatorname{Tr}(\Sigma)/\mu$ from Theorem 8.1, this yields full convergence in $\mathbb{R}^{d\times d}$ to some $C_{\infty}$. To see this, for any $u \in \mathbb{R}^d$, the scalar $u^\top C_t u$ is nondecreasing and bounded, hence convergent. The polarizatin identity then extends this to convergence of every bilinear form $u^\top C_t v$, and taking $u, v$ to be standard basis vectors shows that $C_t$ converges entrywise to a limit $C_\infty \succeq 0$. Continuity of the linear map $\mathcal{M}$ then lets us pass to the limit in $(31)$ to obtain the matrix fixed-point 
 
 $$C_\infty = \mathcal{M}(C_\infty) + \gamma^2\Sigma,$$ 
 
@@ -1954,7 +1954,7 @@ $$
 
 Below this threshold the algorithm is **statistically limited** and any further reduction in error requires more samples; above it the algorithm is **optimization limited**, because too few updates have been spent removing the bias.
 
-**Numerical illustration.** The figure below illustrates both regimes on the same well-specified isotropic Gaussian model used in Theorems 8.1 and 8.2, with $d=20$ and $\sigma=0.3$. For each batch size $B \in \{1,2,4,\ldots,512\}$ we run constant-stepsize mini-batch SGD with burn-in $t=T/2$ and report the median, with a $10$--$90\%$ interquantile band, of the tail-averaged excess risk $L(\overline w_{T/2:T}^{(B)})-L(w_\ast)$ over $45$ trials. The left panel fixes the number of updates at $T=250$ and shows the fixed-update regime: the variance decays like $1/B$ until the curve flattens at the deterministic bias level around the predicted $B_{\mathrm{crit}}\approx 41$. The right panel fixes the total sample budget at $N=8192$ and shows the fixed-sample regime: the risk is essentially flat for moderate $B$, since the variance depends only on $N$, but rises sharply once $B$ is so large that $T=N/B$ is too small to absorb the bias.
+**Numerical illustration.** The figure below illustrates both regimes on the same well-specified isotropic Gaussian model used in Theorems 8.1 and 8.2, with $d=20$ and $\sigma=0.3$. For each batch size $B \in \lbrace 1,2,4,\ldots,512\rbrace$ we run constant-stepsize mini-batch SGD with burn-in $t=T/2$ and report the median, with a $10$--$90\%$ interquantile band, of the tail-averaged excess risk $L(\overline w_{T/2:T}^{(B)})-L(w_\ast)$ over $45$ trials. The left panel fixes the number of updates at $T=250$ and shows the fixed-update regime: the variance decays like $1/B$ until the curve flattens at the deterministic bias level around the predicted $B_{\mathrm{crit}}\approx 41$. The right panel fixes the total sample budget at $N=8192$ and shows the fixed-sample regime: the risk is essentially flat for moderate $B$, since the variance depends only on $N$, but rises sharply once $B$ is so large that $T=N/B$ is too small to absorb the bias.
 
 ![Mini-batch tail-averaged SGD: batch saturation and critical batch size](figures/sgd_minibatch_saturation.png)
 
@@ -1980,7 +1980,7 @@ $$\mathbb{E}[L(w_t)] - L(w_\ast) \;\leq\; e^{-\gamma\mu t}\,R^2\,\lVert w_0 - w_
 
 This is a sharp departure from the noisy regime: in interpolation, *constant-stepsize* SGD --- with no averaging, no decreasing stepsize, and no batch growth --- already achieves linear convergence, contracting at the per-step rate $\gamma\mu$, optimized to $\mu/R^2$ at $\gamma = 1/R^2$.
 
-A canonical example is the **discrete consistent linear system**: given $D \in \mathbb{R}^{n\times d}$ with rows $d_1,\ldots,d_n$ and $y \in \mathbb{R}^n$ satisfying $y = D w_\ast$ for some $w_\ast$, Corollary 8.4 governs the constant-stepsize SGD iteration in which $(x,y) = (d_i, y_i)$ is sampled uniformly from $\{1,\ldots,n\}$. In this setup $H = D^\top D / n$, $\mu = \sigma_{\min}^2(D)/n$, and the smallest valid $R^2$ in $(25)$ is $\max_i \lVert d_i\rVert^2$, so the optimal stepsize $\gamma = 1/R^2$ yields the SGD rate $\sigma_{\min}^2(D)/(n\,\max_i\lVert d_i\rVert^2)$.
+A canonical example is the **discrete consistent linear system**: given $D \in \mathbb{R}^{n\times d}$ with rows $d_1,\ldots,d_n$ and $y \in \mathbb{R}^n$ satisfying $y = D w_\ast$ for some $w_\ast$, Corollary 8.4 governs the constant-stepsize SGD iteration in which $(x,y) = (d_i, y_i)$ is sampled uniformly from $\lbrace 1,\ldots,n\rbrace$. In this setup $H = D^\top D / n$, $\mu = \sigma_{\min}^2(D)/n$, and the smallest valid $R^2$ in $(25)$ is $\max_i \lVert d_i\rVert^2$, so the optimal stepsize $\gamma = 1/R^2$ yields the SGD rate $\sigma_{\min}^2(D)/(n\,\max_i\lVert d_i\rVert^2)$.
 
 A natural question is whether one can do better by exploiting the row geometry. The classical **randomized Kaczmarz** algorithm of Strohmer and Vershynin [SV09] does exactly this: it samples rows with norm-weighted probability and uses a row-adaptive stepsize that performs an exact orthogonal projection at each step.
 
@@ -1992,14 +1992,12 @@ A natural question is whether one can do better by exploiting the row geometry. 
 
 Set $p_i = \lVert d_i\rVert^2 / \lVert D\rVert_F^2$ for $i = 1, \ldots, n$
 **For** $t = 0, 1, 2, \ldots$ do:
-$\qquad$ sample $i_t \in \{1, \ldots, n\}$ with probability $p_{i_t}$
+$\qquad$ sample $i_t \in \lbrace 1, \ldots, n\rbrace$ with probability $p_{i_t}$
 $\qquad w_{t+1} = w_t \;+\; \dfrac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t}$
 
 </div>
 
-Each update can be geometrically understood as an orthogonal projection: $w_{t+1}$ is the closest point to $w_t$ in the affine hyperplane $\{w \in \mathbb{R}^d : \langle d_{i_t}, w\rangle = y_{i_t}\}$.
-
-To make the geometry concrete, consider the 2D consistent system with $n=5$ unit-norm rows $d_1,\ldots,d_5 \in \mathbb{R}^2$ and right-hand side $y_i = \langle d_i, w_\ast\rangle$, so that the lines $\ell_i = \{w \in \mathbb{R}^2 : \langle d_i, w\rangle = y_i\}$ all pass through the common point $w_\ast$. Starting from a fixed $w_0$, each Kaczmarz step picks one of the five lines (uniformly, since $\lVert d_i\rVert = 1$) and replaces $w_t$ by its orthogonal projection onto that line. The animation below shows the first $14$ iterations: at each step the chosen line $\ell_{i_t}$ is drawn in red and the dashed arrow traces the projection from $w_t$ to $w_{t+1}$.
+Each update can be geometrically understood as an orthogonal projection: $w_{t+1}$ is the closest point to $w_t$ in the affine hyperplane $\lbrace w \in \mathbb{R}^d : \langle d_{i_t}, w\rangle = y_{i_t}\rbrace$. To make the geometry concrete, consider the 2D consistent system with $n=5$ unit-norm rows $d_1,\ldots,d_5 \in \mathbb{R}^2$ and right-hand side $y_i = \langle d_i, w_\ast\rangle$, so that the lines $\ell_i = \lbrace w \in \mathbb{R}^2 : \langle d_i, w\rangle = y_i\rbrace$ all pass through the common point $w_\ast$. Starting from a fixed $w_0$, each Kaczmarz step picks one of the five lines (uniformly, since $\lVert d_i\rVert = 1$) and replaces $w_t$ by its orthogonal projection onto that line. The animation below shows the first $14$ iterations: at each step the chosen line $\ell_{i_t}$ is drawn in red and the dashed arrow traces the projection from $w_t$ to $w_{t+1}$.
 
 ![Randomized Kaczmarz on a 2D consistent linear system](figures/kaczmarz_2d.gif)
 
@@ -2213,7 +2211,7 @@ $$
 
 which is the integrated form of the ODE $(49)$.
 
-It remains to bound the discrete-versus-continuous error $e_\ell := u(w_\ell) - \mu(t_\ell)$ uniformly in $t = t_\ell \le T$, where $t_k := k/d$. Write $G(v) := -\gamma\,F_1(v) + \gamma^2\,F_2(v)$ for the drift and let $L_G$ denote a Lipschitz constant for $G$ on $\{\|v\|\le R\}$; uniqueness of the solution $\mu$ of $(49)$ on $[0,T]$ implicitly requires this local Lipschitz property. Splitting the integral $\int_0^{t_\ell} G(\mu(s))\,ds$ into the mesh sum $\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}} G(\mu(s))\,ds$ and adding and subtracting $\tfrac{1}{d}\,G(\mu(t_k))$ in each summand decomposes the error into three explicit pieces:
+It remains to bound the discrete-versus-continuous error $e_\ell := u(w_\ell) - \mu(t_\ell)$ uniformly in $t = t_\ell \le T$, where $t_k := k/d$. Write $G(v) := -\gamma\,F_1(v) + \gamma^2\,F_2(v)$ for the drift and let $L_G$ denote a Lipschitz constant for $G$ on $\lbrace \|v\|\le R\rbrace$; uniqueness of the solution $\mu$ of $(49)$ on $[0,T]$ implicitly requires this local Lipschitz property. Splitting the integral $\int_0^{t_\ell} G(\mu(s))\,ds$ into the mesh sum $\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}} G(\mu(s))\,ds$ and adding and subtracting $\tfrac{1}{d}\,G(\mu(t_k))$ in each summand decomposes the error into three explicit pieces:
 
 $$
 e_\ell \;=\; e_0 \;+\; \underbrace{\frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G(u(w_k)) - G(\mu(t_k))\bigr]}_{\text{accumulated Lipschitz contraction}} \;-\; \underbrace{\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}\bigl[G(\mu(s)) - G(\mu(t_k))\bigr]\,ds}_{\text{Euler truncation error}} \;+\; o_{\mathbb{P}}(1).
