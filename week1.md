@@ -1958,7 +1958,7 @@ Below this threshold the algorithm is **statistically limited** and any further 
 
 ![Mini-batch tail-averaged SGD: batch saturation and critical batch size](figures/sgd_minibatch_saturation.png)
 
-Theorem 8.1 is the classical last-iterate bound for constant-stepsize SGD on least squares and dates back to [RM51,Pol87,KY03]; the streamlined proof via the bias--variance decomposition and a Lyapunov equation for the stationary noise covariance is standard and appears, with variants, in e.g. [BM11, BM13, DB15, JKK+18]. Theorem 8.2 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis. The mini-batch generalization above and the resulting critical-batch-size analysis are most commonly associated with the empirical study of Shallue, Lee, Antognini, Sohl-Dickstein, Frostig, and Dahl [SLAS+19] and the noise-scale analysis of McCandlish, Kaplan, Amodei, and the OpenAI Dota Team [MKA+18].
+Theorem 8.1 is the classical last-iterate bound for constant-stepsize SGD on least squares and dates back to [RM51,Pol87,KY03]; the streamlined proof via the bias--variance decomposition and a Lyapunov equation for the stationary noise covariance is standard and appears, with variants, in e.g. [BM11, BM13, DB15, JKK+18]. Theorem 8.2 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis.
 
 ---
 
