@@ -163,17 +163,12 @@ def main():
         label=r"tail average $L(\overline{w}_{t/2:t})-L(w_\ast)$",
     )
 
-    # Reference lines over a smooth grid.
+    # Reference line over a smooth grid.
     t_ref = np.linspace(lo, T_max, 400)
-    ref_CR = sigma_MLE_sq / t_ref
     ref_thm = theorem_bound(
         t_ref, gamma, mu, R2, sigma_MLE_sq, rho_misspec, w0_diff_sq,
     )
 
-    ax.semilogy(
-        t_ref, ref_CR, ":", color="black", linewidth=1.3,
-        label=r"lower bound  $\sigma_{\mathrm{MLE}}^2/t$",
-    )
     ax.semilogy(
         t_ref, ref_thm, "--", color="0.35", linewidth=1.3,
         label=r"Theorem 8.2 bound (burn-in $=t/2$)",
