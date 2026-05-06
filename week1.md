@@ -1991,8 +1991,11 @@ A natural question is whether one can do better by exploiting the row geometry. 
 **Input:** $D \in \mathbb{R}^{n\times d}$ with nonzero rows $d_1, \ldots, d_n$, $\;y \in \mathbb{R}^n$, $\;w_0 \in \mathbb{R}^d$
 
 Set $p_i = \lVert d_i\rVert^2 / \lVert D\rVert_F^2$ for $i = 1, \ldots, n$
+
 **For** $t = 0, 1, 2, \ldots$ do:
+
 $\qquad$ sample $i_t \in \lbrace 1, \ldots, n\rbrace$ with probability $p_{i_t}$
+
 $\qquad w_{t+1} = w_t \;+\; \dfrac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t}$
 
 </div>
