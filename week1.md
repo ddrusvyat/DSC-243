@@ -24,8 +24,9 @@ In these these notes we study optimization algorithms for the  **convex quadrati
 - [6. Sublinear Rates in the Positive Semidefinite Case](#sec-6)
 - [7. Convergence Under Source Conditions and Spectral Structure](#sec-7)
 - [8. Stochastic Gradient Descent for Least Squares](#sec-8)
-- [9. High-Dimensional Limits of Streaming SGD](#sec-9)
-- [10. Related Literature](#sec-10)
+- [9. Lower Bounds for First-Order and Stochastic Algorithms](#sec-9)
+- [10. High-Dimensional Limits of Streaming SGD](#sec-10)
+- [11. Related Literature](#sec-11)
 - [Summary](#summary)
 
 ---
@@ -1902,6 +1903,8 @@ $$
 
 The same calculation with the order of $\Phi$ and $\widetilde{\mathcal{T}}$ reversed gives $\Phi\bigl(\widetilde{\mathcal{T}}(M)\bigr) = M$, so $\Phi = \widetilde{\mathcal{T}}^{-1}$, completing the proof. <span style="float: right;">$\square$</span>
 
+The variance term $\sigma_{\mathrm{MLE}}^2/(T-t)$ in Theorem 8.2 is in fact sharp: no algorithm processing $T$ stochastic samples can do better than the $\sigma^2 d/T$ rate that tail-averaged constant-stepsize SGD already achieves. The matching lower bound, due to Mourtada [Mou22], is proved in §9.
+
 ### Mini-batches, saturation, and the critical batch size
 
 In practice each step of $(26)$ is replaced by an average over a small **mini-batch** of $B$ samples. This raises an immediate question: how does the bound of Theorem 8.2 change with $B$, and how large should $B$ be? The answer is essentially read off the variance term, and uncovers the phenomenon of **batch saturation**: once the noise has been driven below the remaining optimization bias, additional samples per step buy nothing. To keep the formulas readable we fix the stepsize at $\gamma R^2 = \tfrac{1}{2}$ throughout this section, so that $\gamma R^2/(1-\gamma R^2) = 1$ and the variance prefactor of $(32)$ collapses to $2(1+\rho_{\mathrm{misspec}})$.
@@ -1958,7 +1961,7 @@ Below this threshold the algorithm is **statistically limited** and any further 
 
 ![Mini-batch tail-averaged SGD: batch saturation and critical batch size](figures/sgd_minibatch_saturation.png)
 
-Theorem 8.1 is the classical last-iterate bound for constant-stepsize SGD on least squares and dates back to [RM51,Pol87,KY03]; the streamlined proof via the bias--variance decomposition and a Lyapunov equation for the stationary noise covariance is standard and appears, with variants, in e.g. [BM11, BM13, DB15, JKK+18]. Theorem 8.2 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis.
+Theorem 8.1 is the classical last-iterate bound for constant-stepsize SGD on least squares and dates back to [RM51,Pol87,KY03]; the streamlined proof via the bias--variance decomposition and a Lyapunov equation for the stationary noise covariance is standard and appears, with variants, in e.g. [BM11, BM13, DB15, JKK+18]. Theorem 8.2 is due to Jain, Kakade, Kidambi, Netrapalli, Pillutla, and Sidford [JKK+18], who established minimax optimality of tail-averaged constant-stepsize SGD for least squares via a Markov-chain/covariance analysis. The matching minimax lower bound that confirms this optimality is the subject of §9.
 
 ---
 
@@ -2058,9 +2061,238 @@ The Kaczmarz method itself, in its deterministic cyclic form, dates back to Kacz
 
 ---
 
+## 9. Lower Bounds for First-Order and Stochastic Algorithms {#sec-9}
+
+This section establishes that the upper bounds developed in Sections 2--4 and Section 8 are sharp, by exhibiting matching lower bounds in two settings of interest. The first is the **deterministic optimization** setting of Sections 2--4: we close the loophole left by the polynomial/Krylov framework, which only constrains methods whose iterates lie in $x_0 + \mathcal{K}_k(A,r_0)$, and show that even algorithms allowed to query gradients at arbitrary points cannot beat the Chebyshev/CG rate $O(\sqrt{\kappa}\,\log(1/\varepsilon))$. The hard instance is the tridiagonal **chain quadratic** of Nemirovski and Yudin [NY83]. The second is the **stochastic estimation** setting of Section 8: we show that on the well-specified additive-Gaussian-noise least-squares problem, no algorithm processing $T$ samples can extract excess risk smaller than $\sigma^2 d/(2T)$, matching tail-averaged streaming SGD up to an absolute constant. The argument is the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
+
+For the first setting, we restrict to **deterministic first-order algorithms**, by which we mean a procedure $\mathcal{A}$ producing iterates $x_0, x_1, \ldots \in \mathbb{R}^d$ in which $x_0$ is a fixed deterministic vector --- depending on the problem only through known parameters such as $d$ --- and $x_{t+1}$ is a fixed deterministic function of the past gradients $g_0 = \nabla f(x_0), \ldots, g_t = \nabla f(x_t)$. This includes gradient descent with any sequence of stepsizes, conjugate gradients, and indeed any reasonable first-order method.
+
+### A hard quadratic and the chain property
+
+Consider the quadratic on $\mathbb{R}^d$
+
+$$
+\bar f(z) \;=\; \tfrac{1}{2}\, z^\top T z - e_1^\top z,
+$$
+
+where $T \in \mathbb{R}^{d\times d}$ is the symmetric tridiagonal matrix
+
+$$
+T \;=\; \begin{pmatrix}
+2 & -1 & 0 & \cdots & 0 \\
+-1 & 2 & -1 & \ddots & \vdots \\
+0 & -1 & 2 & \ddots & 0 \\
+\vdots & \ddots & \ddots & \ddots & -1 \\
+0 & \cdots & 0 & -1 & 2
+\end{pmatrix}.
+$$
+
+The matrix $T$ is positive definite, with eigenvalues $\lambda_j(T) = 4\sin^2\!\bigl(j\pi/(2(d+1))\bigr)$ for $j=1,\ldots,d$, so $\bar f$ has a unique minimizer. This minimizer solves $T z^\ast = e_1$, and the tridiagonal recursion gives the explicit solution
+
+$$
+z^\ast_i \;=\; 1 - \frac{i}{d+1}, \qquad i = 1, \ldots, d:
+$$
+
+every coordinate of $z^\ast$ is nonzero, with magnitudes decreasing linearly from near $1$ at $i = 1$ to near $0$ at $i = d$. Write $E_m := \operatorname{span}\lbrace e_1,\dots,e_m\rbrace$ for the span of the first $m$ standard basis vectors.
+
+The structural feature that drives the entire lower-bound argument is the **chain property** of $\bar f$:
+
+$$
+z \in E_m \quad \Longrightarrow \quad \nabla\bar f(z) = T z - e_1 \in E_{m+1}.
+$$
+
+This is immediate from tridiagonality: the $i$th entry of $Tz$ depends only on $z_{i-1}, z_i, z_{i+1}$, so a vector supported on the first $m$ coordinates produces a gradient supported on the first $m+1$. *Each gradient query thus advances the support by at most one new coordinate.*
+
+The animation below shows the chain property at work: gradient descent is run on $\bar f$ from $x_0 = 0$, and at every step the supports of $x_t$ (left panel) and $\nabla\bar f(x_t)$ (right panel) are exactly $\{1,\ldots,t\}$ and $\{1,\ldots,t+1\}$. Untouched coordinates are gray; activated coordinates are blue.
+
+![Chain property of the tridiagonal quadratic: each gradient query activates one new coordinate](figures/chain_property.gif)
+
+If we had a guarantee that the iterates of any deterministic first-order method always satisfied $x_t \in E_{2t+1}$, the chain property would already yield a clean lower bound on $\lVert x_t - z^\ast\rVert$ from the part of $z^\ast$ that the iterate cannot reach. Of course, no such guarantee holds --- a method is free to query off-coordinate points. The next lemma resolves the difficulty: by composing $\bar f$ with a carefully chosen rotation, we force any deterministic first-order method to behave as if it were operating in coordinates.
+
+### The rotation lemma
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma 9.1 (Rotation neutralizes arbitrary queries).** *Fix $k \ge 0$ and assume $d \ge 2k + 2$. For every deterministic first-order algorithm $\mathcal{A}$ there exists an orthogonal matrix $Q \in \mathbb{R}^{d\times d}$ such that, when $\mathcal{A}$ is run on*
+
+$$
+f(x) \;:=\; \bar f(Q^\top x),
+$$
+
+*the iterates $x_0, x_1, \ldots, x_k$ produced by $\mathcal{A}$ satisfy*
+
+$$
+Q^\top x_t \in E_{2t+1}, \qquad Q^\top \nabla f(x_t) \in E_{2t+2}, \qquad t = 0, 1, \ldots, k.
+$$
+
+</div>
+
+So although $\mathcal{A}$ is allowed to query *anywhere* in $\mathbb{R}^d$, on the rotated instance its information still propagates only one new coordinate per gradient call --- exactly as if it were a zero-respecting method on the unrotated $\bar f$. The proof constructs the columns of $Q$ inductively, exploiting the fact that the algorithm, being deterministic, must commit to its $(t+1)$-st query before seeing how $Q$ is completed past the columns already used.
+
+*Proof.* Write $Q = [q_1, q_2, \ldots, q_d]$, with the columns $q_i$ to be chosen orthonormal. We construct them one round at a time, maintaining the invariant
+
+$$
+Q^\top x_i \in E_{2i+1}, \qquad Q^\top g_i \in E_{2i+2}, \qquad g_i := \nabla f(x_i),
+$$
+
+for every completed round $i$.
+
+*Base step ($t = 0$).* The algorithm chooses $x_0$ before any gradients are available, so $x_0$ is a fixed deterministic vector. If $x_0 \neq 0$, choose $q_1 = x_0/\lVert x_0\rVert$; if $x_0 = 0$, choose $q_1$ to be any unit vector. In either case $x_0 \in \operatorname{span}\lbrace q_1\rbrace$, and therefore $Q^\top x_0 \in E_1$. Since $f(x) = \bar f(Q^\top x)$, the chain rule gives $Q^\top g_0 = \nabla \bar f(Q^\top x_0)$, and the chain property of $\bar f$ then yields $Q^\top g_0 \in E_2$.
+
+*Inductive step.* Suppose the invariant holds for rounds $0, \dots, t$, and that $q_1, \dots, q_{2t+2}$ have already been fixed. By assumption, $Q^\top x_i \in E_{2i+1}$ and $Q^\top g_i \in E_{2i+2}$ for all $i \le t$, so each of the past oracle answers $g_0, \dots, g_t$ is determined by the columns $q_1,\dots,q_{2t+2}$ alone. How we eventually complete $Q$ on the orthogonal complement of $\operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ does not affect any of those answers.
+
+Since $\mathcal{A}$ is deterministic, the next iterate $x_{t+1} = \Phi_{t+1}(g_0, \dots, g_t)$ is a fixed vector of $\mathbb{R}^d$, known to us before any column of $Q$ outside $S_t := \operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ is committed. Decompose $x_{t+1}$ into its $S_t$- and $S_t^\perp$-components,
+
+$$
+x_{t+1} = P_{S_t} x_{t+1} + r_{t+1}, \qquad r_{t+1} := x_{t+1} - P_{S_t} x_{t+1} \in S_t^\perp,
+$$
+
+and choose the next basis vector along the orthogonal projection of $x_{t+1}$ onto $S_t^\perp$: if $r_{t+1} \neq 0$, set $q_{2t+3} = r_{t+1}/\lVert r_{t+1}\rVert$; otherwise let $q_{2t+3}$ be any unit vector in $S_t^\perp$. In either case $q_{2t+3} \perp S_t$ and $x_{t+1} \in \operatorname{span}\lbrace q_1,\dots,q_{2t+3}\rbrace$, so
+
+$$
+Q^\top x_{t+1} \in E_{2t+3}.
+$$
+
+This is where the construction earns its keep: by aligning the new basis vector with whatever direction outside $S_t$ the algorithm just probed, we absorb the entire off-$S_t$ part of $x_{t+1}$ into a *single* new coordinate of the rotated iterate, irrespective of how arbitrary the query was in the original coordinates.
+
+It remains to advance the gradient by one further coordinate. Differentiating $f(x) = \bar f(Q^\top x)$ via the chain rule gives $\nabla f(x) = Q\,\nabla \bar f(Q^\top x)$, so $Q^\top g_{t+1} = \nabla \bar f(Q^\top x_{t+1})$. Feeding the containment $Q^\top x_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
+
+$$
+Q^\top g_{t+1} = \nabla \bar f(Q^\top x_{t+1}) \in E_{2t+4},
+$$
+
+which closes the inductive step. The remaining columns $q_{2t+4}, \dots, q_d$ may be completed to an orthonormal basis arbitrarily once the algorithm has terminated. <span style="float: right;">$\square$</span>
+
+Lemma 9.1 is the formal reason that off-Krylov queries do not break worst-case lower bounds. Such queries do break the *literal* claim that all iterates lie in a Krylov subspace, but on a suitably rotated hard instance they still uncover new information only one dimension at a time. The lower-bound recipe is therefore:
+
+1. Pick a hard "chain" quadratic $\bar f$ with the chain property.
+2. Use Lemma 9.1 to reduce any deterministic first-order method on a rotated instance to a *zero-respecting* method on $\bar f$ --- one whose iterates lie in the growing chain of coordinate subspaces $E_1 \subseteq E_3 \subseteq E_5 \subseteq \cdots$.
+3. Lower-bound the error of any point supported on only the first $2k+1$ coordinates.
+
+Step 3 is now an explicit calculation on the tridiagonal example.
 
 
-## 9. High-Dimensional Limits of Streaming SGD {#sec-9}
+
+### The lower bound
+
+
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 9.3 (Lower bound matching the $\beta R^2/k^2$ rate).** *Fix $k \ge 1$ and $L, R > 0$. There exist a dimension $d \le 4k+2$, a convex quadratic $f : \mathbb{R}^d \to \mathbb{R}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le L$, and an initialization $x_0$ with $\lVert x_0 - x^\ast\rVert = R$, such that for every deterministic first-order algorithm $\mathcal{A}$ the iterates satisfy*
+
+$$
+f(x_k) - f^\ast \;\ge\; \frac{c\,L\,R^2}{(k+1)^2}
+$$
+
+*for an absolute constant $c > 0$.*
+
+</div>
+
+*Proof.* Set $d := 4k+2$, let $\bar f(z) = \tfrac12 z^\top T z - z^\top e_1$ be the chain quadratic on $\mathbb{R}^d$ --- with $T$ the tridiagonal Hessian and $z^\ast$ its minimizer --- and consider the rescaled instance
+
+$$
+f(x) \;:=\; \alpha\,\bar f\bigl(\beta\,Q^\top x\bigr), \qquad \alpha \;:=\; \frac{L\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \beta \;:=\; \frac{\lVert z^\ast\rVert}{R},
+$$
+
+where the orthogonal matrix $Q$ will be chosen by Lemma 9.1 below. The Hessian of $f$ is $\alpha\beta^2\,Q\,T\,Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\beta^2\,\lVert T\rVert_{\mathrm{op}} = L$, and the minimizer of $f$ is $x^\ast = Q\,z^\ast/\beta$ with $\lVert x^\ast\rVert = R$; choosing $x_0 = 0$ gives $\lVert x_0 - x^\ast\rVert = R$.
+
+The argument behind Lemma 9.1 is invariant under the affine change of variables $x \mapsto \beta\,Q^\top x$: replacing $\bar f$ by $f = \alpha\,\bar f\circ(\beta Q^\top \cdot)$ rescales gradients by $\alpha\beta\,Q$ but does not affect which coordinate subspaces the rescaled iterates $\beta\,Q^\top x_t$ pass through. Applying Lemma 9.1 to the deterministic first-order method induced by $\mathcal A$ on $\bar f$ via this change of variables therefore furnishes an orthogonal $Q$ such that
+
+$$
+\beta\,Q^\top x_t \in E_{2t+1}, \qquad t = 0, 1, \ldots, k.
+$$
+
+Setting $w := \beta\,Q^\top x_k \in E_{2k+1}$, we obtain
+
+$$
+f(x_k) - f^\ast \;=\; \alpha\,\bigl(\bar f(w) - \bar f^\ast\bigr) \;\ge\; \alpha\,\bigl(\,\textstyle\min_{u \in E_{2k+1}}\,\bar f(u)\, -\, \bar f^\ast\bigr).
+$$
+
+The minimizer of $\bar f$ over $E_{2k+1}$ solves the truncated tridiagonal system $T_{2k+1}\,u_{1:2k+1} = e_1$, with explicit solution $u_i = 1 - i/(2k+2)$ for $i \le 2k+1$ and $u_i = 0$ otherwise. Using the identity $\bar f(y) = -\tfrac{1}{2}\,y_1$ at any minimizer $y$ of a truncated chain --- which follows from $T_m\,y_{1:m} = e_1$ in the corresponding subspace and the tridiagonality of $T$ --- we obtain
+
+$$
+\min_{u \in E_{2k+1}} \bar f(u) - \bar f^\ast \;=\; \frac{1}{2}\!\left[\frac{d}{d+1} - \frac{2k+1}{2k+2}\right] \;=\; \frac{d - 2k - 1}{2\,(d+1)(2k+2)} \;=\; \frac{2k+1}{2\,(4k+3)(2k+2)}.
+$$
+
+The elementary bounds $\lVert T\rVert_{\mathrm{op}} \le 4$ and $\lVert z^\ast\rVert^2 = (d-1)d(2d-1)/(6(d+1)^2) \le d/3 = (4k+2)/3$ yield $\alpha \ge 3\,L R^2 / (4(4k+2))$. Substituting and using $4k+2 = 2(2k+1)$ and $2k+2 = 2(k+1)$ gives
+
+$$
+f(x_k) - f^\ast \;\ge\; \frac{3\,L R^2}{4(4k+2)} \cdot \frac{2k+1}{2(4k+3)(2k+2)} \;=\; \frac{3\,L R^2}{32\,(4k+3)\,(k+1)} \;\ge\; \frac{3}{128}\cdot\frac{L R^2}{(k+1)^2},
+$$
+
+where the last inequality uses $4k+3 \le 4(k+1)$ for $k \ge 1$. <span style="float: right;">$\square$</span>
+
+The bound matches the upper bound $\beta R^2/(8k^2)$ of Theorem 6.2 up to an absolute constant: the $O(\sqrt{\beta R^2/\varepsilon})$ iteration complexity of Chebyshev acceleration and conjugate gradients in the smooth convex regime is therefore optimal among deterministic first-order methods on quadratics, even allowing arbitrary off-Krylov queries.
+
+The hard quadratic and the rotation argument are due to Nemirovski and Yudin [NY83]; modern treatments appear in Nesterov [Nes04, Nes18]. The same chain construction underlies the corresponding lower bounds for general smooth strongly convex and smooth convex minimization beyond the quadratic class, with only minor adjustments to the choice of $T$ and the way the chain quadratic is embedded in $\mathbb{R}^d$.
+
+### A statistical lower bound for stochastic algorithms
+
+We now turn from optimization on a fixed deterministic objective to estimation from noisy stochastic samples. The setting is the streaming least-squares problem of Section 8 specialized to the well-specified additive Gaussian noise model
+
+$$
+y \;=\; \langle w_\ast, x\rangle + \eta, \qquad \eta \sim \mathcal{N}(0,\sigma^2)\ \text{independent of}\ x.
+$$
+
+In this regime $\Sigma = \sigma^2 H$ gives $\sigma_{\mathrm{MLE}}^2 = \tfrac12 d\sigma^2$ and $\rho_{\mathrm{misspec}} = 1$, and the variance bound of Theorem 8.2 (after a burn-in long enough to eliminate the bias and at $\gamma R^2 = \tfrac12$) reduces to $4d\sigma^2/(T-t)$. We show that this $d\sigma^2/T$ scaling is sharp: no algorithm processing $T$ stochastic samples can do better. Tail-averaged constant-stepsize SGD is therefore **minimax-optimal** on the well-specified least-squares problem.
+
+The argument is short and elegant, and follows Mourtada [Mou22]. The supremum over $w_\ast$ is at least the average against any prior, and a Gaussian prior makes everything calculable in closed form because the optimal estimator under that prior is ridge regression, which we already understand. To bring the streaming setting into a tractable fixed-design framework, we restrict the algorithm class by giving it the design points $x_1,\ldots,x_T$ in advance and letting it observe only the noisy responses $y_1,\ldots,y_T$. This restricted class includes streaming SGD, which never uses information beyond the $(x_t,y_t)$ pairs already seen, so a lower bound for the restricted class is also a lower bound for streaming algorithms.
+
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 9.4 (Minimax lower bound for streaming least squares).** *Fix $T \ge 1$ and a positive-definite covariance $H \in \mathbb{R}^{d\times d}$. Let $x_1, \ldots, x_T \in \mathbb{R}^d$ be deterministic vectors satisfying $\tfrac{1}{T}\sum_{t=1}^T x_t x_t^\top = H$. Under the well-specified Gaussian-noise model, every (possibly randomized) measurable function $\hat w : \mathbb{R}^T \to \mathbb{R}^d$ of the responses $y_1,\ldots,y_T$ satisfies*
+
+$$
+\sup_{w_\ast \in \mathbb{R}^d}\, \mathbb{E}\bigl[L(\hat w(y_1,\ldots,y_T)) - L(w_\ast)\bigr] \;\ge\; \frac{\sigma^2 d}{2T}.
+$$
+
+</div>
+
+*Proof.* Set $\Phi := [x_1,\ldots,x_T]^\top \in \mathbb{R}^{T\times d}$, so that $\Phi^\top\Phi = T H$. The data take the form $y = \Phi w_\ast + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2 I_T)$, and the excess risk reads $L(\hat w) - L(w_\ast) = \tfrac12\,\lVert\hat w - w_\ast\rVert_H^2$.
+
+The supremum over $w_\ast$ is bounded below by the expectation under any probability distribution on $w_\ast$. We choose the Gaussian prior $w_\ast \sim \mathcal{N}\bigl(0,\tfrac{\sigma^2}{T\lambda}I_d\bigr)$, where $\lambda > 0$ is a parameter sent to zero at the end. Under this prior the joint $(w_\ast,y)$ is Gaussian, and
+
+$$
+\sup_{w_\ast}\,\mathbb{E}_\eta\,\lVert \hat w(y) - w_\ast\rVert_H^2 \;\ge\; \mathbb{E}_{w_\ast}\,\mathbb{E}_\eta\,\lVert \hat w(y) - w_\ast\rVert_H^2 \;=\; \mathbb{E}_y\,\mathbb{E}_{w_\ast \mid y}\,\lVert \hat w(y) - w_\ast\rVert_H^2.
+$$
+
+For each fixed $y$, the inner expectation is minimized by setting $\hat w(y)$ to the conditional mean $A_\ast(y) := \mathbb{E}[w_\ast \mid y]$ --- the mean is the minimizer of mean-squared error under any reference inner product. For Gaussian conditioning the posterior mean coincides with the posterior mode, that is, the maximizer over $w_\ast$ of the joint log-density
+
+$$
+\log p(w_\ast, y) \;=\; -\frac{1}{2\sigma^2}\,\lVert y - \Phi w_\ast\rVert^2 \;-\; \frac{T\lambda}{2\sigma^2}\,\lVert w_\ast\rVert^2 \;+\; \text{const}.
+$$
+
+The right-hand side is the negated ridge-regression cost, so the optimal estimator is
+
+$$
+A_\ast(y) \;=\; (\Phi^\top \Phi + T\lambda I)^{-1}\,\Phi^\top y \;=\; \tfrac{1}{T}(H + \lambda I)^{-1}\,\Phi^\top y.
+$$
+
+Substituting $y = \Phi w_\ast + \eta$ and using the identity $(\Phi^\top\Phi + T\lambda I)^{-1}\Phi^\top\Phi - I = -T\lambda(\Phi^\top\Phi + T\lambda I)^{-1}$ gives the bias-variance decomposition
+
+$$
+A_\ast(y) - w_\ast \;=\; -\lambda(H+\lambda I)^{-1}w_\ast \;+\; \tfrac{1}{T}(H+\lambda I)^{-1}\Phi^\top \eta.
+$$
+
+Independence of $w_\ast$ and $\eta$ kills the cross term in $\lVert\,\cdot\,\rVert_H^2$, and computing the two diagonal terms with $\mathbb{E}[w_\ast w_\ast^\top] = \tfrac{\sigma^2}{T\lambda}I$ and $\mathbb{E}[\eta\eta^\top] = \sigma^2 I_T$ yields
+
+$$
+\mathbb{E}\,\lVert A_\ast(y) - w_\ast\rVert_H^2
+\;=\; \frac{\sigma^2}{T}\Bigl[\lambda\,\operatorname{Tr}\!\bigl((H+\lambda I)^{-2}H\bigr) + \operatorname{Tr}\!\bigl((H+\lambda I)^{-2}H^2\bigr)\Bigr]
+\;=\; \frac{\sigma^2}{T}\,\operatorname{Tr}\!\bigl((H+\lambda I)^{-1}H\bigr),
+$$
+
+where the second equality factors $\lambda H + H^2 = H(\lambda I + H)$. Letting $\lambda \downarrow 0$, the trace converges to $\operatorname{Tr}(I_d) = d$ since $H \succ 0$, and inserting the factor of $\tfrac12$ from the excess-risk identity completes the proof. <span style="float: right;">$\square$</span>
+
+The matching with Theorem 8.2 is direct: under the well-specified Gaussian-noise model, the variance term collapses to $4\sigma^2 d/(T-t)$ and the lower bound to $\sigma^2 d/(2T)$, so the two differ only by an absolute constant. No stochastic algorithm processing $T$ samples can beat the $\sigma^2 d/T$ rate of streaming SGD on this problem; in particular, neither tail averaging, mini-batching, nor any more elaborate scheme can extract more than $O(\sigma^2 d/T)$ excess risk.
+
+Theorem 9.4 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; the elegant Bayesian-Gaussian-prior proof we follow is due to Mourtada [Mou22].
+
+---
+
+## 10. High-Dimensional Limits of Streaming SGD {#sec-10}
 
 The analysis of Section 8 gave a non-asymptotic bound for tail-averaged SGD that depends on $d$ only through the scalar constants $R^2$, $\mu$, $\sigma_{\mathrm{MLE}}^2$, and $\rho_{\mathrm{misspec}}$. In high-dimensional applications the question is not whether SGD converges but how the entire excess-risk curve $t\mapsto L(w_t)-L(w_\ast)$ behaves as $d$ grows. The phenomenon at the center of this section is that, after rescaling the stepsize as $\gamma_k = \gamma/d$ and measuring iterations in **epochs** $t := k/d$, the random curves $t\mapsto L(w_{[td]})$ concentrate as $d\to\infty$ around a *deterministic* limit that depends on the problem only through a few summary statistics and the spectrum of the feature covariance.
 
@@ -2088,7 +2320,7 @@ The following lemma computes the one-step change of the excess risk under $(44)$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma 9.1 (One-step update).** *Let $R(w) := \tfrac{1}{2}\lVert w-w_\ast\rVert ^2 = L(w) - \tfrac{1}{2}\sigma^2$. The streaming iterates $(44)$ satisfy*
+**Lemma 10.1 (One-step update).** *Let $R(w) := \tfrac{1}{2}\lVert w-w_\ast\rVert ^2 = L(w) - \tfrac{1}{2}\sigma^2$. The streaming iterates $(44)$ satisfy*
 
 $$
 d\cdot \mathbb{E}\bigl[R(w_{k+1}) - R(w_k)\,\big|\,\mathcal{F}_k\bigr] = -2\gamma\,R(w_k) + \gamma^2\bigl(R(w_k)+\tfrac{\sigma^2}{2}\bigr) + O(d^{-1}), \tag{45}
@@ -2134,11 +2366,11 @@ The ODE is stable iff $\gamma < 2$, and in that regime $\psi(t) \to \psi_\infty 
 
 ### Autonomous order parameters
 
-The closure in Lemma 9.1 was that the conditional drift of $R$ is a function of $R$ itself. We now isolate this property abstractly. Let $u : \mathbb{R}^d \to \mathbb{R}^r$ be a vector of $r$ continuously differentiable observables, with $r$ held fixed as $d\to\infty$.
+The closure in Lemma 10.1 was that the conditional drift of $R$ is a function of $R$ itself. We now isolate this property abstractly. Let $u : \mathbb{R}^d \to \mathbb{R}^r$ be a vector of $r$ continuously differentiable observables, with $r$ held fixed as $d\to\infty$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Definition 9.2 (Autonomous closure).** *A family of streaming least-squares problems indexed by $d$ admits an **autonomous closure** by observables $u : \mathbb{R}^d \to \mathbb{R}^r$ (with $u_1 = L$) if there exist continuous functions $F_1, F_2 : \mathbb{R}^r \to \mathbb{R}^r$ such that, uniformly on compact sets of $\lVert w_0\rVert $ as $d \to \infty$:*
+**Definition 10.2 (Autonomous closure).** *A family of streaming least-squares problems indexed by $d$ admits an **autonomous closure** by observables $u : \mathbb{R}^d \to \mathbb{R}^r$ (with $u_1 = L$) if there exist continuous functions $F_1, F_2 : \mathbb{R}^r \to \mathbb{R}^r$ such that, uniformly on compact sets of $\lVert w_0\rVert $ as $d \to \infty$:*
 
 *(i) $L$ is uniformly coercive: $\liminf_{\lVert w\rVert \to\infty}\liminf_{d\to\infty} L(w) = +\infty$;*
 
@@ -2160,7 +2392,7 @@ The isotropic Gaussian model admits a one-parameter closure $u = L$ with $F_1(u)
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.3 (Autonomous ODE limit).** *Suppose the streaming problem admits an autonomous closure $u : \mathbb{R}^d \to \mathbb{R}^r$ in the sense of Definition 9.2 and that $u(w_0) \to \mu_0$ in probability as $d\to\infty$. Let $\mu : [0,\infty) \to \mathbb{R}^r$ solve*
+**Theorem 10.3 (Autonomous ODE limit).** *Suppose the streaming problem admits an autonomous closure $u : \mathbb{R}^d \to \mathbb{R}^r$ in the sense of Definition 10.2 and that $u(w_0) \to \mu_0$ in probability as $d\to\infty$. Let $\mu : [0,\infty) \to \mathbb{R}^r$ solve*
 
 $$
 \dot\mu = -\gamma\,F_1(\mu) + \gamma^2\,F_2(\mu), \qquad \mu(0) = \mu_0, \tag{49}
@@ -2252,7 +2484,7 @@ For the rest of the section we work with streaming least squares under the follo
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Assumption 9.4 (Streaming data).** *For some fixed $\varepsilon \in (0, 1/20)$:*
+**Assumption 10.4 (Streaming data).** *For some fixed $\varepsilon \in (0, 1/20)$:*
 
 *(i) $\mathbb{E}[x] = 0$ and $H := \mathbb{E}[xx^\top]$ has operator norm bounded independently of $d$;*
 
@@ -2272,7 +2504,7 @@ Conditions (i)--(iv) are satisfied by isotropic Gaussian features with bounded s
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Definition 9.5 (Homogenized SGD).** *Homogenized SGD with stepsize $\gamma$ and feature covariance $H$ is the $\mathbb{R}^d$-valued continuous-time process $(X_t)_{t\ge 0}$ with $X_0 = w_0$ solving*
+**Definition 10.5 (Homogenized SGD).** *Homogenized SGD with stepsize $\gamma$ and feature covariance $H$ is the $\mathbb{R}^d$-valued continuous-time process $(X_t)_{t\ge 0}$ with $X_0 = w_0$ solving*
 
 $$
 dX_t = -\gamma\,\nabla L(X_t)\,dt + \gamma\,\sqrt{\tfrac{2\,L(X_t)\,H}{d}}\;dB_t, \tag{53}
@@ -2286,7 +2518,7 @@ For the least-squares risk, $\nabla L(w) = H(w-w_\ast)$, so $(53)$ is a linear S
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Definition 9.6 ($C^2$ norm).** *For a twice-differentiable function $q : \mathbb{R}^d \to \mathbb{C}$,*
+**Definition 10.6 ($C^2$ norm).** *For a twice-differentiable function $q : \mathbb{R}^d \to \mathbb{C}$,*
 
 $$
 \|q\|_{C^2} := \sup_{x \in \mathbb{R}^d}\|\nabla^2 q(x)\|_{\mathrm{op}} + \|\nabla q(0)\| + |q(0)|. \tag{54}
@@ -2298,7 +2530,7 @@ Every quadratic on $\mathbb{R}^d$ has finite $C^2$ norm, and the central compari
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.7 (Streaming SGD vs. homogenized SGD).** *Under Assumption 9.4, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$ and every deterministic $w_0$ with $\lVert w_0\rVert  \le 1$, there is a constant $C = C(\lVert H\rVert _{\mathrm{op}})$ such that for every $n \le d\log d/C$, the streaming iterates $\lbrace w_k\rbrace _{k=0}^n$ and the homogenized SGD process $\lbrace X_t\rbrace _{t=0}^{n/d}$ (with the same initialization, driven by an independent Brownian motion) satisfy*
+**Theorem 10.7 (Streaming SGD vs. homogenized SGD).** *Under Assumption 10.4, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$ and every deterministic $w_0$ with $\lVert w_0\rVert  \le 1$, there is a constant $C = C(\lVert H\rVert _{\mathrm{op}})$ such that for every $n \le d\log d/C$, the streaming iterates $\lbrace w_k\rbrace _{k=0}^n$ and the homogenized SGD process $\lbrace X_t\rbrace _{t=0}^{n/d}$ (with the same initialization, driven by an independent Brownian motion) satisfy*
 
 $$
 \sup_{0\le k\le n}\bigl|q(w_k) - q(X_{k/d})\bigr| \;<\; \|q\|_{C^2}\cdot e^{Cn/d}\cdot d^{-1/2 + 9\varepsilon}, \tag{55}
@@ -2312,7 +2544,7 @@ The estimate $(55)$ is a pathwise comparison: every quadratic statistic of strea
 
 ### The Volterra risk curve
 
-Theorem 9.7 reduces streaming SGD to a $d$-dimensional linear SDE. Although the state space is $d$-dimensional, the *risk* $t\mapsto L(X_t)$ itself satisfies a closed scalar convolution equation determined by the gradient-flow risk curve and the spectrum of $H$.
+Theorem 10.7 reduces streaming SGD to a $d$-dimensional linear SDE. Although the state space is $d$-dimensional, the *risk* $t\mapsto L(X_t)$ itself satisfies a closed scalar convolution equation determined by the gradient-flow risk curve and the spectrum of $H$.
 
 Let $Y_t$ denote gradient flow on $L$ from $w_0$, i.e. the solution of $\dot Y_t = -\nabla L(Y_t)$ with $Y_0 = w_0$. For least squares this is explicit:
 
@@ -2324,7 +2556,7 @@ The function $F(t) := L(Y_t)$ decreases monotonically to $\tfrac{1}{2}\sigma^2$ 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Definition 9.8 (Volterra risk model).** *With $F(t) := L(Y_t)$ and the **memory kernel***
+**Definition 10.8 (Volterra risk model).** *With $F(t) := L(Y_t)$ and the **memory kernel***
 
 $$
 \mathcal{K}_\gamma(t) := \frac{\gamma^2}{d}\operatorname{Tr}\bigl(H^2\,e^{-2\gamma H t}\bigr), \tag{57}
@@ -2342,7 +2574,7 @@ The two terms in $(58)$ correspond to the two terms in $(53)$. The forcing $F(\g
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.9 (Volterra risk curve).** *Under Assumption 9.4, for every $T > 0$ and every $\varepsilon' > 0$,*
+**Theorem 10.9 (Volterra risk curve).** *Under Assumption 10.4, for every $T > 0$ and every $\varepsilon' > 0$,*
 
 $$
 \sup_{0\le t \le T}\bigl|L(X_t) - \Psi(t)\bigr| \;<\; C(T, \|H\|_{\mathrm{op}})\cdot d^{-1/2 + \varepsilon'}, \tag{59}
@@ -2352,7 +2584,7 @@ $$
 
 </div>
 
-Combining Theorems 9.7 and 9.9 gives the end-to-end statement: on the epoch scale $t = k/d$, and up to errors of order $d^{-1/2 + O(\varepsilon)}$, the random risk curve $L(w_{[td]})$ of streaming SGD agrees with the deterministic Volterra solution $\Psi(t)$. The whole $d$-dependence of the limit lives in the empirical spectral measure $\mu_H := \tfrac{1}{d}\sum_{i=1}^d \delta_{\lambda_i(H)}$ of the feature covariance, since
+Combining Theorems 10.7 and 10.9 gives the end-to-end statement: on the epoch scale $t = k/d$, and up to errors of order $d^{-1/2 + O(\varepsilon)}$, the random risk curve $L(w_{[td]})$ of streaming SGD agrees with the deterministic Volterra solution $\Psi(t)$. The whole $d$-dependence of the limit lives in the empirical spectral measure $\mu_H := \tfrac{1}{d}\sum_{i=1}^d \delta_{\lambda_i(H)}$ of the feature covariance, since
 
 $$
 \mathcal{K}_\gamma(t) = \gamma^2 \int_0^\infty \lambda^2 e^{-2\gamma\lambda t}\,\mu_H(d\lambda). \tag{60}
@@ -2364,11 +2596,11 @@ If $\mu_H$ converges to a limiting measure $\mu$ (for instance the Marchenko--Pa
 
 ![Streaming SGD with correlated features: concentration around the Volterra limit](figures/sgd_volterra_limit.png)
 
-The autonomous-ODE reduction of Theorem 9.3 is in the spirit of Ben Arous, Gheissari, and Jagannath [BAGJ22] and goes back, in the neural-network context, to Saad and Solla [SS95]. The homogenized SGD comparison and the Volterra risk curve are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a, Paq+22b], with extensions in Collins-Woodfin and Paquette [CP23]. We have followed the lecture-note synthesis of Paquette [Paq23].
+The autonomous-ODE reduction of Theorem 10.3 is in the spirit of Ben Arous, Gheissari, and Jagannath [BAGJ22] and goes back, in the neural-network context, to Saad and Solla [SS95]. The homogenized SGD comparison and the Volterra risk curve are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a, Paq+22b], with extensions in Collins-Woodfin and Paquette [CP23]. We have followed the lecture-note synthesis of Paquette [Paq23].
 
 ---
 
-## 10. Related Literature {#sec-10}
+## 11. Related Literature {#sec-11}
 
 The results discussed in these notes are largely classical in numerical optimization, Krylov methods, inverse problems, and random matrix theory. The novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
 
@@ -2379,8 +2611,10 @@ The results discussed in these notes are largely classical in numerical optimiza
 - **Marchenko--Pastur asymptotics.** The limiting spectral law is due to [MP67], with modern expositions in [BS10, Ver18].
 - **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behaviour of this density determines the asymptotic exponent.
 - **Stochastic gradient descent for least squares.** The constant-stepsize, tail-averaged SGD analysis in Section 8 follows the Markov-chain/covariance approach of [JKK+18], which establishes minimax optimality of tail-averaged SGD for the linear regression problem.
-- **Interpolation and randomized Kaczmarz.** The randomized Kaczmarz algorithm of Theorem 8.5 is due to Strohmer and Vershynin [SV09], building on the classical cyclic method of Kaczmarz [Kac37]; the connection between Kaczmarz and importance-sampled SGD on interpolation least squares was articulated by Needell, Srebro, and Ward [NSW16], and the broader family of randomized iterative methods is unified by Gower and Richtárik [GR15].
-- **High-dimensional limits of streaming SGD.** The autonomous-ODE reduction in §9.1--9.2 is an old idea in the physics literature on two-layer neural networks going back to Saad and Solla [SS95], and has been given a rigorous and general formulation by Ben Arous, Gheissari, and Jagannath [BAGJ22]. The homogenized-SGD SDE and the Volterra risk curve of §9.3--9.5 are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a] and were further developed in [Paq+22b, CP23]; the lecture notes [Paq23] provide the expository synthesis we have followed.
+- **Lower bounds for first-order methods.** The tridiagonal chain quadratic and the rotation argument behind Lemma 9.1 and Theorems 9.2--9.3 are due to Nemirovski and Yudin [NY83]; modern textbook treatments appear in Nesterov [Nes04, Nes18]. The same construction yields the matching $\Omega(\sqrt{\kappa}\,\log(1/\varepsilon))$ lower bound for general smooth strongly convex minimization beyond the quadratic class.
+- **Lower bounds for stochastic algorithms on least squares.** The matching minimax lower bound in Theorem 9.4 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; we follow the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
+- **Interpolation and randomized Kaczmarz.** The randomized Kaczmarz algorithm of Theorem 8.6 is due to Strohmer and Vershynin [SV09], building on the classical cyclic method of Kaczmarz [Kac37]; the connection between Kaczmarz and importance-sampled SGD on interpolation least squares was articulated by Needell, Srebro, and Ward [NSW16], and the broader family of randomized iterative methods is unified by Gower and Richtárik [GR15].
+- **High-dimensional limits of streaming SGD.** The autonomous-ODE reduction in §10.1--10.2 is an old idea in the physics literature on two-layer neural networks going back to Saad and Solla [SS95], and has been given a rigorous and general formulation by Ben Arous, Gheissari, and Jagannath [BAGJ22]. The homogenized-SGD SDE and the Volterra risk curve of §10.3--10.5 are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a] and were further developed in [Paq+22b, CP23]; the lecture notes [Paq23] provide the expository synthesis we have followed.
 
 <!--
 ### How the present results map to the cited literature
@@ -2419,6 +2653,7 @@ The notes combine ideas that appear in different communities; the table below ma
 - [BS10] Bai, Z. D., and Silverstein, J. W. (2010). *Spectral Analysis of Large Dimensional Random Matrices* (2nd ed.). Springer.
 - [Nes04] Nesterov, Y. (2004). *Introductory Lectures on Convex Optimization*. Kluwer.
 - [Nes18] Nesterov, Y. (2018). *Lectures on Convex Optimization* (2nd ed.). Springer.
+- [NY83] Nemirovski, A. S., and Yudin, D. B. (1983). *Problem Complexity and Method Efficiency in Optimization*. Wiley-Interscience.
 - [Ver18] Vershynin, R. (2018). *High-Dimensional Probability*. Cambridge University Press.
 - [PS20] Pedregosa, F., and Scieur, D. (2020). *Acceleration through spectral density estimation*. Proceedings of the 37th International Conference on Machine Learning, PMLR 119:7553--7562. arXiv:2002.04756.
 - [SP20] Scieur, D., and Pedregosa, F. (2020). *Universal Average-Case Optimality of Polyak Momentum*. Proceedings of the 37th International Conference on Machine Learning, PMLR 119:8565--8572. arXiv:2002.04664.
@@ -2432,6 +2667,7 @@ The notes combine ideas that appear in different communities; the table below ma
 - [BM13] Bach, F., and Moulines, E. (2013). *Non-strongly-convex smooth stochastic approximation with convergence rate $O(1/n)$*. NeurIPS 2013. arXiv:1306.2119.
 - [DB15] Défossez, A., and Bach, F. (2015). *Averaged least-mean-squares: bias-variance trade-offs and optimal sampling distributions*. AISTATS 2015. arXiv:1412.6603.
 - [JKK+18] Jain, P., Kakade, S. M., Kidambi, R., Netrapalli, P., Pillutla, V. K., and Sidford, A. (2018). *A Markov Chain Theory Approach to Characterizing the Minimax Optimality of Stochastic Gradient Descent (for Least Squares)*. arXiv:1710.09430.
+- [Mou22] Mourtada, J. (2022). *Exact minimax risk for linear least squares, and the lower tail of sample covariance matrices*. Annals of Statistics, 50(4):2157--2178. arXiv:1912.10754.
 - [Kac37] Kaczmarz, S. (1937). *Angenäherte Auflösung von Systemen linearer Gleichungen*. Bulletin International de l'Académie Polonaise des Sciences et des Lettres A, 35:355--357.
 - [SV09] Strohmer, T., and Vershynin, R. (2009). *A randomized Kaczmarz algorithm with exponential convergence*. Journal of Fourier Analysis and Applications, 15(2):262--278.
 - [NSW16] Needell, D., Srebro, N., and Ward, R. (2016). *Stochastic gradient descent, weighted sampling, and the randomized Kaczmarz algorithm*. Mathematical Programming, 155(1):549--573.
