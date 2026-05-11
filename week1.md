@@ -2005,7 +2005,7 @@ $\qquad w_{t+1} = w_t \;+\; \dfrac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert
 
 Each update can be geometrically understood as an orthogonal projection: $w_{t+1}$ is the closest point to $w_t$ in the affine hyperplane $\lbrace w \in \mathbb{R}^d : \langle d_{i_t}, w\rangle = y_{i_t}\rbrace$. To make the geometry concrete, consider the 2D consistent system with $n=5$ unit-norm rows $d_1,\ldots,d_5 \in \mathbb{R}^2$ and right-hand side $y_i = \langle d_i, w_\ast\rangle$, so that the lines $\ell_i = \lbrace w \in \mathbb{R}^2 : \langle d_i, w\rangle = y_i\rbrace$ all pass through the common point $w_\ast$. Starting from a fixed $w_0$, each Kaczmarz step picks one of the five lines (uniformly, since $\lVert d_i\rVert = 1$) and replaces $w_t$ by its orthogonal projection onto that line. The animation below shows the first $14$ iterations: at each step the chosen line $\ell_{i_t}$ is drawn in red and the dashed arrow traces the projection from $w_t$ to $w_{t+1}$.
 
-![Randomized Kaczmarz on a 2D consistent linear system](figures/kaczmarz_2d.gif)
+<p style="text-align: center;"><img src="figures/kaczmarz_2d.gif" alt="Randomized Kaczmarz on a 2D consistent linear system" /></p>
 
  The following theorem captures the classical convergence guarantee.
 
@@ -2144,7 +2144,7 @@ for every completed round $i$.
 Since $\mathcal{A}$ is deterministic, the next iterate $x_{t+1} = \Phi_{t+1}(g_0, \dots, g_t)$ is a fixed vector of $\mathbb{R}^d$, known to us before any column of $Q$ outside $S_t := \operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ is committed. Decompose $x_{t+1}$ into its $S_t$- and $S_t^\perp$-components,
 
 $$
-x_{t+1} = P_{S_t} x_{t+1} + r_{t+1}, \qquad r_{t+1} := x_{t+1} - P_{S_t} x_{t+1} \in S_t^\perp,
+x_{t+1} = P_{S_t} x_{t+1} + \underbrace{P_{S_t^{\perp}} x_{t+1}}_{=:r_{t+1}},
 $$
 
 and choose the next basis vector along the orthogonal projection of $x_{t+1}$ onto $S_t^\perp$: if $r_{t+1} \neq 0$, set $q_{2t+3} = r_{t+1}/\lVert r_{t+1}\rVert$; otherwise let $q_{2t+3}$ be any unit vector in $S_t^\perp$. In either case $q_{2t+3} \perp S_t$ and $x_{t+1} \in \operatorname{span}\lbrace q_1,\dots,q_{2t+3}\rbrace$, so
@@ -2153,15 +2153,15 @@ $$
 Q^\top x_{t+1} \in E_{2t+3}.
 $$
 
-This is where the construction earns its keep: by aligning the new basis vector with whatever direction outside $S_t$ the algorithm just probed, we absorb the entire off-$S_t$ part of $x_{t+1}$ into a *single* new coordinate of the rotated iterate, irrespective of how arbitrary the query was in the original coordinates.
 
-It remains to advance the gradient by one further coordinate. Differentiating $f(x) = \bar f(Q^\top x)$ via the chain rule gives $\nabla f(x) = Q\,\nabla \bar f(Q^\top x)$, so $Q^\top g_{t+1} = \nabla \bar f(Q^\top x_{t+1})$. Feeding the containment $Q^\top x_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
+
+Differentiating $f(x) = \bar f(Q^\top x)$ via the chain rule gives $\nabla f(x) = Q\,\nabla \bar f(Q^\top x)$, so $Q^\top g_{t+1} = \nabla \bar f(Q^\top x_{t+1})$. Feeding the containment $Q^\top x_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
 
 $$
 Q^\top g_{t+1} = \nabla \bar f(Q^\top x_{t+1}) \in E_{2t+4},
 $$
 
-which closes the inductive step. The remaining columns $q_{2t+4}, \dots, q_d$ may be completed to an orthonormal basis arbitrarily once the algorithm has terminated. <span style="float: right;">$\square$</span>
+which completes the inductive step. The remaining columns $q_{2t+4}, \dots, q_d$ may be completed to an orthonormal basis arbitrarily once the algorithm has terminated. <span style="float: right;">$\square$</span>
 
 Lemma 9.1 is the formal reason that off-Krylov queries do not break worst-case lower bounds. Such queries do break the *literal* claim that all iterates lie in a Krylov subspace, but on a suitably rotated hard instance they still uncover new information only one dimension at a time. The lower-bound recipe is therefore:
 
@@ -2189,19 +2189,25 @@ $$
 
 </div>
 
-*Proof.* Set $d := 4k+2$, let $\bar f(z) = \tfrac12 z^\top T z - z^\top e_1$ be the chain quadratic on $\mathbb{R}^d$ --- with $T$ the tridiagonal Hessian and $z^\ast$ its minimizer --- and consider the rescaled instance
+*Proof.* Set $d := 4k+2$ and let $\bar f(z) = \tfrac12 z^\top T z - z^\top e_1$ be the chain quadratic on $\mathbb{R}^d$, with $T$ the tridiagonal Hessian and $z^\ast$ its minimizer. Fix the rescalings
 
 $$
-f(x) \;:=\; \alpha\,\bar f\bigl(\beta\,Q^\top x\bigr), \qquad \alpha \;:=\; \frac{L\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \beta \;:=\; \frac{\lVert z^\ast\rVert}{R},
+\alpha \;:=\; \frac{L\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \beta \;:=\; \frac{\lVert z^\ast\rVert}{R},
 $$
 
-where the orthogonal matrix $Q$ will be chosen by Lemma 9.1 below. The Hessian of $f$ is $\alpha\beta^2\,Q\,T\,Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\beta^2\,\lVert T\rVert_{\mathrm{op}} = L$, and the minimizer of $f$ is $x^\ast = Q\,z^\ast/\beta$ with $\lVert x^\ast\rVert = R$; choosing $x_0 = 0$ gives $\lVert x_0 - x^\ast\rVert = R$.
-
-The argument behind Lemma 9.1 is invariant under the affine change of variables $x \mapsto \beta\,Q^\top x$: replacing $\bar f$ by $f = \alpha\,\bar f\circ(\beta Q^\top \cdot)$ rescales gradients by $\alpha\beta\,Q$ but does not affect which coordinate subspaces the rescaled iterates $\beta\,Q^\top x_t$ pass through. Applying Lemma 9.1 to the deterministic first-order method induced by $\mathcal A$ on $\bar f$ via this change of variables therefore furnishes an orthogonal $Q$ such that
+and observe that the scaled chain quadratic $z \mapsto \alpha\,\bar f(\beta z)$ has the same chain property as $\bar f$ — its gradient is $\alpha\beta(\beta T z - e_1)$, which is supported on the first $m+1$ coordinates whenever $z$ is supported on the first $m$. Lemma 9.1 therefore applies verbatim with $\bar f$ replaced by $\alpha\,\bar f(\beta\,\cdot\,)$, furnishing an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance
 
 $$
-\beta\,Q^\top x_t \in E_{2t+1}, \qquad t = 0, 1, \ldots, k.
+f(x) \;:=\; \alpha\,\bar f\bigl(\beta\,Q^\top x\bigr),
 $$
+
+the iterates satisfy
+
+$$
+\beta\,Q^\top x_t \;\in\; E_{2t+1}, \qquad \forall t = 0, 1, \ldots, k.
+$$
+
+This function  $f$ has the required parameters: its Hessian is $\alpha\beta^2\,Q T Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\beta^2\,\lVert T\rVert_{\mathrm{op}} = L$, and its minimizer is $x^\ast = Q\,z^\ast/\beta$ with $\lVert x_0 - x^\ast\rVert = \lVert z^\ast\rVert/\beta = R$.
 
 Setting $w := \beta\,Q^\top x_k \in E_{2k+1}$, we obtain
 
@@ -2209,19 +2215,27 @@ $$
 f(x_k) - f^\ast \;=\; \alpha\,\bigl(\bar f(w) - \bar f^\ast\bigr) \;\ge\; \alpha\,\bigl(\,\textstyle\min_{u \in E_{2k+1}}\,\bar f(u)\, -\, \bar f^\ast\bigr).
 $$
 
-The minimizer of $\bar f$ over $E_{2k+1}$ solves the truncated tridiagonal system $T_{2k+1}\,u_{1:2k+1} = e_1$, with explicit solution $u_i = 1 - i/(2k+2)$ for $i \le 2k+1$ and $u_i = 0$ otherwise. Using the identity $\bar f(y) = -\tfrac{1}{2}\,y_1$ at any minimizer $y$ of a truncated chain --- which follows from $T_m\,y_{1:m} = e_1$ in the corresponding subspace and the tridiagonality of $T$ --- we obtain
+The minimizer of $\bar f$ over $E_{2k+1}$ solves the truncated tridiagonal system $T_{2k+1}\,u_{1:2k+1} = e_1$, with explicit solution 
+
+$$u_i = 1 - i/(2k+2) \qquad\forall i \le 2k+1,$$ 
+
+and $u_i = 0$ otherwise. Since any minimizer of $y$ of a truncated chain satisfies $T_m\,y_{1:m} = e_1$, plugging this expression into $\bar f$ directly shows $\bar f(y) = -\tfrac{1}{2}\,y_1$. Therefore we deduce
 
 $$
 \min_{u \in E_{2k+1}} \bar f(u) - \bar f^\ast \;=\; \frac{1}{2}\!\left[\frac{d}{d+1} - \frac{2k+1}{2k+2}\right] \;=\; \frac{d - 2k - 1}{2\,(d+1)(2k+2)} \;=\; \frac{2k+1}{2\,(4k+3)(2k+2)}.
 $$
 
-The elementary bounds $\lVert T\rVert_{\mathrm{op}} \le 4$ and $\lVert z^\ast\rVert^2 = (d-1)d(2d-1)/(6(d+1)^2) \le d/3 = (4k+2)/3$ yield $\alpha \ge 3\,L R^2 / (4(4k+2))$. Substituting and using $4k+2 = 2(2k+1)$ and $2k+2 = 2(k+1)$ gives
+The elementary bounds $\lVert T\rVert_{\mathrm{op}} \le 4$ and 
+
+$$\lVert z^\ast\rVert^2 \;=\; \frac{1}{(d+1)^2}\sum_{i=1}^d i^2 \;=\; \frac{d(2d+1)}{6(d+1)} \;\le\; \frac{d}{3} \;=\; \frac{4k+2}{3}$$
+
+ yield $\alpha \ge 3\,L R^2 / (4(4k+2))$. Substituting gives
 
 $$
 f(x_k) - f^\ast \;\ge\; \frac{3\,L R^2}{4(4k+2)} \cdot \frac{2k+1}{2(4k+3)(2k+2)} \;=\; \frac{3\,L R^2}{32\,(4k+3)\,(k+1)} \;\ge\; \frac{3}{128}\cdot\frac{L R^2}{(k+1)^2},
 $$
 
-where the last inequality uses $4k+3 \le 4(k+1)$ for $k \ge 1$. <span style="float: right;">$\square$</span>
+as claimed. <span style="float: right;">$\square$</span>
 
 The bound matches the upper bound $\beta R^2/(8k^2)$ of Theorem 6.2 up to an absolute constant: the $O(\sqrt{\beta R^2/\varepsilon})$ iteration complexity of Chebyshev acceleration and conjugate gradients in the smooth convex regime is therefore optimal among deterministic first-order methods on quadratics, even allowing arbitrary off-Krylov queries.
 
