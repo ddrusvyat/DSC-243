@@ -2136,7 +2136,9 @@ $$
 Q^\top x_i \in E_{2i+1}, \qquad Q^\top g_i \in E_{2i+2}, \qquad g_i := \nabla f(x_i),
 $$
 
-for every completed round $i$.
+for every completed round $i$. The animation below previews the construction: each round adds two new columns of $Q$ (orange strip on the right), the rotated iterate $Q^\top x_t$ acquires two new nonzero coordinates (heatmap column), and the rotated representations of earlier iterates remain frozen — the new $q$'s lie in the orthogonal complement of everything queried so far, so $Q^\top x_s$ for $s < t$ is unaffected by extending $Q$.
+
+![Adaptive construction of Q in the proof of Lemma 9.1: each round adds two columns of Q without disturbing past iterates](figures/rotation_lemma.gif)
 
 *Base step ($t = 0$).* The algorithm chooses $x_0$ before any gradients are available, so $x_0$ is a fixed deterministic vector. If $x_0 \neq 0$, choose $q_1 = x_0/\lVert x_0\rVert$; if $x_0 = 0$, choose $q_1$ to be any unit vector. In either case $x_0 \in \operatorname{span}\lbrace q_1\rbrace$, and therefore $Q^\top x_0 \in E_1$. Before the gradient oracle can return $g_0 = \nabla f(x_0) = Q\,\nabla\bar f(Q^\top x_0)$, we also commit $q_2$ to be any unit vector orthogonal to $q_1$. With $q_1, q_2$ fixed, the chain rule gives $Q^\top g_0 = \nabla \bar f(Q^\top x_0)$, and the chain property of $\bar f$ yields $Q^\top g_0 \in E_2$.
 
@@ -2157,10 +2159,6 @@ Q^\top g_{t+1} \in E_{2t+4},
 $$
 
 which completes the inductive step. The remaining columns $q_{2k+3}, \dots, q_d$ play no role during the first $k$ rounds and may be completed to an orthonormal basis arbitrarily once the algorithm has terminated. <span style="float: right;">$\square$</span>
-
-The animation below illustrates the inductive construction. A deterministic first-order method (here perturbed gradient descent that deliberately queries off-Krylov directions) is run on $f = \bar f \circ Q^\top$. At each round $t$ the heatmap column shows the entries of $Q^\top x_t$, while the right strip tracks which columns of $Q$ have been committed. Two new columns $q_{2t+1}, q_{2t+2}$ are added per round (orange), and the support of $Q^\top x_t$ extends downward to $E_{2t+1}$ (dashed outline). Crucially, *the heatmap columns for earlier rounds never change once written*: the newly added $q$'s lie in the orthogonal complement of every previously queried iterate, so $Q^\top x_s$ for $s < t$ is unaffected by extending $Q$.
-
-![Adaptive construction of Q in the proof of Lemma 9.1: each round adds two columns of Q without disturbing past iterates](figures/rotation_lemma.gif)
 
 Lemma 9.1 is the formal reason that off-Krylov queries do not break worst-case lower bounds. Such queries do break the *literal* claim that all iterates lie in a Krylov subspace, but on a suitably rotated hard instance they still uncover new information only one dimension at a time. The lower-bound recipe is therefore:
 
