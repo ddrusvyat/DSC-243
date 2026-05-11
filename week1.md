@@ -2113,6 +2113,7 @@ If we had a guarantee that the iterates of any deterministic first-order method 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
+
 **Lemma 9.1 (Rotation neutralizes arbitrary queries).** *Fix $k \ge 0$ and assume $d \ge 2k + 2$. For every deterministic first-order algorithm $\mathcal{A}$ there exists an orthogonal matrix $Q \in \mathbb{R}^{d\times d}$ such that, when $\mathcal{A}$ is run on*
 
 $$
@@ -2127,9 +2128,9 @@ $$
 
 </div>
 
-So although $\mathcal{A}$ is allowed to query *anywhere* in $\mathbb{R}^d$, on the rotated instance its information still propagates only one new coordinate per gradient call --- exactly as if it were a zero-respecting method on the unrotated $\bar f$. The proof constructs the columns of $Q$ inductively, exploiting the fact that the algorithm, being deterministic, must commit to its $(t+1)$-st query before seeing how $Q$ is completed past the columns already used.
+So although $\mathcal{A}$ is allowed to query *anywhere* in $\mathbb{R}^d$, on the rotated instance its information is forced into the controlled ladder $E_1, E_3, E_5, \ldots$. The proof constructs the columns of $Q$ inductively, exploiting the fact that the algorithm, being deterministic, must commit to its $(t+1)$-st query before seeing how $Q$ is completed past the columns already used.
 
-*Proof.* Write $Q = [q_1, q_2, \ldots, q_d]$, with the columns $q_i$ to be chosen orthonormal. We construct them one round at a time, maintaining the invariant
+*Proof.* Write $Q = [q_1, q_2, \ldots, q_d]$, with the columns $q_i$ to be chosen orthonormal. We construct them two at a time, maintaining the invariant
 
 $$
 Q^\top x_i \in E_{2i+1}, \qquad Q^\top g_i \in E_{2i+2}, \qquad g_i := \nabla f(x_i),
@@ -2137,9 +2138,9 @@ $$
 
 for every completed round $i$.
 
-*Base step ($t = 0$).* The algorithm chooses $x_0$ before any gradients are available, so $x_0$ is a fixed deterministic vector. If $x_0 \neq 0$, choose $q_1 = x_0/\lVert x_0\rVert$; if $x_0 = 0$, choose $q_1$ to be any unit vector. In either case $x_0 \in \operatorname{span}\lbrace q_1\rbrace$, and therefore $Q^\top x_0 \in E_1$. Since $f(x) = \bar f(Q^\top x)$, the chain rule gives $Q^\top g_0 = \nabla \bar f(Q^\top x_0)$, and the chain property of $\bar f$ then yields $Q^\top g_0 \in E_2$.
+*Base step ($t = 0$).* The algorithm chooses $x_0$ before any gradients are available, so $x_0$ is a fixed deterministic vector. If $x_0 \neq 0$, choose $q_1 = x_0/\lVert x_0\rVert$; if $x_0 = 0$, choose $q_1$ to be any unit vector. In either case $x_0 \in \operatorname{span}\lbrace q_1\rbrace$, and therefore $Q^\top x_0 \in E_1$. Before the gradient oracle can return $g_0 = \nabla f(x_0) = Q\,\nabla\bar f(Q^\top x_0)$, we also commit $q_2$ to be any unit vector orthogonal to $q_1$. With $q_1, q_2$ fixed, the chain rule gives $Q^\top g_0 = \nabla \bar f(Q^\top x_0)$, and the chain property of $\bar f$ yields $Q^\top g_0 \in E_2$.
 
-*Inductive step.* Suppose the invariant holds for rounds $0, \dots, t$, and that $q_1, \dots, q_{2t+2}$ have already been fixed. By assumption, $Q^\top x_i \in E_{2i+1}$ and $Q^\top g_i \in E_{2i+2}$ for all $i \le t$, so each of the past oracle answers $g_0, \dots, g_t$ is determined by the columns $q_1,\dots,q_{2t+2}$ alone. How we eventually complete $Q$ on the orthogonal complement of $\operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ does not affect any of those answers.
+*Inductive step.* Suppose the invariant holds for rounds $0, \dots, t$ with $t \le k-1$, and that $q_1, \dots, q_{2t+2}$ have already been fixed. By assumption, $Q^\top x_i \in E_{2i+1}$ and $Q^\top g_i \in E_{2i+2}$ for all $i \le t$, so each of the past oracle answers $g_0, \dots, g_t$ is determined by the columns $q_1,\dots,q_{2t+2}$ alone. How we eventually complete $Q$ on the orthogonal complement of $\operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ does not affect any of those answers.
 
 Since $\mathcal{A}$ is deterministic, the next iterate $x_{t+1} = \Phi_{t+1}(g_0, \dots, g_t)$ is a fixed vector of $\mathbb{R}^d$, known to us before any column of $Q$ outside $S_t := \operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ is committed. Decompose $x_{t+1}$ into its $S_t$- and $S_t^\perp$-components,
 
@@ -2147,21 +2148,19 @@ $$
 x_{t+1} = P_{S_t} x_{t+1} + \underbrace{P_{S_t^{\perp}} x_{t+1}}_{=:r_{t+1}},
 $$
 
-and choose the next basis vector along the orthogonal projection of $x_{t+1}$ onto $S_t^\perp$: if $r_{t+1} \neq 0$, set $q_{2t+3} = r_{t+1}/\lVert r_{t+1}\rVert$; otherwise let $q_{2t+3}$ be any unit vector in $S_t^\perp$. In either case $q_{2t+3} \perp S_t$ and $x_{t+1} \in \operatorname{span}\lbrace q_1,\dots,q_{2t+3}\rbrace$, so
+and choose the next basis vector along the orthogonal projection of $x_{t+1}$ onto $S_t^\perp$: if $r_{t+1} \neq 0$, set $q_{2t+3} = r_{t+1}/\lVert r_{t+1}\rVert$; otherwise let $q_{2t+3}$ be any unit vector in $S_t^\perp$. In either case $q_{2t+3} \perp S_t$ and $x_{t+1} \in \operatorname{span}\lbrace q_1,\dots,q_{2t+3}\rbrace$, so $Q^\top x_{t+1} \in E_{2t+3}$.
+
+Next we commit one more column, $q_{2t+4}$, taken to be any unit vector in $S_t^\perp$ orthogonal to $q_{2t+3}$. Such a vector exists because $\dim S_t^\perp = d - (2t+2) \ge 2$ when $t \le k-1$ and $d \ge 2k+2$. With $q_1, \dots, q_{2t+4}$ now committed, the chain rule $\nabla f(x) = Q\,\nabla\bar f(Q^\top x)$ gives $Q^\top g_{t+1} = \nabla\bar f(Q^\top x_{t+1})$. Plugging the containment $Q^\top x_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
 
 $$
-Q^\top x_{t+1} \in E_{2t+3}.
+Q^\top g_{t+1} \in E_{2t+4},
 $$
 
+which completes the inductive step. The remaining columns $q_{2k+3}, \dots, q_d$ play no role during the first $k$ rounds and may be completed to an orthonormal basis arbitrarily once the algorithm has terminated. <span style="float: right;">$\square$</span>
 
+The animation below illustrates the inductive construction. A deterministic first-order method (here perturbed gradient descent that deliberately queries off-Krylov directions) is run on $f = \bar f \circ Q^\top$. At each round $t$ the heatmap column shows the entries of $Q^\top x_t$, while the right strip tracks which columns of $Q$ have been committed. Two new columns $q_{2t+1}, q_{2t+2}$ are added per round (orange), and the support of $Q^\top x_t$ extends downward to $E_{2t+1}$ (dashed outline). Crucially, *the heatmap columns for earlier rounds never change once written*: the newly added $q$'s lie in the orthogonal complement of every previously queried iterate, so $Q^\top x_s$ for $s < t$ is unaffected by extending $Q$.
 
-Differentiating $f(x) = \bar f(Q^\top x)$ via the chain rule gives $\nabla f(x) = Q\,\nabla \bar f(Q^\top x)$, so $Q^\top g_{t+1} = \nabla \bar f(Q^\top x_{t+1})$. Feeding the containment $Q^\top x_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
-
-$$
-Q^\top g_{t+1} = \nabla \bar f(Q^\top x_{t+1}) \in E_{2t+4},
-$$
-
-which completes the inductive step. The remaining columns $q_{2t+4}, \dots, q_d$ may be completed to an orthonormal basis arbitrarily once the algorithm has terminated. <span style="float: right;">$\square$</span>
+![Adaptive construction of Q in the proof of Lemma 9.1: each round adds two columns of Q without disturbing past iterates](figures/rotation_lemma.gif)
 
 Lemma 9.1 is the formal reason that off-Krylov queries do not break worst-case lower bounds. Such queries do break the *literal* claim that all iterates lie in a Krylov subspace, but on a suitably rotated hard instance they still uncover new information only one dimension at a time. The lower-bound recipe is therefore:
 
@@ -2179,10 +2178,10 @@ Step 3 is now an explicit calculation on the tridiagonal example.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.3 (Lower bound matching the $\beta R^2/k^2$ rate).** *Fix $k \ge 1$ and $L, R > 0$. There exist a dimension $d \le 4k+2$, a convex quadratic $f : \mathbb{R}^d \to \mathbb{R}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le L$, and an initialization $x_0$ with $\lVert x_0 - x^\ast\rVert = R$, such that for every deterministic first-order algorithm $\mathcal{A}$ the iterates satisfy*
+**Theorem 9.3 (Lower bound).** *Fix $k \ge 1$ and $\beta, R > 0$, and set $d := 4k+2$. There exist a convex quadratic $f : \mathbb{R}^d \to \mathbb{R}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$ and an initialization $x_0$ with $\lVert x_0 - x^\ast\rVert = R$ such that for every deterministic first-order algorithm $\mathcal{A}$ the iterates satisfy*
 
 $$
-f(x_k) - f^\ast \;\ge\; \frac{c\,L\,R^2}{(k+1)^2}
+f(x_k) - f^\ast \;\ge\; \frac{c\,\beta\,R^2}{(k+1)^2}
 $$
 
 *for an absolute constant $c > 0$.*
@@ -2192,24 +2191,24 @@ $$
 *Proof.* Set $d := 4k+2$ and let $\bar f(z) = \tfrac12 z^\top T z - z^\top e_1$ be the chain quadratic on $\mathbb{R}^d$, with $T$ the tridiagonal Hessian and $z^\ast$ its minimizer. Fix the rescalings
 
 $$
-\alpha \;:=\; \frac{L\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \beta \;:=\; \frac{\lVert z^\ast\rVert}{R},
+\alpha \;:=\; \frac{\beta\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \gamma \;:=\; \frac{\lVert z^\ast\rVert}{R},
 $$
 
-and observe that the scaled chain quadratic $z \mapsto \alpha\,\bar f(\beta z)$ has the same chain property as $\bar f$ — its gradient is $\alpha\beta(\beta T z - e_1)$, which is supported on the first $m+1$ coordinates whenever $z$ is supported on the first $m$. Lemma 9.1 therefore applies verbatim with $\bar f$ replaced by $\alpha\,\bar f(\beta\,\cdot\,)$, furnishing an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance
+and observe that the scaled chain quadratic $z \mapsto \alpha\,\bar f(\gamma z)$ has the same chain property as $\bar f$ — its gradient is $\alpha\gamma(\gamma T z - e_1)$, which is supported on the first $m+1$ coordinates whenever $z$ is supported on the first $m$. Lemma 9.1 therefore applies verbatim with $\bar f$ replaced by $\alpha\,\bar f(\gamma\,\cdot\,)$, furnishing an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance
 
 $$
-f(x) \;:=\; \alpha\,\bar f\bigl(\beta\,Q^\top x\bigr),
+f(x) \;:=\; \alpha\,\bar f\bigl(\gamma\,Q^\top x\bigr),
 $$
 
 the iterates satisfy
 
 $$
-\beta\,Q^\top x_t \;\in\; E_{2t+1}, \qquad \forall t = 0, 1, \ldots, k.
+\gamma\,Q^\top x_t \;\in\; E_{2t+1}, \qquad \forall\, t = 0, 1, \ldots, k.
 $$
 
-This function  $f$ has the required parameters: its Hessian is $\alpha\beta^2\,Q T Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\beta^2\,\lVert T\rVert_{\mathrm{op}} = L$, and its minimizer is $x^\ast = Q\,z^\ast/\beta$ with $\lVert x_0 - x^\ast\rVert = \lVert z^\ast\rVert/\beta = R$.
+This function $f$ has the required parameters: its Hessian is $\alpha\gamma^2\,Q T Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\gamma^2\,\lVert T\rVert_{\mathrm{op}} = \beta$, and its minimizer is $x^\ast = Q\,z^\ast/\gamma$ with $\lVert x_0 - x^\ast\rVert = \lVert z^\ast\rVert/\gamma = R$.
 
-Setting $w := \beta\,Q^\top x_k \in E_{2k+1}$, we obtain
+Setting $w := \gamma\,Q^\top x_k \in E_{2k+1}$, we obtain
 
 $$
 f(x_k) - f^\ast \;=\; \alpha\,\bigl(\bar f(w) - \bar f^\ast\bigr) \;\ge\; \alpha\,\bigl(\,\textstyle\min_{u \in E_{2k+1}}\,\bar f(u)\, -\, \bar f^\ast\bigr).
@@ -2217,7 +2216,7 @@ $$
 
 The minimizer of $\bar f$ over $E_{2k+1}$ solves the truncated tridiagonal system $T_{2k+1}\,u_{1:2k+1} = e_1$, with explicit solution 
 
-$$u_i = 1 - i/(2k+2) \qquad\forall i \le 2k+1,$$ 
+$$u_i = 1 - \frac{i}{2k+2} \qquad\forall i \le 2k+1,$$ 
 
 and $u_i = 0$ otherwise. Since any minimizer of $y$ of a truncated chain satisfies $T_m\,y_{1:m} = e_1$, plugging this expression into $\bar f$ directly shows $\bar f(y) = -\tfrac{1}{2}\,y_1$. Therefore we deduce
 
@@ -2229,10 +2228,10 @@ The elementary bounds $\lVert T\rVert_{\mathrm{op}} \le 4$ and
 
 $$\lVert z^\ast\rVert^2 \;=\; \frac{1}{(d+1)^2}\sum_{i=1}^d i^2 \;=\; \frac{d(2d+1)}{6(d+1)} \;\le\; \frac{d}{3} \;=\; \frac{4k+2}{3}$$
 
- yield $\alpha \ge 3\,L R^2 / (4(4k+2))$. Substituting gives
+ yield $\alpha \ge 3\,\beta R^2 / (4(4k+2))$. Substituting gives
 
 $$
-f(x_k) - f^\ast \;\ge\; \frac{3\,L R^2}{4(4k+2)} \cdot \frac{2k+1}{2(4k+3)(2k+2)} \;=\; \frac{3\,L R^2}{32\,(4k+3)\,(k+1)} \;\ge\; \frac{3}{128}\cdot\frac{L R^2}{(k+1)^2},
+f(x_k) - f^\ast \;\ge\; \frac{3\,\beta R^2}{4(4k+2)} \cdot \frac{2k+1}{2(4k+3)(2k+2)} \;=\; \frac{3\,\beta R^2}{32\,(4k+3)\,(k+1)} \;\ge\; \frac{3}{128}\cdot\frac{\beta R^2}{(k+1)^2},
 $$
 
 as claimed. <span style="float: right;">$\square$</span>
