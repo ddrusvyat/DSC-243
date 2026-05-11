@@ -2087,7 +2087,7 @@ T \;=\; \begin{pmatrix}
 \end{pmatrix}.
 $$
 
-The matrix $T$ is positive definite, with eigenvalues $\lambda_j(T) = 4\sin^2\!\bigl(j\pi/(2(d+1))\bigr)$ for $j=1,\ldots,d$, so $\bar f$ has a unique minimizer. This minimizer solves $T z^\ast = e_1$, and the tridiagonal recursion gives the explicit solution
+The matrix $T$ is positive definite, with eigenvalues $\lambda_j(T) = 4\sin^2\bigl(j\pi/(2(d+1))\bigr)$ for $j=1,\ldots,d$, so $\bar f$ has a unique minimizer. This minimizer solves $T z^\ast = e_1$, and the tridiagonal recursion gives the explicit solution
 
 $$
 z^\ast_i \;=\; 1 - \frac{i}{d+1}, \qquad i = 1, \ldots, d:
