@@ -2385,7 +2385,7 @@ $$A_{i,i+1}=A_{i+1,i}\ne 0, \qquad \forall i=1,\ldots,N-1.$$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma 9.3 (Jacobi realization).** Let $\mu$ be a positive Borel measure on $[0,\beta]$ with $M_2 := \int \lambda^2\,d\mu < \infty$, supported on at least $N+1 := 2k+3$ distinct points in $(0,\beta]$. Then there exist an irreducible SPD tridiagonal matrix $A \in \mathbb{R}^{N\times N}$ with $\lVert A\rVert_{\mathrm{op}} \le \beta$ and a scalar $\tau > 0$ such that, for $b := \tau e_1$ and $x^\ast := A^{-1}b$, the following holds. If $A=\sum_{i=1}^N \lambda_i v_i v_i^\top$ is an eigendecomposition and $x^\ast=\sum_{i=1}^N c_i v_i$, then the atomic **spectral measure**
+**Lemma 9.3 (Jacobi realization).** Let $\mu$ be a positive Borel measure on $[0,\beta]$ with $M_2 := \int \lambda^2\,d\mu < \infty$, supported on at least $N+1 := 2k+3$ distinct points in $(0,\beta]$. Then there exist an irreducible SPD tridiagonal matrix $A \in \mathbb{R}^{N\times N}$ with $\lVert A\rVert_{\mathrm{op}} \le \beta$ and a scalar $\tau > 0$ such that, for $b := \tau e_1$ and $x^\ast := A^{-1}b$, the following holds. If $A=\sum_{i=1}^N \lambda_i v_i v_i^\top$ is an eigendecomposition of $A$ and $x^\ast=\sum_{i=1}^N c_i v_i$, then the atomic **spectral measure**
 
 $$\mu_{A,x^\ast}:=\sum_{i=1}^N c_i^2\,\delta_{\lambda_i},$$
 
@@ -2410,7 +2410,13 @@ $$
 A_{ij}:=\langle q_{i-1},\,\lambda q_{j-1}\rangle_{\nu_N},\qquad i,j=1,\ldots,N.
 $$
 
-This is the so-called Jacobi matrix. It is clearly symmetric, and it is tridiagonal by the degree-orthogonality relation: $\lambda q_{j-1}$ has degree $j$, so it can have nonzero inner product only with $q_{j-2},q_{j-1},q_j$. Thus only the entries with $|i-j|\le 1$ can be nonzero.
+This is the so-called Jacobi matrix. It is clearly symmetric, and it is tridiagonal by the degree-orthogonality relation: $\lambda q_{j-1}$ has degree $j$, so it can have nonzero inner product only with $q_{j-2}$, $q_{j-1}$, or $q_j$. Thus only the entries satisfying
+
+\[
+\lvert i-j\rvert \le 1
+\]
+
+can be nonzero.
 
 We claim that the off-diagonal entries of $A$ are positive. To see this, write the positive leading coefficient of $q_n$ as $\kappa_n>0$. Comparing leading terms in the expansion of $\lambda q_n$ in the orthonormal basis gives
 
@@ -2510,7 +2516,7 @@ $$
 
 The integrand has degree at most $4k+3$, so Lemma 9.3 lets us replace $\mu_{A,x^\ast}$ by $\mu_{\mathrm{err}}$. <span style="float: right;">$\square$</span>
 
-**Krylov is rate-optimal on every structured spectrum.** Comparing $(61)$ at order $k$ with Theorem 9.4 at order $2k+1$,
+**Krylov is rate-optimal on every structured spectrum.** Comparing $(61)$ at order $k$ with Theorem 9.4 at order $2k+1$, we deduce
 
 $$
 \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_{2k+1} \\ p(0) = 1}}\!\int \lambda\,p^2\,d\mu_{\mathrm{err}} \;\;\le\;\; f(x_k) - f^\ast \;\;\le\;\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}\!\int \lambda\,p^2\,d\mu_{\mathrm{err}},
