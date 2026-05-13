@@ -2410,13 +2410,9 @@ $$
 A_{ij}:=\langle q_{i-1},\,\lambda q_{j-1}\rangle_{\nu_N},\qquad i,j=1,\ldots,N.
 $$
 
-This is the so-called Jacobi matrix. It is clearly symmetric, and it is tridiagonal by the degree-orthogonality relation: $\lambda q_{j-1}$ has degree $j$, so it can have nonzero inner product only with $q_{j-2}$, $q_{j-1}$, or $q_j$. Thus only the entries satisfying
-
-\[
+This is the so-called Jacobi matrix. It is clearly symmetric, and it is tridiagonal by the degree-orthogonality relation: $\lambda q_{j-1}$ has degree $j$, so it can have nonzero inner product only with $q_{j-2}$, $q_{j-1}$, or $q_j$. Thus only the entries satisfying $
 \lvert i-j\rvert \le 1
-\]
-
-can be nonzero.
+$ can be nonzero.
 
 We claim that the off-diagonal entries of $A$ are positive. To see this, write the positive leading coefficient of $q_n$ as $\kappa_n>0$. Comparing leading terms in the expansion of $\lambda q_n$ in the orthonormal basis gives
 
