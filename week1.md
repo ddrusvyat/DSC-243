@@ -2342,7 +2342,7 @@ We claim that these weights give exact integration on $\mathcal{P}_{2N-1}$. Fix 
 $$P=\tilde p_N\,s+r, \qquad \deg s,\deg r\le N-1.
 $$
 
-Here $s$ is the quotient and $r$ is the remainder. This decomposition is useful because the quotient term $\tilde p_Ns$ contributes nothing to either side of the desired identity. Against $\mu$, it integrates to zero by orthogonality, since $s\in\mathcal{P}_{N-1}$ and $\tilde p_N\perp \mathcal{P}_{N-1}$. Against $\mu_N$, it also integrates to zero because $\mu_N$ is supported exactly on the roots $\theta_j$ of $\tilde p_N$. Therefore, to prove exactness for $P$, it remains only to prove exactness for the lower-degree remainder $r\in\mathcal{P}_{N-1}$.
+Here $s$ is the quotient and $r$ is the remainder. This decomposition is useful because the quotient term $\tilde p_N\,s$ contributes nothing to either side of the desired identity. Against $\mu$, it integrates to zero by orthogonality, since $s\in\mathcal{P}_{N-1}$ and $\tilde p_N$ is orthogonal to $\mathcal{P}_{N-1}$. Against $\mu_N$, it also integrates to zero because $\mu_N$ is supported exactly on the roots $\theta_j$ of $\tilde p_N$. Therefore, to prove exactness for $P$, it remains only to prove exactness for the lower-degree remainder $r\in\mathcal{P}_{N-1}$.
 
 Now use the fact that a polynomial of degree at most $N-1$ is completely determined by its values at $N$ distinct points. The Lagrange polynomials $\ell_1,\ldots,\ell_N$ were built precisely for this purpose: $\ell_j(\theta_i)=\mathbf{1}_{i=j}$, so the linear combination
 
