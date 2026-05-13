@@ -411,7 +411,25 @@ The **Krylov subspace method** is the idealized algorithm that, at each step $k$
 
 $$x_k = \argmin_{x \,\in\, x_0 + \mathcal{K}_k(A,\,r_0)} f(x). \tag{4}$$
 
-The convergence analysis of the Krylov subspace method follows almost immediately from the polynomial framework developed in Section 3.
+It is illuminating to compare the *exact* performance of the Krylov method to that of gradient descent with time-varying stepsizes. Write as usual $e_0 = x_0 - x^\ast = \sum_{i=1}^d c_i v_i$ in the eigenbasis of $A$. Recall that optimizing over the stepsizes $\eta_0,\ldots,\eta_{k-1}$, yields the function-value guarantee for the last iterate of gradient descent:
+
+$$
+f(x_k) - f^\ast \;=\;\min_{\substack{p \in \mathcal{P}^{r}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}. \tag{4a}
+$$
+
+For the Krylov method, any point $x \in x_0 + \mathcal{K}_k(A,r_0)$ can be written as $x = x_0 + q(A)\,r_0$ for some polynomial $q$ of degree at most $k-1$. Using the expression $r_0 = -A\,e_0$ this becomes
+
+$$
+x - x^\ast \;=\; e_0 - q(A)\,A\,e_0 \;=\; p(A)\,e_0, \tag{5}
+$$
+
+where we define the polynomial $p(\lambda) = 1 - \lambda\,q(\lambda)$. As $q$ varies over polynomials of degree at most $k-1$, the polynomial $p$ varies over *all* of $\mathcal{P}_k$ with $p(0)=1$, with no real-root restriction. The defining property $(4)$ therefore yields the *equality*
+
+$$
+f(x_k) - f^\ast \;=\; \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}\qquad \forall k. \tag{4b}
+$$
+
+The two expressions $(4a)$ and $(4b)$ differ in exactly one formal respect: the Krylov method optimizes over *all* polynomials with $p(0)=1$, whereas gradient descent is confined to those with real roots. 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -428,21 +446,16 @@ $$
 
 *Proof.* The linear rate follows directly from Theorem $3.1$: the $k$th iterate produced by the Chebyshev stepsizes lies in $x_0+\mathcal{K}_k(A,r_0)$, whereas the Krylov method minimizes $f$ over that entire affine space, and so cannot do worse.
 
-To prove finite termination, define $e_0:=x_0-x^\ast$ as usual. It suffices to show that $x^\ast$ lies in $x_0+\mathcal{K}_m(A,r_0)$. Observe that a point lies in $x_0+\mathcal{K}_k(A,r_0)$ if and only if it can be written as $x_0+q(A)r_0$ for some polynomial $q$ of degree at most $k-1$. Since equality $r_0=-Ae_0$ holds, we may write
-
-$$
-x_0-x^{\ast}+q(A)r_0=e_0-q(A)Ae_0=p(A)e_0, \tag{5}
-$$
-
- where $p(\lambda)=1-\lambda q(\lambda)$ has degree at most $k$ and satisfies $p(0)=1$. Observe that the polynomials $p$ that have this form are exactly the polynomials of degree at most $k$ having zero as a root. With this in mind, define
+To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}_m$ with $p(0)=1$ for which $\sum_{i=1}^d \lambda_i\,c_i^2\,p(\lambda_i)^2 = 0$, since this forces $f(x_m) = f^\ast$ and hence $x_m = x^\ast$. Take
 
 $$
 p(\lambda):=\prod_{i=1}^m\left(1-\frac{\lambda}{\lambda_i}\right),
 $$
 
-where $\lambda_1,\ldots,\lambda_m$ are the distinct eigenvalues of $A$. Since this polynomial $p$ vanishes at every eigenvalue of $A$, we deduce that the right-hand-side of equation $(5)$ is zero. Rearranging yields $x^\ast=x_0+q(A)e_0$ and therefore $x^\ast$ lies in $x_0+\mathcal{K}_m(A,r_0)$ as claimed. <span style="float: right;">$\square$</span>
+where $\lambda_1,\ldots,\lambda_m$ are the distinct eigenvalues of $A$. Then $p$ has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $A$, so the sum is zero as required. <span style="float: right;">$\square$</span>
 
 The convergence bound in Theorem 4.1 is identical to the Chebyshev bound in Theorem 3.1, and the iteration complexity has the same order $O(\sqrt{\kappa}\,\ln((f(x_0)-f^\ast)/\varepsilon))$. Importantly, the Krylov method achieves this complexity *without knowing $\alpha$ or $\beta$ and without requiring to specify the time horizon $k$*; moreover, finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
+
 
 ### The Conjugate Gradient algorithm implements the Krylov method 
 
@@ -766,17 +779,17 @@ The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional qua
 
 Up to this point, we emphasized worst-case bounds obtained from extreme eigenvalues alone. In this section, we obtain refined and improved guarantees that take into account the entire spectrum of the matrix $A$, rather than its extreme eigenvalues. These refined bounds are important in practice because in high-dimensional problems, the *distribution* of eigenvalues is often far from the worst case, and exploiting this structure leads to substantially sharper estimates.
 
-As motivation, recall from Section 2 that for gradient descent with time varying step-sizes $\eta_i$ we have the exact error formula:
+As motivation, recall from Section 4 that the conjugate gradient method satisfies the exact error formula
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2, \tag{12}
+f(x_k) - f^\ast \;=\; \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}}\, \frac{1}{2}\sum_{i=1}^d \lambda_i\,p(\lambda_i)^{2}\,c_i^2, \tag{12}
 $$
 
-where we define $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ and $c_i$ are the coefficients of $e_0$ in the eigenbasis of $A$. The worst-case analysis bounds this sum by pulling out the maximum: $\max_{\lambda\in[\alpha,\beta]} p_k(\lambda)^2$ in the positive definite case, or $\max_{\lambda\in[0,\beta]} \lambda\, p_k(\lambda)^2$ in the positive semidefinite case. This upper bound ignores two sources of structure:
+where $c_i$ are the coefficients of $e_0 = x_0 - x^\ast$ in the eigenbasis of $A$. The worst-case analysis upper bounds this minimum by exhibiting a particular polynomial $p$ — a (shifted) Chebyshev polynomial — and then bounding the resulting sum by pulling out the maximum: $\max_{\lambda\in[\alpha,\beta]} p(\lambda)^2$ in the positive definite case, or $\max_{\lambda\in[0,\beta]} \lambda\, p(\lambda)^2$ in the positive semidefinite case. This bound ignores two sources of structure:
 
 1. **Initial error.** If the components $c_i$ of the initial error are small for small eigenvalues, the sum is dominated by well-conditioned directions. This is captured by *source conditions*.
 
-2. **Eigenvalue density.** If most eigenvalues lie far from the point where $\lambda p_k(\lambda)^{2}$ is largest, replacing the sum by an integral against the spectral density gives a sharper estimate. This is the *spectral integral* approach.
+2. **Eigenvalue density.** If most eigenvalues lie far from the point where $\lambda\, p(\lambda)^{2}$ is largest, replacing the sum by an integral against the spectral density gives a sharper estimate. This is the *spectral integral* approach.
 
 We develop both ideas in turn, then combine them.
 
@@ -889,7 +902,13 @@ $$f(x_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{
 
 </div>
 
-*Proof.* Write $c_i = \lambda_i^s \tilde{c}_i$, where $\tilde{c}_i = v_i^\top w$. Substituting into $(12)$ yields:
+*Proof.* For GD with stepsize $\eta = 1/\beta$, the error satisfies $e_k = (I - A/\beta)^k e_0$, so
+
+$$
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1-\lambda_i/\beta)^{2k}\,c_i^2.
+$$
+
+Writing $c_i = \lambda_i^s \tilde{c}_i$ with $\tilde{c}_i = v_i^\top w$, this becomes
 
 $$
 f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2,
@@ -951,13 +970,13 @@ The following figure shows the actual convergence of gradient descent (with step
 
 ### The spectral integral
 
-Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that gradient descent with time varying stepsizes $\eta_1,\ldots, \eta_k$ satisfies
+Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that for any first-order method whose error has the form $e_k = p_k(A)\,e_0$ for some polynomial $p_k \in \mathcal{P}_k$ with $p_k(0)=1$ — which includes gradient descent with stepsizes $\eta_j$ (where $p_k(\lambda) = \prod_j(1-\eta_j\lambda)$), the Chebyshev iteration, and the conjugate gradient method (which adaptively minimizes over $p_k$) — we have
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2.
+f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2,
 $$
 
-where we define the polynomial $p_k(\lambda)=\prod_{j=1}^k(1-\eta_j\lambda)$ and $c_i$ are the coordinates of $e_0$ in the eigenbasis of $A$. The idea is that if $d$ is large and the eigenvalues are well-spread out, the sum in the expression may be estimated as an integral with respect to a continuous density.  To make this precise define the **spectral error measure**
+where $c_i$ are the coordinates of $e_0$ in the eigenbasis of $A$. The idea is that if $d$ is large and the eigenvalues are well-spread out, the sum in the expression may be estimated as an integral with respect to a continuous density.  To make this precise define the **spectral error measure**
 
 $$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
 
@@ -1264,15 +1283,15 @@ $$
 
 In all three regimes, the square-root edge behavior of Marchenko--Pastur yields the same $k^{-3/2}$ polynomial factor; what changes is whether it multiplies an exponential term (gap $>0$) or appears alone (gap $=0$).
 
-### Extensions to time varying stepsizes and the Krylov method
+### Extensions to the Krylov method
 
-We now turn to the analogous analysis for **gradient descent with time-varying stepsizes**. Passing directly to the limit under the reweighted spectral assumption $\nu_d\Rightarrow\nu$ of the earlier subsections, finding the best stepsize sequence is equivalent to solving the polynomial problem
+We now turn to the analogous analysis for thje **Krylov method**. Passing directly to the limit under the reweighted spectral assumption $\nu_d\Rightarrow\nu$ of the earlier subsections, finding the best stepsize sequence is equivalent to solving the polynomial problem
 
 $$
 \mathcal{E}_k \;=\; \min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\,\int_{0}^{\beta}\lambda\,p(\lambda)^2\,d\nu(\lambda), \tag{19}
 $$
 
-where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta]$ --- for example $\nu=\lVert e_0\rVert^2\,\mu_{MP}$ in the Marchenko--Pastur setting --- and $\mathcal{P}_k$ consists of degree at most $k$ polynomials. Note that the constraint set $\mathcal{V}_k:=\lbrace p\in \mathcal{P}_k: p(0)=1\rbrace$ is a finite-dimensional affine space. Strictly speaking, we should stipulate in $(19)$ that the polynomials in question have all real roots. For all examples we will consider the optimal polynomial in $\mathcal{V}_k$ will have all real roots and therefore there is no distinction between the two optimization problems.
+where $\nu$ is the limiting (reweighted) spectral measure supported on $[0,\beta]$ --- for example $\nu=\lVert e_0\rVert^2\,\mu_{MP}$ in the Marchenko--Pastur setting --- and $\mathcal{P}_k$ consists of degree at most $k$ polynomials. Note that the constraint set $\mathcal{V}_k:=\lbrace p\in \mathcal{P}_k: p(0)=1\rbrace$ is a finite-dimensional affine space. 
 
 Interestingly, we will now see that the solution to $(19)$ can be computed explicitly. The key idea is to realize that the objective has the form $$\lVert p\rVert^2$$ where the norm is induced by the inner product $$\langle f,g\rangle=\int_{0}^{\beta} fg\,d\mu$$ with reweighted measure $$d\mu(\lambda)=\lambda\cdot d\nu(\lambda)$$. Let $$\psi_0,\dots,\psi_k$$ be any orthonormal basis of $$\mathcal{P}_k$$ with respect to this inner product; such a basis can be constructed analytically by Gram--Schmidt. Writing $$p=\sum_{i=0}^k u_i\,\psi_i$$ for unknown coefficients $$u_i$$, the optimization problem $(19)$ is equivalent to
 
@@ -2065,11 +2084,27 @@ The Kaczmarz method itself, in its deterministic cyclic form, dates back to Kacz
 
 This section establishes that the upper bounds developed in Sections 2--4 and Section 8 are sharp, by exhibiting matching lower bounds in two settings of interest. The first is the **deterministic optimization** setting of Sections 2--4: we close the loophole left by the polynomial/Krylov framework, which only constrains methods whose iterates lie in $x_0 + \mathcal{K}_k(A,r_0)$, and show that even algorithms allowed to query gradients at arbitrary points cannot beat the Chebyshev/CG rate $O(\sqrt{\kappa}\,\log(1/\varepsilon))$. The hard instance is the tridiagonal **chain quadratic** of Nemirovski and Yudin [NY83]. The second is the **stochastic estimation** setting of Section 8: we show that on the well-specified additive-Gaussian-noise least-squares problem, no algorithm processing $T$ samples can extract excess risk smaller than $\sigma^2 d/(2T)$, matching tail-averaged streaming SGD up to an absolute constant. The argument is the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
 
-For the first setting, we restrict to **deterministic first-order algorithms**, by which we mean a procedure $\mathcal{A}$ producing iterates $x_0, x_1, \ldots \in \mathbb{R}^d$ in which $x_0$ is a fixed deterministic vector --- depending on the problem only through known parameters such as $d$ --- and $x_{t+1}$ is a fixed deterministic function of the past gradients $g_0 = \nabla f(x_0), \ldots, g_t = \nabla f(x_t)$. This includes gradient descent with any sequence of stepsizes, conjugate gradients, and indeed any reasonable first-order method.
+For the first setting, we restrict to **deterministic first-order algorithms**, by which we mean a procedure $\mathcal{A}$ producing iterates $x_0, x_1, \ldots \in \mathbb{R}^d$ in which $x_0$ is a fixed deterministic vector --- depending on the problem only through known parameters--- and $x_{t+1}$ is a fixed deterministic function of the past gradients $g_0 = \nabla f(x_0), \ldots, g_t = \nabla f(x_t)$. This includes gradient descent with any sequence of stepsizes, conjugate gradients, and indeed any reasonable first-order method.
 
-### A hard quadratic and the chain property
+### Zero-chain quadratics
 
-Consider the quadratic on $\mathbb{R}^d$
+Write $E_m := \operatorname{span}\lbrace e_1,\dots,e_m\rbrace$ for the span of the first $m$ standard basis vectors of $\mathbb{R}^d$, with the convention $E_0 := \lbrace 0\rbrace$. The structural feature that drives the entire lower-bound argument is the following property of certain convex quadratics, which controls how the support of iterates can grow under first-order queries.
+
+<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Definition (Zero-chain quadratic).** A convex quadratic $\bar f : \mathbb{R}^d \to \mathbb{R}$ is called a **zero-chain quadratic** if it satisfies the *chain property*
+
+$$
+z \in E_m \quad \Longrightarrow \quad \nabla\bar f(z) \in E_{m+1}, \qquad \forall m = 0, 1, \ldots, d-1.
+$$
+
+</div>
+
+In words: starting from any vector supported on the first $m$ coordinates, the gradient is supported on the first $m+1$ coordinates. *Each gradient query thus advances the support by at most one new coordinate.*
+
+<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Example (Tridiagonal chain quadratic).** The canonical example, due to Nemirovski and Yudin, is the quadratic on $\mathbb{R}^d$
 
 $$
 \bar f(z) \;=\; \tfrac{1}{2}\, z^\top T z - e_1^\top z,
@@ -2090,31 +2125,37 @@ $$
 The matrix $T$ is positive definite, with eigenvalues $\lambda_j(T) = 4\sin^2\bigl(j\pi/(2(d+1))\bigr)$ for $j=1,\ldots,d$, so $\bar f$ has a unique minimizer. This minimizer solves $T z^\ast = e_1$, and the tridiagonal recursion gives the explicit solution
 
 $$
-z^\ast_i \;=\; 1 - \frac{i}{d+1}, \qquad i = 1, \ldots, d:
+z^\ast_i \;=\; 1 - \frac{i}{d+1}, \qquad i = 1, \ldots, d;
 $$
 
-every coordinate of $z^\ast$ is nonzero, with magnitudes decreasing linearly from near $1$ at $i = 1$ to near $0$ at $i = d$. Write $E_m := \operatorname{span}\lbrace e_1,\dots,e_m\rbrace$ for the span of the first $m$ standard basis vectors.
-
-The structural feature that drives the entire lower-bound argument is the **chain property** of $\bar f$:
-
-$$
-z \in E_m \quad \Longrightarrow \quad \nabla\bar f(z) = T z - e_1 \in E_{m+1}.
-$$
-
-This is immediate from tridiagonality: the $i$th entry of $Tz$ depends only on $z_{i-1}, z_i, z_{i+1}$, so a vector supported on the first $m$ coordinates produces a gradient supported on the first $m+1$. *Each gradient query thus advances the support by at most one new coordinate.*
+every coordinate of $z^\ast$ is nonzero, with magnitudes decreasing linearly from near $1$ at $i = 1$ to near $0$ at $i = d$. The chain property is immediate from tridiagonality of $T$: the $i$th entry of $\nabla\bar f(z) = Tz - e_1$ depends only on $z_{i-1}, z_i, z_{i+1}$, so a vector supported on the first $m$ coordinates produces a gradient supported on the first $m+1$. Hence $\bar f$ is a zero-chain quadratic.
 
 The animation below shows the chain property at work: gradient descent is run on $\bar f$ from $x_0 = 0$, and at every step the supports of $x_t$ (left panel) and $\nabla\bar f(x_t)$ (right panel) are exactly $\{1,\ldots,t\}$ and $\{1,\ldots,t+1\}$. Untouched coordinates are gray; activated coordinates are blue.
 
 ![Chain property of the tridiagonal quadratic: each gradient query activates one new coordinate](figures/chain_property.gif)
 
-If we had a guarantee that the iterates of any deterministic first-order method always satisfied $x_t \in E_{2t+1}$, the chain property would already yield a clean lower bound on $\lVert x_t - z^\ast\rVert$ from the part of $z^\ast$ that the iterate cannot reach. Of course, no such guarantee holds --- a method is free to query off-coordinate points. The next lemma resolves the difficulty: by composing $\bar f$ with a carefully chosen rotation, we force any deterministic first-order method to behave as if it were operating in coordinates.
+</div>
+
+<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Example (Rescaling).** The class of zero-chain quadratics is closed under positive scalar rescaling of the input and output: if $\bar f$ is a zero-chain quadratic on $\mathbb{R}^d$ and $\alpha, \gamma > 0$ are any constants, then the rescaled function
+
+$$
+f(x) \;:=\; \alpha\,\bar f(\gamma\,x)
+$$
+
+is itself a zero-chain quadratic. Indeed, the chain rule gives $\nabla f(x) = \alpha\gamma\,\nabla\bar f(\gamma x)$ and the zero-chain property follows immediately. This closure under rescaling will let us tune the smoothness constant and the initial distance $\lVert x_0 - x^\ast\rVert$ to any prescribed values without losing the chain structure.
+
+</div>
+
+If we had a guarantee that the iterates of any deterministic first-order method always satisfied $x_t \in E_{2t+1}$, the chain property would already yield a clean lower bound on $\lVert x_t - x^\ast\rVert$ from the part of the minimizer that the iterate cannot reach. Of course, no such guarantee holds --- a method is free to query off-coordinate points. The next lemma resolves the difficulty: by composing a zero-chain quadratic with a carefully chosen rotation, we force any deterministic first-order method to discover new coordinates two at a time.
 
 ### The rotation lemma
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 
-**Lemma 9.1 (Rotation neutralizes arbitrary queries).** *Fix $k \ge 0$ and assume $d \ge 2k + 2$. For every deterministic first-order algorithm $\mathcal{A}$ there exists an orthogonal matrix $Q \in \mathbb{R}^{d\times d}$ such that, when $\mathcal{A}$ is run on*
+**Lemma 9.1 (Rotation neutralizes arbitrary queries).** *Let $\bar f$ be a zero-chain quadratic on $\mathbb{R}^d$, fix $k \ge 0$, and assume $d \ge 2k + 2$. For every deterministic first-order algorithm $\mathcal{A}$ there exists an orthogonal matrix $Q \in \mathbb{R}^{d\times d}$ such that, when $\mathcal{A}$ is run on*
 
 $$
 f(x) \;:=\; \bar f(Q^\top x),
@@ -2160,9 +2201,9 @@ $$
 
 which completes the inductive step. The remaining columns $q_{2k+3}, \dots, q_d$ play no role during the first $k$ rounds and may be completed to an orthonormal basis arbitrarily once the algorithm has terminated. <span style="float: right;">$\square$</span>
 
-Lemma 9.1 is the formal reason that off-Krylov queries do not break worst-case lower bounds. Such queries do break the *literal* claim that all iterates lie in a Krylov subspace, but on a suitably rotated hard instance they still uncover new information only one dimension at a time. The lower-bound recipe is therefore:
+Lemma 9.1 is the formal reason that off-Krylov queries do not break worst-case lower bounds. Such queries do break the *literal* claim that all iterates lie in a Krylov subspace, but on a suitably rotated zero-chain quadratic they still uncover new information only one dimension at a time. The lower-bound recipe is therefore:
 
-1. Pick a hard "chain" quadratic $\bar f$ with the chain property.
+1. Pick a zero-chain quadratic $\bar f$, possibly after rescaling.
 2. Use Lemma 9.1 to reduce any deterministic first-order method on a rotated instance to a *zero-respecting* method on $\bar f$ --- one whose iterates lie in the growing chain of coordinate subspaces $E_1 \subseteq E_3 \subseteq E_5 \subseteq \cdots$.
 3. Lower-bound the error of any point supported on only the first $2k+1$ coordinates.
 
@@ -2179,29 +2220,27 @@ Step 3 is now an explicit calculation on the tridiagonal example.
 **Theorem 9.3 (Lower bound).** *Fix $k \ge 1$ and $\beta, R > 0$, and set $d := 4k+2$. There exist a convex quadratic $f : \mathbb{R}^d \to \mathbb{R}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$ and an initialization $x_0$ with $\lVert x_0 - x^\ast\rVert = R$ such that for every deterministic first-order algorithm $\mathcal{A}$ the iterates satisfy*
 
 $$
-f(x_k) - f^\ast \;\ge\; \frac{c\,\beta\,R^2}{(k+1)^2}
+f(x_k) - f^\ast \;\ge\; \frac{3}{128}\cdot\frac{\beta\,R^2}{(k+1)^2}.
 $$
-
-*for an absolute constant $c > 0$.*
 
 </div>
 
-*Proof.* Set $d := 4k+2$ and let $\bar f(z) = \tfrac12 z^\top T z - z^\top e_1$ be the chain quadratic on $\mathbb{R}^d$, with $T$ the tridiagonal Hessian and $z^\ast$ its minimizer. Fix the rescalings
+*Proof.* Set $d := 4k+2$ and let $\bar f(z) = \tfrac12 z^\top T z - z^\top e_1$ be the tridiagonal chain quadratic on $\mathbb{R}^d$, with $T$ the tridiagonal Hessian and $z^\ast$ its minimizer. Fix the rescalings
 
 $$
-\alpha \;:=\; \frac{\beta\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \gamma \;:=\; \frac{\lVert z^\ast\rVert}{R},
+\alpha \;:=\; \frac{\beta\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \gamma \;:=\; \frac{\lVert z^\ast\rVert}{R}.
 $$
 
-and observe that the scaled chain quadratic $z \mapsto \alpha\,\bar f(\gamma z)$ has the same chain property as $\bar f$ — its gradient is $\alpha\gamma(\gamma T z - e_1)$, which is supported on the first $m+1$ coordinates whenever $z$ is supported on the first $m$. Lemma 9.1 therefore applies verbatim with $\bar f$ replaced by $\alpha\,\bar f(\gamma\,\cdot\,)$, furnishing an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance
+By the rescaling example, $\tilde f(z) := \alpha\,\bar f(\gamma\,z)$ is itself a zero-chain quadratic. Lemma 9.1 applied to $\tilde f$ therefore furnishes an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance
 
 $$
-f(x) \;:=\; \alpha\,\bar f\bigl(\gamma\,Q^\top x\bigr),
+f(x) \;:=\; \tilde f(Q^\top x) \;=\; \alpha\,\bar f\bigl(\gamma\,Q^\top x\bigr),
 $$
 
 the iterates satisfy
 
 $$
-\gamma\,Q^\top x_t \;\in\; E_{2t+1}, \qquad \forall\, t = 0, 1, \ldots, k.
+Q^\top x_t \;\in\; E_{2t+1}, \qquad \forall\, t = 0, 1, \ldots, k.
 $$
 
 This function $f$ has the required parameters: its Hessian is $\alpha\gamma^2\,Q T Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\gamma^2\,\lVert T\rVert_{\mathrm{op}} = \beta$, and its minimizer is $x^\ast = Q\,z^\ast/\gamma$ with $\lVert x_0 - x^\ast\rVert = \lVert z^\ast\rVert/\gamma = R$.
@@ -2238,6 +2277,252 @@ The bound matches the upper bound $\beta R^2/(8k^2)$ of Theorem 6.2 up to an abs
 
 The hard quadratic and the rotation argument are due to Nemirovski and Yudin [NY83]; modern treatments appear in Nesterov [Nes04, Nes18]. The same chain construction underlies the corresponding lower bounds for general smooth strongly convex and smooth convex minimization beyond the quadratic class, with only minor adjustments to the choice of $T$ and the way the chain quadratic is embedded in $\mathbb{R}^d$.
 
+### Lower bounds with structured spectrum
+
+Theorem 9.3 closes the gap in the *worst case*: no deterministic first-order method beats Chebyshev/CG on every quadratic with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$. Recall, however, that Section 7 showed that *structured* spectra --- power-law densities $\phi(\lambda) = M\lambda^{a-1}$ and Marchenko--Pastur laws, for instance --- yield much faster CG rates than the worst case allows. A natural question is whether these structured rates are themselves tight against arbitrary deterministic first-order methods.
+
+The answer is that the structured rate is tight: *the same residual polynomial that drives the CG upper bound also certifies a matching lower bound for every deterministic first-order method*, up to a constant shift $k \mapsto 2k+1$. Our goal is to show why this is the case. 
+
+We bgin by recalling from Section 7 the **spectral measure** $\mu := \sum_{i=1}^d c_i^2\,\delta_{\lambda_i}$ on $[0,\beta]$, where $c_i$ are the coordinates of the initial error $x_0 - x^\ast$ in the eigenbasis of $A$. Rewriting $(4b)$ as an integral against $\mu$ gives the spectral-measure form of the CG identity:
+
+$$
+f(x_k^{\mathrm{CG}}) - f^\ast \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}~\int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda), \tag{61}
+$$
+
+We will lower-bound the performance of any deterministic method by the same quantity on the right-hand side of $(61)$ but with $k$ replaced by $2k+1$. The construction relies on a classical ingredient,  Gauss quadrature. This basic technique, summarized in Lemma 9.2, shows that for any nondegenerate measure $\mu$ on a compact interval, there exists a measure  $\mu_N$ **supported only on $N$ points**, such that any polynomial with degree at most $2N-1$ integrates to the same quantity with respect to both measures $\mu$ and $\mu_N$. In this way, we can reduce the measure $\mu$ to a measure $\mu_N$ supported only on $N\approx k$ points.
+
+
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma 9.2 (Gauss quadrature).** *Let $\mu$ be a positive Borel measure on $[0,\beta]$ supported on at least $N+1$ distinct points, with finite moments up to order $2N-1$. Then there exist points $\theta_1 < \cdots < \theta_N$ in the interior of the convex hull of $\mathrm{supp}(\mu)$ and positive weights $w_1,\ldots,w_N > 0$ such that the atomic measure*
+
+$$\mu_N \;:=\; \sum_{j=1}^N w_j\,\delta_{\theta_j} \tag{62}
+$$
+
+*agrees with $\mu$ on every polynomial of degree at most $2N-1$:*
+
+$$\int P\,d\mu_N \;=\; \int P\,d\mu \qquad \text{for every } P \in \mathcal{P}_{2N-1}. \tag{$\dagger$}
+$$
+
+</div>
+
+The measure $\mu_N$ is called the **$N$-point Gauss quadrature rule** for $\mu$. Figure 9.1 illustrates the rule for a Beta-like density: just $N=5$ atoms suffice to reproduce the continuous integral exactly on every polynomial of degree at most $2N-1 = 9$.
+
+![Gauss quadrature for a non-uniform measure on $[0,1]$: left, the continuous density (blue) and the $N=5$ atoms of $\mu_N$ (red stems with heights proportional to the weights $w_j$); right, a test polynomial $P \in \mathcal{P}_9$ together with its values at the Gauss nodes — the continuous integral $\int P\,d\mu$ equals the discrete sum $\sum_j w_j\,P(\theta_j)$ exactly.](figures/gauss_quadrature.png)
+
+*Proof.* We will choose the nodes first, then choose the weights so that all lower-degree polynomials are integrated correctly.
+
+Apply Gram--Schmidt in $L^2(\mu)$ to the monomials $\{1,\lambda,\ldots,\lambda^N\}$, producing orthonormal polynomials $\tilde p_0,\ldots,\tilde p_N$ with $\deg \tilde p_n=n$. This construction is well-defined: after subtracting the projection of $\lambda^n$ onto the lower-degree polynomials, the remaining polynomial cannot have zero $L^2(\mu)$ norm unless it vanishes on $\mathrm{supp}(\mu)$; but a nonzero polynomial of degree at most $n\le N$ cannot vanish on the at least $N+1$ distinct support points of $\mu$. Take the quadrature nodes $\theta_1<\cdots<\theta_N$ to be the roots of $\tilde p_N$.
+
+We claim that these roots are real, simple, and lie in the interior of the convex hull of $\mathrm{supp}(\mu)$. The key point is that $\tilde p_N$ must change sign at least $N$ times across the support of $\mu$. To see this, suppose instead that it changes sign only $m<N$ times. Let $\xi_1<\cdots<\xi_m$ denote the corresponding sign-change locations. Between consecutive $\xi_i$'s, the sign of $\tilde p_N$ is constant, and crossing a $\xi_i$ flips the sign. Hence the polynomial
+
+$$r(\lambda):=\prod_{i=1}^m(\lambda-\xi_i)$$
+
+changes sign at exactly the same locations. After multiplying $r$ by $-1$ if necessary, we therefore have $\tilde p_N(\lambda)\,r(\lambda)\ge 0$ for every $\lambda\in \mathrm{supp}(\mu)$. Moreover, the product is not identically zero on $\mathrm{supp}(\mu)$: otherwise $\tilde p_N$ would vanish on all of $\mathrm{supp}(\mu)$ except possibly the $m$ points $\xi_i$, forcing the degree-$N$ polynomial $\tilde p_N$ to have too many zeros. Since we have $r\in \mathcal{P}_m\subseteq \mathcal{P}_{N-1}$, we get
+
+$$\int \tilde p_N(\lambda)\,r(\lambda)\,d\mu(\lambda)>0,$$
+
+contradicting the orthogonality $\tilde p_N \perp \mathcal{P}_{N-1}$.
+
+Thus $\tilde p_N$ has at least $N$ sign changes on the support. Each sign change gives a distinct real zero, while $\deg \tilde p_N=N$, so these are exactly the $N$ distinct roots of $\tilde p_N$. The roots lie between support points, hence in the interior of the convex hull of $\mathrm{supp}(\mu)$.
+
+Now let $\ell_j$ be the polynomial:
+
+$$\ell_j(\lambda):=\prod_{i\ne j}\frac{\lambda-\theta_i}{\theta_j-\theta_i} \qquad\textrm{and note}\qquad \ell_j(\theta_i)=\mathbf{1}_{i=j},
+$$
+
+Define the weights
+
+$$w_j:=\int \ell_j(\lambda)\,d\mu(\lambda).
+$$
+
+We claim that these weights give exact integration on $\mathcal{P}_{2N-1}$. Fix $P\in \mathcal{P}_{2N-1}$. Since $\tilde p_N$ is a degree-$N$ polynomial, ordinary polynomial long division lets us write $P$ uniquely as
+
+$$P=\tilde p_N\,s+r, \qquad \deg s,\deg r\le N-1.
+$$
+
+Here $s$ is the quotient and $r$ is the remainder. This decomposition is useful because the quotient term $\tilde p_Ns$ contributes nothing to either side of the desired identity. Against $\mu$, it integrates to zero by orthogonality, since $s\in\mathcal{P}_{N-1}$ and $\tilde p_N\perp \mathcal{P}_{N-1}$. Against $\mu_N$, it also integrates to zero because $\mu_N$ is supported exactly on the roots $\theta_j$ of $\tilde p_N$. Therefore, to prove exactness for $P$, it remains only to prove exactness for the lower-degree remainder $r\in\mathcal{P}_{N-1}$.
+
+Now use the fact that a polynomial of degree at most $N-1$ is completely determined by its values at $N$ distinct points. The Lagrange polynomials $\ell_1,\ldots,\ell_N$ were built precisely for this purpose: $\ell_j(\theta_i)=\mathbf{1}_{i=j}$, so the linear combination
+
+$$\sum_{j=1}^N r(\theta_j)\,\ell_j.
+$$
+
+has the same value as $r$ at every node $\theta_i$. Since both sides have degree at most $N-1$, equality at the $N$ distinct nodes forces equality $r=\sum_{j=1}^N r(\theta_j)\,\ell_j$ as polynomials. Therefore
+
+$$
+\int r\,d\mu
+=\sum_{j=1}^N r(\theta_j)\int \ell_j\,d\mu
+=\sum_{j=1}^N r(\theta_j)w_j
+=\int r\,d\mu_N.
+$$
+
+This proves exactness for the remainder. It remains only to check that the weights are positive. The polynomial $\ell_j-\ell_j^2$ vanishes at every node $\theta_i$, so it is divisible by $\tilde p_N$:
+
+$$\ell_j-\ell_j^2=\tilde p_N\,h_j
+$$
+
+for some $h_j\in\mathcal{P}_{N-2}$. Orthogonality again gives $\int \tilde p_N h_j\,d\mu=0$, and therefore
+
+$$w_j=\int \ell_j\,d\mu=\int \ell_j^2\,d\mu>0.
+$$
+
+Combining this with the reduction from $P$ to $r$ proves $(\dagger)$. <span style="float: right;">$\square$</span>
+
+Gauss quadrature gives us a nice finite measure $\mu_N$ that is indistinguishable from $\mu$ when tested again polynomials of degree $\approx k$. We will use this measure $\mu_N$ to construct a hard instance
+
+$$\bar f(z)=\frac{1}{2}z^\top A z-b^\top z$$
+
+whose Hessian is tridiagonal, whose Krylov spaces grow along the coordinate chain, and whose minimizer has spectral measure $\mu_N$ (hence the same relevant moments as $\mu$). The next lemma supplies exactly this realization. 
+
+In what follows, a tridiagonal matrix is called **irreducible** if all of its off-diagonal entries are nonzero; for a symmetric tridiagonal matrix, this means
+
+$$A_{i,i+1}=A_{i+1,i}\ne 0, \qquad \forall i=1,\ldots,N-1.$$
+
+
+
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma 9.3 (Jacobi realization).** Let $\mu$ be a positive Borel measure on $[0,\beta]$ with $M_2 := \int \lambda^2\,d\mu < \infty$, supported on at least $N+1 := 2k+3$ distinct points in $(0,\beta]$. Then there exist an irreducible SPD tridiagonal matrix $A \in \mathbb{R}^{N\times N}$ with $\lVert A\rVert_{\mathrm{op}} \le \beta$ and a scalar $\tau > 0$ such that, for $b := \tau e_1$ and $x^\ast := A^{-1}b$, the following holds. If $A=\sum_{i=1}^N \lambda_i v_i v_i^\top$ is an eigendecomposition and $x^\ast=\sum_{i=1}^N c_i v_i$, then the atomic **spectral measure**
+
+$$\mu_{A,x^\ast}:=\sum_{i=1}^N c_i^2\,\delta_{\lambda_i},$$
+
+*agrees with $\mu$ on every polynomial of degree at most $4k+3$, meaning*
+
+$$\int P(\lambda)\,d\mu_{A,x^\ast}(\lambda)=\int P(\lambda)\,d\mu(\lambda)\qquad \forall P\in\mathcal{P}_{4k+3}.$$
+
+</div>
+
+*Proof.* Write $N := 2k+2$. Let $\mu_N$ be the $N$-point Gauss quadrature rule for $\mu$ from Lemma 9.2.  Equation $(\dagger)$ applied to the polynomial  $P(\lambda)=\lambda^2$ yields $\int \lambda^2\,d\mu_N = \int \lambda^2\,d\mu = M_2$, and therefore
+
+$$\nu_N := \frac{\lambda^2}{M_2}\,\mu_N
+$$
+
+is a probability measure on $(0,\beta]$ with exactly $N$ atoms.
+
+Now apply Gram--Schmidt in $L^2(\nu_N)$ to $\{1,\lambda,\ldots,\lambda^{N-1}\}$, producing orthonormal polynomials $q_0\equiv 1,q_1,\ldots,q_{N-1}$. Since $\nu_N$ has exactly $N$ atoms, $L^2(\nu_N)$ is just the space of functions on those $N$ points, hence is $N$-dimensional. The monomials $1,\lambda,\ldots,\lambda^{N-1}$ span this space. Therefore $q_0,\ldots,q_{N-1}$ form an orthonormal basis for all of $L^2(\nu_N)$.
+
+Let $M_\lambda$ denote multiplication by $\lambda$ on $L^2(\nu_N)$, and write its matrix in this basis:
+
+$$
+A_{ij}:=\langle q_{i-1},\,\lambda q_{j-1}\rangle_{\nu_N},\qquad i,j=1,\ldots,N.
+$$
+
+This is the so-called Jacobi matrix. It is clearly symmetric, and it is tridiagonal by the degree-orthogonality relation: $\lambda q_{j-1}$ has degree $j$, so it can have nonzero inner product only with $q_{j-2},q_{j-1},q_j$. Thus only the entries with $|i-j|\le 1$ can be nonzero.
+
+We claim that the off-diagonal entries of $A$ are positive. To see this, write the positive leading coefficient of $q_n$ as $\kappa_n>0$. Comparing leading terms in the expansion of $\lambda q_n$ in the orthonormal basis gives
+
+$$
+\lambda q_n
+= \frac{\kappa_n}{\kappa_{n+1}}\,q_{n+1}+\text{lower-degree terms}.
+$$
+
+Because the basis is orthonormal, the coefficient of $q_{n+1}$ in this expansion is exactly $\langle q_{n+1},\lambda q_n\rangle_{\nu_N}$. Therefore
+
+$$\langle q_{n+1},\lambda q_n\rangle_{\nu_N}=\frac{\kappa_n}{\kappa_{n+1}}>0,$$
+
+and $A$ is irreducible. The bounds on $A$ follow directly from its quadratic form. If $u\in\mathbb{R}^N$ corresponds to the polynomial $p_u:=\sum_{n=0}^{N-1}u_{n+1}q_n$, then
+
+$$
+u^\top A u=\int \lambda\,p_u(\lambda)^2\,d\nu_N(\lambda).
+$$
+
+Since $\nu_N$ is supported on $(0,\beta]$, we have
+
+$$
+0<u^\top A u\le \beta\int p_u(\lambda)^2\,d\nu_N(\lambda)=\beta\lVert u\rVert^2
+$$
+
+for every nonzero $u$. Therefore $A$ is SPD and $\lVert A\rVert_{\mathrm{op}}\le \beta$.
+
+We now claim that for any vector $z$ and polynomial $P$, the spectral measure evaluates as 
+
+$$
+z^\top P(A)z=\int P(\lambda)\,d\mu_{A,z}(\lambda).
+$$
+
+Indeed, if $A=\sum_i\lambda_i v_i v_i^\top$, then $P(A)=\sum_i P(\lambda_i)v_i v_i^\top$, so
+
+$$
+z^\top P(A)z
+=\sum_i P(\lambda_i)(v_i^\top z)^2
+=\int P(\lambda)\,d\mu_{A,z}(\lambda).
+$$
+
+Now, set $\tau:=\sqrt{M_2}$, $b:=\tau e_1$, and $x^\ast:=A^{-1}b=\tau A^{-1}e_1$. Since $e_1$ corresponds to the constant polynomial $q_0\equiv 1$, for any polynomial $P$ the identification of $A$ with multiplication by $\lambda$ gives
+
+$$
+\begin{aligned}
+x^{\ast\top}P(A)x^\ast
+&=\tau^2\,e_1^\top A^{-1}P(A)A^{-1}e_1 \\
+&=\tau^2\,\langle 1,\,\lambda^{-1}P(\lambda)\lambda^{-1}\cdot 1\rangle_{L^2(\nu_N)} \\
+&=\tau^2\int \lambda^{-2}P(\lambda)\,d\nu_N(\lambda).
+\end{aligned}
+$$
+
+Therefore the preceding display says that $\mu_{A,x^\ast}$ is the measure whose integral against $P$ is the integral of $P$ against $\tau^2\lambda^{-2}\nu_N$. In other words,
+
+$$
+\mu_{A,x^\ast}
+=\tau^2\lambda^{-2}\nu_N
+=M_2\lambda^{-2}\left(\frac{\lambda^2}{M_2}\mu_N\right)
+=\mu_N.
+$$
+
+Lemma 9.2 says that $\mu_N$ agrees with $\mu$ on $\mathcal{P}_{2N-1}=\mathcal{P}_{4k+3}$, proving the claim. <span style="float: right;">$\square$</span>
+
+The Jacobi instance $(A,\tau e_1)$ has two further properties that make it a good hard instance.
+
+First, its Krylov spaces are exactly the coordinate subspaces:
+
+$$\mathcal{K}_m(A,b)=\operatorname{span}\{b,Ab,\ldots,A^{m-1}b\}=E_m,\qquad \forall m\le N.$$
+
+Indeed, the inclusion $\mathcal{K}_m(A,b)\subseteq E_m$ follows directly from tridiagonality. The reverse inclusion is where irreducibility is used. Since every subdiagonal entry of $A$ is nonzero, the $j$th coordinate of $A^{j-1}e_1$ is the nonzero product $A_{j,j-1}A_{j-1,j-2}\cdots A_{2,1}\neq 0.$
+Thus the vectors $e_1,Ae_1,\ldots,A^{m-1}e_1$ reveal exactly one new coordinate at each step, and therefore span $E_m$.
+
+Second, the quadratic $\bar f(z):=\tfrac12 z^\top A z-b^\top z$ is a zero-chain quadratic. If $z\in E_m$, then tridiagonality gives $Az\in E_{m+1}$, while $b=\tau e_1\in E_{m+1}$. Hence $\nabla\bar f(z)=Az-b\in E_{m+1}$. Lemma 9.1 therefore applies to $\bar f$, and combined with $(61)$ on the unrotated $(A,b)$ yields the structured-spectrum analogue of Theorem 9.3.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 9.4 (Structured spectral-error lower bound).** *Fix target least-squares spectral data: real numbers $\lambda_i\in(0,\beta]$ and $c_i\in \mathbb{R}$ for all $i=1,\ldots, d$. Suppose that at least $2k+3$ of the values $\lambda_i$ are distinct. Define the corresponding measure*
+
+$$\mu_{\mathrm{err}}:=\sum_i c_i^2\,\delta_{\lambda_i}.$$
+
+*Then for every deterministic first-order algorithm $\mathcal{A}$ there exists a convex quadratic least-squares instance $f$ on $\mathbb{R}^{2k+2}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$, initialization $x_0 = 0$, and spectral error measure agreeing with $\mu_{\mathrm{err}}$ on polynomials of degree at most $4k+3$, such that the iterate $x_k$ produced by $\mathcal{A}$ satisfies*
+
+$$
+f(x_k) - f^\ast \;\ge\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_{2k+1} \\ p(0) = 1}}\int_0^\beta \lambda\,p(\lambda)^2\,d\mu_{\mathrm{err}}(\lambda).
+$$
+
+</div>
+
+*Proof.* Let $(A, b)$ be the Jacobi realization of the target spectral error measure $\mu_{\mathrm{err}}$ from Lemma 9.3, and set $\bar f(z) := \tfrac12 z^\top A z - b^\top z$. The only role of the zero-chain property is to let Lemma 9.1 control where the algorithm's rotated iterates can live. Since $\bar f$ is zero-chain, Lemma 9.1 furnishes an orthogonal matrix $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance $f(x) := \bar f(Q^\top x)$, the iterates satisfy
+
+$$Q^\top x_t \in E_{2t+1}, \qquad t=0,\ldots,k.$$
+
+For the Jacobi instance, the irreducible tridiagonal structure gives $E_m=\mathcal{K}_m(A,b)$ for $m\le N$. Thus at time $k$ the rotated iterate $Q^\top x_k$ lies inside the Krylov subspace $\mathcal{K}_{2k+1}(A,b)$ of the unrotated hard instance. Applying the polynomial representation $(61)$ to $\bar f$, we deduce
+
+$$
+f(x_k) - f^\ast \;=\; \bar f(Q^\top x_k) - \bar f^\ast \;\ge\; \min_{u \in \mathcal{K}_{2k+1}(A, b)}\bigl[\bar f(u) - \bar f^\ast\bigr] \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_{2k+1} \\ p(0) = 1}}\int_0^\beta \lambda\,p(\lambda)^2\,d\mu_{A,x^\ast}(\lambda).
+$$
+
+The integrand has degree at most $4k+3$, so Lemma 9.3 lets us replace $\mu_{A,x^\ast}$ by $\mu_{\mathrm{err}}$. <span style="float: right;">$\square$</span>
+
+**Krylov is rate-optimal on every structured spectrum.** Comparing $(61)$ at order $k$ with Theorem 9.4 at order $2k+1$,
+
+$$
+\tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_{2k+1} \\ p(0) = 1}}\!\int \lambda\,p^2\,d\mu_{\mathrm{err}} \;\;\le\;\; f(x_k) - f^\ast \;\;\le\;\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}\!\int \lambda\,p^2\,d\mu_{\mathrm{err}},
+$$
+
+so the lower bound and the CG upper bound use the *same residual orthogonal polynomial* against the *same spectral measure*; only the degree differs, by the universal factor $2k+1 \leftrightarrow k$ from Lemma 9.1 (each oracle call exposes at most two new directions of the Jacobi instance). For every structured rate $F(k)$ derived in Section 7 --- power-law density $F(k) \asymp k^{-2(1+a)}$ (Theorem 7.6), Marchenko--Pastur $k^{-3/2}$ (Theorem 7.5) --- the matching lower bound is $F(2k+1)$, which agrees with the upper bound up to constants in $k$. The Krylov method is therefore *rate-optimal on every structured spectral class*, not only on the worst-case spectrum.
+
+**Remark.** The lower bound depends on the spectral error measure $\mu_{\mathrm{err}}$, not on the eigenvalue distribution alone: two least-squares instances with the same Hessian eigenvalues but different alignments of the initial error with the eigenbasis lead to different rates. This is exactly the spectral-error-density viewpoint of Section 7, in which the rate of a method depends on the *joint* distribution of eigenvalues and eigenbasis coefficients rather than the spectrum alone.
+
+
+
+
 ### A statistical lower bound for stochastic algorithms
 
 We now turn from optimization on a fixed deterministic objective to estimation from noisy stochastic samples. The setting is the streaming least-squares problem of Section 8 specialized to the well-specified additive Gaussian noise model
@@ -2253,7 +2538,7 @@ The argument is short and elegant, and follows Mourtada [Mou22]. The supremum ov
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.4 (Minimax lower bound for streaming least squares).** *Fix $T \ge 1$ and a positive-definite covariance $H \in \mathbb{R}^{d\times d}$. Let $x_1, \ldots, x_T \in \mathbb{R}^d$ be deterministic vectors satisfying $\tfrac{1}{T}\sum_{t=1}^T x_t x_t^\top = H$. Under the well-specified Gaussian-noise model, every (possibly randomized) measurable function $\hat w : \mathbb{R}^T \to \mathbb{R}^d$ of the responses $y_1,\ldots,y_T$ satisfies*
+**Theorem 9.5 (Minimax lower bound for streaming least squares).** *Fix $T \ge 1$ and a positive-definite covariance $H \in \mathbb{R}^{d\times d}$. Let $x_1, \ldots, x_T \in \mathbb{R}^d$ be deterministic vectors satisfying $\tfrac{1}{T}\sum_{t=1}^T x_t x_t^\top = H$. Under the well-specified Gaussian-noise model, every (possibly randomized) measurable function $\hat w : \mathbb{R}^T \to \mathbb{R}^d$ of the responses $y_1,\ldots,y_T$ satisfies*
 
 $$
 \sup_{w_\ast \in \mathbb{R}^d}\, \mathbb{E}\bigl[L(\hat w(y_1,\ldots,y_T)) - L(w_\ast)\bigr] \;\ge\; \frac{\sigma^2 d}{2T}.
@@ -2299,7 +2584,7 @@ where the second equality factors $\lambda H + H^2 = H(\lambda I + H)$. Letting 
 
 The matching with Theorem 8.2 is direct: under the well-specified Gaussian-noise model, the variance term collapses to $4\sigma^2 d/(T-t)$ and the lower bound to $\sigma^2 d/(2T)$, so the two differ only by an absolute constant. No stochastic algorithm processing $T$ samples can beat the $\sigma^2 d/T$ rate of streaming SGD on this problem; in particular, neither tail averaging, mini-batching, nor any more elaborate scheme can extract more than $O(\sigma^2 d/T)$ excess risk.
 
-Theorem 9.4 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; the elegant Bayesian-Gaussian-prior proof we follow is due to Mourtada [Mou22].
+Theorem 9.5 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; the elegant Bayesian-Gaussian-prior proof we follow is due to Mourtada [Mou22].
 
 ---
 
@@ -2623,7 +2908,7 @@ The results discussed in these notes are largely classical in numerical optimiza
 - **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behaviour of this density determines the asymptotic exponent.
 - **Stochastic gradient descent for least squares.** The constant-stepsize, tail-averaged SGD analysis in Section 8 follows the Markov-chain/covariance approach of [JKK+18], which establishes minimax optimality of tail-averaged SGD for the linear regression problem.
 - **Lower bounds for first-order methods.** The tridiagonal chain quadratic and the rotation argument behind Lemma 9.1 and Theorems 9.2--9.3 are due to Nemirovski and Yudin [NY83]; modern textbook treatments appear in Nesterov [Nes04, Nes18]. The same construction yields the matching $\Omega(\sqrt{\kappa}\,\log(1/\varepsilon))$ lower bound for general smooth strongly convex minimization beyond the quadratic class.
-- **Lower bounds for stochastic algorithms on least squares.** The matching minimax lower bound in Theorem 9.4 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; we follow the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
+- **Lower bounds for stochastic algorithms on least squares.** The matching minimax lower bound in Theorem 9.5 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; we follow the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
 - **Interpolation and randomized Kaczmarz.** The randomized Kaczmarz algorithm of Theorem 8.6 is due to Strohmer and Vershynin [SV09], building on the classical cyclic method of Kaczmarz [Kac37]; the connection between Kaczmarz and importance-sampled SGD on interpolation least squares was articulated by Needell, Srebro, and Ward [NSW16], and the broader family of randomized iterative methods is unified by Gower and Richtárik [GR15].
 - **High-dimensional limits of streaming SGD.** The autonomous-ODE reduction in §10.1--10.2 is an old idea in the physics literature on two-layer neural networks going back to Saad and Solla [SS95], and has been given a rigorous and general formulation by Ben Arous, Gheissari, and Jagannath [BAGJ22]. The homogenized-SGD SDE and the Volterra risk curve of §10.3--10.5 are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a] and were further developed in [Paq+22b, CP23]; the lecture notes [Paq23] provide the expository synthesis we have followed.
 
