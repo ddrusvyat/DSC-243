@@ -2473,7 +2473,13 @@ $$
 =\mu_N.
 $$
 
-Lemma 9.2 says that $\mu_N$ agrees with $\mu$ on $\mathcal{P}_{2N-1}=\mathcal{P}_{4k+3}$, proving the claim. <span style="float: right;">$\square$</span>
+Lemma 9.2 says that $\mu_N$ agrees with $\mu$ on the polynomial space
+
+$$
+\mathcal{P}_{2N-1}=\mathcal{P}_{4k+3},
+$$
+
+proving the claim. <span style="float: right;">$\square$</span>
 
 The Jacobi instance $(A,\tau e_1)$ has two further properties that make it a good hard instance.
 
