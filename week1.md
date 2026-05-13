@@ -2485,7 +2485,12 @@ First, its Krylov spaces are exactly the coordinate subspaces:
 
 $$\mathcal{K}_m(A,b)=\operatorname{span}\{b,Ab,\ldots,A^{m-1}b\}=E_m,\qquad \forall m\le N.$$
 
-Indeed, the inclusion $\mathcal{K}_m(A,b)\subseteq E_m$ follows directly from tridiagonality. The reverse inclusion is where irreducibility is used. Since every subdiagonal entry of $A$ is nonzero, the $j$th coordinate of $A^{j-1}e_1$ is the nonzero product $A_{j,j-1}A_{j-1,j-2}\cdots A_{2,1}\neq 0.$
+Indeed, the inclusion $\mathcal{K}_m(A,b)\subseteq E_m$ follows directly from tridiagonality. The reverse inclusion is where irreducibility is used. Since every subdiagonal entry of $A$ is nonzero, the $j$th coordinate of $A^{j-1}e_1$ contains the nonzero product
+
+$$
+A_{j,j-1}A_{j-1,j-2}\cdots A_{2,1}\ne 0.
+$$
+
 Thus the vectors $e_1,Ae_1,\ldots,A^{m-1}e_1$ reveal exactly one new coordinate at each step, and therefore span $E_m$.
 
 Second, the quadratic $\bar f(z):=\tfrac12 z^\top A z-b^\top z$ is a zero-chain quadratic. If $z\in E_m$, then tridiagonality gives $Az\in E_{m+1}$, while $b=\tau e_1\in E_{m+1}$. Hence $\nabla\bar f(z)=Az-b\in E_{m+1}$. Lemma 9.1 therefore applies to $\bar f$, and combined with $(61)$ on the unrotated $(A,b)$ yields the structured-spectrum analogue of Theorem 9.3.
@@ -2508,7 +2513,13 @@ $$
 
 $$Q^\top x_t \in E_{2t+1}, \qquad t=0,\ldots,k.$$
 
-For the Jacobi instance, the irreducible tridiagonal structure gives $E_m=\mathcal{K}_m(A,b)$ for $m\le N$. Thus at time $k$ the rotated iterate $Q^\top x_k$ lies inside the Krylov subspace $\mathcal{K}_{2k+1}(A,b)$ of the unrotated hard instance. Applying the polynomial representation $(61)$ to $\bar f$, we deduce
+For the Jacobi instance, the irreducible tridiagonal structure gives
+
+$$
+E_m=\mathcal{K}_m(A,b), \qquad m\le N.
+$$
+
+Thus at time $k$ the rotated iterate $Q^\top x_k$ lies inside the Krylov subspace $\mathcal{K}_{2k+1}(A,b)$ of the unrotated hard instance. Applying the polynomial representation $(61)$ to $\bar f$, we deduce
 
 $$
 f(x_k) - f^\ast \;=\; \bar f(Q^\top x_k) - \bar f^\ast \;\ge\; \min_{u \in \mathcal{K}_{2k+1}(A, b)}\bigl[\bar f(u) - \bar f^\ast\bigr] \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_{2k+1} \\ p(0) = 1}}\int_0^\beta \lambda\,p(\lambda)^2\,d\mu_{A,x^\ast}(\lambda).
