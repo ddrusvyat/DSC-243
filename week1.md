@@ -2292,10 +2292,11 @@ $$
 We will now show that the conjugate gradient method is optimal in a much stronger sense than the minimax bound we have already proved: the worst-case instance for any deterministic first-order algorithm can be chosen to have *any prescribed spectral measure*.
 
 We will need the following simple helper lemma. We call a tridiagonal matrix $A\in\mathbb{R}^{d\times d}$ *irreducible* if all of its off-diagonal entries are nonzero:
-\[
-  A_{i,i+1}=A_{i+1,i}\ne 0,
-  \qquad \forall i=1,\ldots,d-1.
-\]
+
+$$
+A_{i,i+1} = A_{i+1,i} \ne 0, \qquad \forall\, i = 1, \ldots, d-1.
+$$
+
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Lemma 9.3 (Krylov subspaces of irreducible tridiagonal matrices).** *If $A \in \mathbb{R}^{d \times d}$ is irreducible and tridiagonal, then the Krylov subspace $\mathcal{K}_t(A, e_1)$ coincides with the coordinate subspace $E_t$ for every $t \ge 1$.*
@@ -2621,194 +2622,6 @@ For every $p \in \mathcal{P}_{2t+1}$, the integrand $\lambda\,p(\lambda)^2$ has 
 
 
 
-Gauss quadrature gives us a nice finite measure $\mu_N$ that is indistinguishable from $\mu$ when tested again polynomials of degree $\approx k$. We will use this measure $\mu_N$ to construct a hard instance
-
-$$\bar f(z)=\frac{1}{2}z^\top A z-b^\top z$$
-
-whose Hessian is tridiagonal, whose Krylov spaces grow along the coordinate chain, and whose minimizer has spectral measure $\mu_N$ (hence the same relevant moments as $\mu$). The next lemma supplies exactly this realization. 
-
-In what follows, a tridiagonal matrix is called **irreducible** if all of its off-diagonal entries are nonzero; for a symmetric tridiagonal matrix, this means
-
-$$A_{i,i+1}=A_{i+1,i}\ne 0, \qquad \forall i=1,\ldots,N-1.$$
-
-
-
-
-<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
-
-**Lemma 9.8 (Jacobi realization).** Let $\mu$ be a positive Borel measure on $[0,\beta]$ with $M_2 := \int \lambda^2\,d\mu < \infty$, supported on at least $N+1 := 2k+3$ distinct points in $(0,\beta]$. Then there exist an irreducible SPD tridiagonal matrix $A \in \mathbb{R}^{N\times N}$ with $\lVert A\rVert_{\mathrm{op}} \le \beta$ and a scalar $\tau > 0$ such that, for $b := \tau e_1$ and $x^\ast := A^{-1}b$, the following holds. If $A=\sum_{i=1}^N \lambda_i v_i v_i^\top$ is an eigendecomposition of $A$ and $x^\ast=\sum_{i=1}^N c_i v_i$, then the atomic **spectral measure**
-
-$$\mu_{A,x^\ast}:=\sum_{i=1}^N c_i^2\,\delta_{\lambda_i},$$
-
-*agrees with $\mu$ on every polynomial of degree at most $4k+3$, meaning*
-
-$$\int P(\lambda)\,d\mu_{A,x^\ast}(\lambda)=\int P(\lambda)\,d\mu(\lambda)\qquad \forall P\in\mathcal{P}_{4k+3}.$$
-
-</div>
-
-*Proof of Lemma 9.8.* Write $N := 2k+2$. Let $\mu_N$ be the $N$-point Gauss quadrature rule for $\mu$ from Lemma 9.6.  Equation $(\dagger)$ applied to the polynomial  $P(\lambda)=\lambda^2$ yields $\int \lambda^2\,d\mu_N = \int \lambda^2\,d\mu = M_2$, and therefore
-
-$$\nu_N := \frac{\lambda^2}{M_2}\,\mu_N
-$$
-
-is a probability measure on $(0,\beta]$ with exactly $N$ atoms.
-
-Now apply Gram--Schmidt in $L^2(\nu_N)$ to $\{1,\lambda,\ldots,\lambda^{N-1}\}$, producing orthonormal polynomials $q_0\equiv 1,q_1,\ldots,q_{N-1}$. Since $\nu_N$ has exactly $N$ atoms, $L^2(\nu_N)$ is just the space of functions on those $N$ points, hence is $N$-dimensional. The monomials $1,\lambda,\ldots,\lambda^{N-1}$ span this space. Therefore $q_0,\ldots,q_{N-1}$ form an orthonormal basis for all of $L^2(\nu_N)$.
-
-Let $M_\lambda$ denote multiplication by $\lambda$ on $L^2(\nu_N)$, and write its matrix in this basis:
-
-$$
-A_{ij}:=\langle q_{i-1},\,\lambda q_{j-1}\rangle_{\nu_N},\qquad i,j=1,\ldots,N.
-$$
-
-This is the so-called Jacobi matrix. It is clearly symmetric, and it is tridiagonal by the degree-orthogonality relation: $\lambda q_{j-1}$ has degree $j$, so it can have nonzero inner product only with $q_{j-2}$, $q_{j-1}$, or $q_j$. Thus only the entries satisfying $
-\lvert i-j\rvert \le 1
-$ can be nonzero.
-
-We claim that the off-diagonal entries of $A$ are positive. To see this, write the positive leading coefficient of $q_n$ as $\kappa_n>0$. Comparing leading terms in the expansion of $\lambda q_n$ in the orthonormal basis gives
-
-$$
-\lambda q_n
-= \frac{\kappa_n}{\kappa_{n+1}}\,q_{n+1}+\text{lower-degree terms}.
-$$
-
-Because the basis is orthonormal, the coefficient of $q_{n+1}$ in this expansion is exactly $\langle q_{n+1},\lambda q_n\rangle_{\nu_N}$. Therefore
-
-$$\langle q_{n+1},\lambda q_n\rangle_{\nu_N}=\frac{\kappa_n}{\kappa_{n+1}}>0,$$
-
-and $A$ is irreducible. The bounds on $A$ follow directly from its quadratic form. If $u\in\mathbb{R}^N$ corresponds to the polynomial $p_u:=\sum_{n=0}^{N-1}u_{n+1}q_n$, then
-
-$$
-u^\top A u=\int \lambda\,p_u(\lambda)^2\,d\nu_N(\lambda).
-$$
-
-Since $\nu_N$ is supported on $(0,\beta]$, we have
-
-$$
-0<u^\top A u\le \beta\int p_u(\lambda)^2\,d\nu_N(\lambda)=\beta\lVert u\rVert^2
-$$
-
-for every nonzero $u$. Therefore $A$ is SPD and $\lVert A\rVert_{\mathrm{op}}\le \beta$.
-
-We now claim that for any vector $z$ and polynomial $P$, the spectral measure evaluates as 
-
-$$
-z^\top P(A)z=\int P(\lambda)\,d\mu_{A,z}(\lambda).
-$$
-
-Indeed, if $A=\sum_i\lambda_i v_i v_i^\top$, then $P(A)=\sum_i P(\lambda_i)v_i v_i^\top$, so
-
-$$
-z^\top P(A)z
-=\sum_i P(\lambda_i)(v_i^\top z)^2
-=\int P(\lambda)\,d\mu_{A,z}(\lambda).
-$$
-
-Now, set $\tau:=\sqrt{M_2}$, $b:=\tau e_1$, and $x^\ast:=A^{-1}b=\tau A^{-1}e_1$. Since $e_1$ corresponds to the constant polynomial $q_0\equiv 1$, for any polynomial $P$ the identification of $A$ with multiplication by $\lambda$ gives
-
-$$
-\begin{aligned}
-x^{\ast\top}P(A)x^\ast
-&=\tau^2\,e_1^\top A^{-1}P(A)A^{-1}e_1 \\
-&=\tau^2\,\langle 1,\,\lambda^{-1}P(\lambda)\lambda^{-1}\cdot 1\rangle_{L^2(\nu_N)} \\
-&=\tau^2\int \lambda^{-2}P(\lambda)\,d\nu_N(\lambda).
-\end{aligned}
-$$
-
-Therefore the preceding display says that $\mu_{A,x^\ast}$ is the measure whose integral against $P$ is the integral of $P$ against $\tau^2\lambda^{-2}\nu_N$. In other words,
-
-$$
-\mu_{A,x^\ast}
-=\tau^2\lambda^{-2}\nu_N
-=M_2\lambda^{-2}\left(\frac{\lambda^2}{M_2}\mu_N\right)
-=\mu_N.
-$$
-
-Lemma 9.6 says that $\mu_N$ agrees with $\mu$ on the polynomial space
-
-$$
-\mathcal{P}_{2N-1}=\mathcal{P}_{4k+3},
-$$
-
-proving the claim. <span style="float: right;">$\square$</span>
-
-The Jacobi instance $(A,\tau e_1)$ has two further properties that make it a good hard instance.
-
-First, its Krylov spaces are exactly the coordinate subspaces:
-
-$$\mathcal{K}_m(A,b)=\operatorname{span}\{b,Ab,\ldots,A^{m-1}b\}=E_m,\qquad \forall m\le N.$$
-
-Indeed, the inclusion $\mathcal{K}_m(A,b)\subseteq E_m$ follows directly from tridiagonality. The reverse inclusion is where irreducibility is used. Since every subdiagonal entry of $A$ is nonzero, the $j$th coordinate of $A^{j-1}e_1$ contains the nonzero product
-
-$$
-A_{j,j-1}A_{j-1,j-2}\cdots A_{2,1}\ne 0.
-$$
-
-Thus the vectors $e_1,Ae_1,\ldots,A^{m-1}e_1$ reveal exactly one new coordinate at each step, and therefore span $E_m$.
-
-Second, the quadratic $\bar f(z):=\tfrac12 z^\top A z-b^\top z$ is a zero-chain quadratic. If $z\in E_m$, then tridiagonality gives $Az\in E_{m+1}$, while $b=\tau e_1\in E_{m+1}$. Hence $\nabla\bar f(z)=Az-b\in E_{m+1}$. Lemma 9.1 therefore applies to $\bar f$, and combined with $(61)$ on the unrotated $(A,b)$ yields the structured-spectrum analogue of Theorem 9.2.
-
-Let $\mathcal{M}_+(I)$ denote the set of finite positive Borel measures on an interval $I$.
-
-<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
-
-**Theorem 9.9 (Structured spectral-error lower bound in a moment neighborhood).** Let $\mu$ be a finite positive Borel measure on $[0,\beta]$ supported on at least $2k+3$ distinct points in $(0,\beta]$. Define the moment neighborhood of $\mu$ to be 
-
-$$
-\mathcal{N}_{4k+3}:=\left\{\nu\in\mathcal{M}_+(0,\beta):
-\int P\,d\nu = \int P\,d\mu
-\qquad \forall P\in\mathcal{P}_{4k+3}\right\}.
-$$
-
-*Then for every deterministic first-order algorithm $\mathcal{A}$ there exists a convex quadratic least-squares instance $f$ on $\mathbb{R}^{2k+2}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$, initialization $x_0 = 0$, and spectral error measure $\nu\in \mathcal{N}_{4k+3}$ such that the iterate $x_k$ produced by $\mathcal{A}$ satisfies*
-
-$$
-f(x_k) - f^\ast \;\ge\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_{2k+1} \\ p(0) = 1}}\int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda).
-$$
-
-</div>
-
-*Proof.* Let $(A, b)$ be the Jacobi realization of $\mu$ from Lemma 9.8, and let $\nu:=\mu_{A,x^\ast}$ be its spectral error measure. Thus $\nu$ lies in the degree-$(4k+3)$ moment neighborhood of $\mu$. Set $\bar f(z) := \tfrac12 z^\top A z - b^\top z$. The only role of the zero-chain property is to let Lemma 9.1 control where the algorithm's rotated iterates can live. Since $\bar f$ is zero-chain, Lemma 9.1 furnishes an orthogonal matrix $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance $f(x) := \bar f(Q^\top x)$, the iterates satisfy
-
-$$Q^\top x_t \in E_{2t+1}, \qquad t=0,\ldots,k.$$
-
-For the Jacobi instance, the irreducible tridiagonal structure gives
-
-$$
-E_m=\mathcal{K}_m(A,b), \qquad m\le N.
-$$
-
-Thus at time $k$ the rotated iterate $Q^\top x_k$ lies inside the Krylov subspace $\mathcal{K}_{2k+1}(A,b)$ of the unrotated hard instance. Applying the polynomial representation $(61)$ to $\bar f$, we deduce
-
-$$
-f(x_k) - f^\ast \;=\; \bar f(Q^\top x_k) - \bar f^\ast \;\ge\; \min_{u \in \mathcal{K}_{2k+1}(A, b)}\bigl[\bar f(u) - \bar f^\ast\bigr] \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_{2k+1} \\ p(0) = 1}}\int_0^\beta \lambda\,p(\lambda)^2\,d\mu_{A,x^\ast}(\lambda).
-$$
-
-The integrand has degree at most $4k+3$, so Lemma 9.8 lets us replace $\mu_{A,x^\ast}$ by $\mu$. <span style="float: right;">$\square$</span>
-
-**Krylov is locally rate-optimal around every structured measure.** For any target measure $\mu\in\mathcal{M}_+([0,\beta])$, define the polynomial approximation error
-
-$$
-\mathcal{E}_k(\mu) \;:=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}\int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda).
-$$
-
-This is exactly the CG upper-bound functional from $(61)$. Theorem 9.9 says that no deterministic first-order method can improve this functional, even locally around $\mu$ in the finite-moment topology. More precisely, for every method and every target $\mu$, there is a nearby measure $\nu$ agreeing with $\mu$ on $\mathcal{P}_{4k+3}$, and a least-squares instance with spectral error measure $\nu$, such that
-
-$$
-f(x_k)-f^\ast \ge \mathcal{E}_{2k+1}(\mu).
-$$
-
-On the other hand, the CG upper-bound analysis for the target measure $\mu$ gives
-
-$$
-f(x_k^{\mathrm{CG}})-f^\ast=\mathcal{E}_k(\mu).
-$$
-
-Thus the upper and lower bounds are governed by the same functional $\mathcal{E}_k(\mu)$, with only the universal degree shift $k\leftrightarrow 2k+1$ coming from Lemma 9.1. Consequently, any structured rate $F(k)=\mathcal{E}_k(\mu)$ derived in Section 7 --- power-law density $F(k)\asymp k^{-2(1+a)}$ (Theorem 7.6), Marchenko--Pastur $k^{-3/2}$ (Theorem 7.5) --- is locally unimprovable: every deterministic first-order method has a matching hard instance in the degree-$(4k+3)$ moment neighborhood of $\mu$, with lower bound $F(2k+1)$.
-
-**Remark.** The lower bound depends on the spectral error measure $\mu$, not on the eigenvalue distribution alone: two least-squares instances with the same Hessian eigenvalues but different alignments of the initial error with the eigenbasis lead to different rates. This is exactly the spectral-error-density viewpoint of Section 7, in which the rate of a method depends on the *joint* distribution of eigenvalues and eigenbasis coefficients rather than the spectrum alone.
-
-
 
 
 ### A statistical lower bound for stochastic algorithms
@@ -2826,7 +2639,7 @@ The argument is short and elegant, and follows Mourtada [Mou22]. The supremum ov
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.10 (Minimax lower bound for streaming least squares).** *Fix $T \ge 1$ and a positive-definite covariance $H \in \mathbb{R}^{d\times d}$. Let $x_1, \ldots, x_T \in \mathbb{R}^d$ be deterministic vectors satisfying $\tfrac{1}{T}\sum_{t=1}^T x_t x_t^\top = H$. Under the well-specified Gaussian-noise model, every (possibly randomized) measurable function $\hat w : \mathbb{R}^T \to \mathbb{R}^d$ of the responses $y_1,\ldots,y_T$ satisfies*
+**Theorem 9.8 (Minimax lower bound for streaming least squares).** *Fix $T \ge 1$ and a positive-definite covariance $H \in \mathbb{R}^{d\times d}$. Let $x_1, \ldots, x_T \in \mathbb{R}^d$ be deterministic vectors satisfying $\tfrac{1}{T}\sum_{t=1}^T x_t x_t^\top = H$. Under the well-specified Gaussian-noise model, every (possibly randomized) measurable function $\hat w : \mathbb{R}^T \to \mathbb{R}^d$ of the responses $y_1,\ldots,y_T$ satisfies*
 
 $$
 \sup_{w_\ast \in \mathbb{R}^d}\, \mathbb{E}\bigl[L(\hat w(y_1,\ldots,y_T)) - L(w_\ast)\bigr] \;\ge\; \frac{\sigma^2 d}{2T}.
@@ -2872,7 +2685,7 @@ where the second equality factors $\lambda H + H^2 = H(\lambda I + H)$. Letting 
 
 The matching with Theorem 8.2 is direct: under the well-specified Gaussian-noise model, the variance term collapses to $4\sigma^2 d/(T-t)$ and the lower bound to $\sigma^2 d/(2T)$, so the two differ only by an absolute constant. No stochastic algorithm processing $T$ samples can beat the $\sigma^2 d/T$ rate of streaming SGD on this problem; in particular, neither tail averaging, mini-batching, nor any more elaborate scheme can extract more than $O(\sigma^2 d/T)$ excess risk.
 
-Theorem 9.10 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; the elegant Bayesian-Gaussian-prior proof we follow is due to Mourtada [Mou22].
+Theorem 9.8 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; the elegant Bayesian-Gaussian-prior proof we follow is due to Mourtada [Mou22].
 
 ---
 
@@ -3196,7 +3009,7 @@ The results discussed in these notes are largely classical in numerical optimiza
 - **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behaviour of this density determines the asymptotic exponent.
 - **Stochastic gradient descent for least squares.** The constant-stepsize, tail-averaged SGD analysis in Section 8 follows the Markov-chain/covariance approach of [JKK+18], which establishes minimax optimality of tail-averaged SGD for the linear regression problem.
 - **Lower bounds for first-order methods.** The tridiagonal chain quadratic and the rotation argument behind Lemma 9.1 and Theorem 9.2 are due to Nemirovski and Yudin [NY83]; modern textbook treatments appear in Nesterov [Nes04, Nes18]. The same construction yields the matching $\Omega(\sqrt{\kappa}\,\log(1/\varepsilon))$ lower bound for general smooth strongly convex minimization beyond the quadratic class.
-- **Lower bounds for stochastic algorithms on least squares.** The matching minimax lower bound in Theorem 9.10 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; we follow the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
+- **Lower bounds for stochastic algorithms on least squares.** The matching minimax lower bound in Theorem 9.8 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; we follow the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
 - **Interpolation and randomized Kaczmarz.** The randomized Kaczmarz algorithm of Theorem 8.6 is due to Strohmer and Vershynin [SV09], building on the classical cyclic method of Kaczmarz [Kac37]; the connection between Kaczmarz and importance-sampled SGD on interpolation least squares was articulated by Needell, Srebro, and Ward [NSW16], and the broader family of randomized iterative methods is unified by Gower and Richtárik [GR15].
 - **High-dimensional limits of streaming SGD.** The autonomous-ODE reduction in §10.1--10.2 is an old idea in the physics literature on two-layer neural networks going back to Saad and Solla [SS95], and has been given a rigorous and general formulation by Ben Arous, Gheissari, and Jagannath [BAGJ22]. The homogenized-SGD SDE and the Volterra risk curve of §10.3--10.5 are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a] and were further developed in [Paq+22b, CP23]; the lecture notes [Paq23] provide the expository synthesis we have followed.
 
