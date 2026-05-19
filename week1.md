@@ -2562,7 +2562,8 @@ $$
 
 We claim that these weights give exact integration on $\mathcal{P}_{2N-1}$. Fix $P\in \mathcal{P}_{2N-1}$. Since $\tilde p_N$ is a degree-$N$ polynomial, ordinary polynomial long division lets us write $P$ uniquely as
 
-$$P=\tilde p_N\,s+r, \qquad \deg s,\deg r\le N-1.
+$$
+P = \tilde p_N\,s + r, \qquad \deg(s),\,\deg(r) \le N-1.
 $$
 
 Here $s$ is the quotient and $r$ is the remainder. This decomposition is useful because the quotient term $\tilde p_N\,s$ contributes nothing to either side of the desired identity. Against $\mu$, it integrates to zero by orthogonality, since $s\in\mathcal{P}_{N-1}$ and $\tilde p_N$ is orthogonal to $\mathcal{P}_{N-1}$. Against $\mu_N$, it also integrates to zero because $\mu_N$ is supported exactly on the roots $\theta_j$ of $\tilde p_N$. Therefore, to prove exactness for $P$, it remains only to prove exactness for the lower-degree remainder $r\in\mathcal{P}_{N-1}$.
