@@ -2633,60 +2633,103 @@ $$
 y \;=\; \langle w_\ast, x\rangle + \eta, \qquad \eta \sim \mathcal{N}(0,\sigma^2)\ \text{independent of}\ x.
 $$
 
-In this regime $\Sigma = \sigma^2 H$ gives $\sigma_{\mathrm{MLE}}^2 = \tfrac12 d\sigma^2$ and $\rho_{\mathrm{misspec}} = 1$, and the variance bound of Theorem 8.2 (after a burn-in long enough to eliminate the bias and at $\gamma R^2 = \tfrac12$) reduces to $4d\sigma^2/(T-t)$. We show that this $d\sigma^2/T$ scaling is sharp: no algorithm processing $T$ stochastic samples can do better. Tail-averaged constant-stepsize SGD is therefore **minimax-optimal** on the well-specified least-squares problem.
+In this regime $\Sigma = \sigma^2 H$ gives $\sigma_{\mathrm{MLE}}^2 = \tfrac12 d\sigma^2$ and $\rho_{\mathrm{misspec}} = 1$, and the variance bound of Theorem 8.2 (after a burn-in long enough to eliminate the bias and at $\gamma R^2 = \tfrac12$) reduces to $4d\sigma^2/(T-t)$. We show that this $d\sigma^2/T$ scaling is sharp: no algorithm processing $T$ stochastic samples can achieve lower variance. Tail-averaged constant-stepsize SGD is therefore **minimax-optimal** on the well-specified least-squares problem.
 
-The argument is short and elegant, and follows Mourtada [Mou22]. The supremum over $w_\ast$ is at least the average against any prior, and a Gaussian prior makes everything calculable in closed form because the optimal estimator under that prior is ridge regression, which we already understand. To bring the streaming setting into a tractable fixed-design framework, we restrict the algorithm class by giving it the design points $x_1,\ldots,x_T$ in advance and letting it observe only the noisy responses $y_1,\ldots,y_T$. This restricted class includes streaming SGD, which never uses information beyond the $(x_t,y_t)$ pairs already seen, so a lower bound for the restricted class is also a lower bound for streaming algorithms.
+The argument is short and elegant, and adapts Mourtada's [Mou22] fixed-design proof to the streaming setting. Recall that the population least-squares risk is
 
+$$
+L(w) \;:=\; \tfrac{1}{2}\,\mathbb{E}_{(x,y)}\!\left[(y - \langle w, x\rangle)^2\right],
+$$
+
+minimized at $w_\ast$, and the excess risk decomposes as $L(w) - L(w_\ast) = \tfrac{1}{2}\,\lVert w - w_\ast\rVert_H^2$, where $H := \mathbb{E}[x x^\top]$ is the feature covariance.
+
+We will also use the following elementary fact from Bayesian estimation.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.8 (Minimax lower bound for streaming least squares).** *Fix $T \ge 1$ and a positive-definite covariance $H \in \mathbb{R}^{d\times d}$. Let $x_1, \ldots, x_T \in \mathbb{R}^d$ be deterministic vectors satisfying $\tfrac{1}{T}\sum_{t=1}^T x_t x_t^\top = H$. Under the well-specified Gaussian-noise model, every (possibly randomized) measurable function $\hat w : \mathbb{R}^T \to \mathbb{R}^d$ of the responses $y_1,\ldots,y_T$ satisfies*
+**Lemma 9.8 (Bayes estimator).** *Let $(w, z)$ be a pair of random vectors with $z$ observed and $w$ unknown, and fix a matrix $M \succeq 0$. Among all measurable estimators $a(z)$, the quantity*
 
 $$
-\sup_{w_\ast \in \mathbb{R}^d}\, \mathbb{E}\bigl[L(\hat w(y_1,\ldots,y_T)) - L(w_\ast)\bigr] \;\ge\; \frac{\sigma^2 d}{2T}.
+\mathbb{E}\,\lVert a(z) - w\rVert_M^2
+$$
+
+*is minimized by the conditional expectation $a(z) = \mathbb{E}[w \mid z]$. Moreover, if for each $z$ the conditional density $w \mapsto p(w \mid z)$ is Gaussian, then $\mathbb{E}[w \mid z]$ coincides with the unique maximizer of $w \mapsto p(w \mid z)$.*
+
+</div>
+
+*Proof.* Write $m(z) := \mathbb{E}[w \mid z]$. Conditioning on $z$ and expanding the squared $M$-norm gives
+
+$$
+\begin{aligned}
+\mathbb{E}\!\left[\lVert a(z)-w\rVert_M^2 \mid z\right]
+&= \lVert a(z)-m(z)\rVert_M^2 \\
+&\qquad + \mathbb{E}\!\left[\lVert m(z)-w\rVert_M^2 \mid z\right],
+\end{aligned}
+$$
+
+since the cross term has conditional expectation zero. The second term does not depend on $a$, so the first term is minimized by $a(z)=m(z)$. The second claim follows since a Gaussian density is symmetric about its mean, so when $p(\cdot \mid z)$ is Gaussian its unique maximizer is $\mathbb{E}[w \mid z]$. <span style="float: right;">$\square$</span>
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Theorem 9.9 (Minimax lower bound for streaming least squares).** *Fix $T \ge 1$, a noise level $\sigma > 0$, and a distribution on $\mathbb{R}^d$ with positive-definite covariance $H = \mathbb{E}[x x^\top]$. Suppose the well-specified Gaussian-noise model $y = \langle w_\ast, x\rangle + \eta$ with $\eta \sim \mathcal{N}(0, \sigma^2)$ independent of $x$. Then given $T$ iid samples $(x_1, y_1), \ldots, (x_T, y_T)$ and any (possibly randomized) measurable estimator $\hat w = \hat w(x_1, y_1, \ldots, x_T, y_T)$, there exists $w_{\ast}$ satisfying
+
+$$
+\mathbb{E}\bigl[L(\hat w) - L(w_\ast)\bigr] \;\ge\; \frac{\sigma^2 d}{2T}.
 $$
 
 </div>
 
-*Proof.* Set $\Phi := [x_1,\ldots,x_T]^\top \in \mathbb{R}^{T\times d}$, so that $\Phi^\top\Phi = T H$. The data take the form $y = \Phi w_\ast + \eta$ with $\eta \sim \mathcal{N}(0,\sigma^2 I_T)$, and the excess risk reads $L(\hat w) - L(w_\ast) = \tfrac12\,\lVert\hat w - w_\ast\rVert_H^2$.
-
-The supremum over $w_\ast$ is bounded below by the expectation under any probability distribution on $w_\ast$. We choose the Gaussian prior $w_\ast \sim \mathcal{N}\bigl(0,\tfrac{\sigma^2}{T\lambda}I_d\bigr)$, where $\lambda > 0$ is a parameter sent to zero at the end. Under this prior the joint $(w_\ast,y)$ is Gaussian, and
+*Proof.* By the excess-risk identity, $L(\hat w) - L(w_\ast) = \tfrac{1}{2}\,\lVert \hat w - w_\ast\rVert_H^2$, so it suffices to lower bound
 
 $$
-\sup_{w_\ast}\,\mathbb{E}_\eta\,\lVert \hat w(y) - w_\ast\rVert_H^2 \;\ge\; \mathbb{E}_{w_\ast}\,\mathbb{E}_\eta\,\lVert \hat w(y) - w_\ast\rVert_H^2 \;=\; \mathbb{E}_y\,\mathbb{E}_{w_\ast \mid y}\,\lVert \hat w(y) - w_\ast\rVert_H^2.
+\sup_{w_\ast}\,\mathbb{E}\,\lVert \hat w - w_\ast\rVert_H^2.
 $$
 
-For each fixed $y$, the inner expectation is minimized by setting $\hat w(y)$ to the conditional mean $A_\ast(y) := \mathbb{E}[w_\ast \mid y]$ --- the mean is the minimizer of mean-squared error under any reference inner product. For Gaussian conditioning the posterior mean coincides with the posterior mode, that is, the maximizer over $w_\ast$ of the joint log-density
+The supremum over $w_\ast$ is bounded below by the expected error under any prior on $w_\ast$. We choose the Gaussian prior $w_\ast \sim \mathcal{N}\bigl(0, \tfrac{\sigma^2}{T\lambda}\,I_d\bigr)$, with $\lambda > 0$ to be sent to zero at the end of the proof. Stack the samples into the data matrix $X \in \mathbb{R}^{T \times d}$ whose $i$-th row is $x_i^\top$, write $\hat H := \tfrac{1}{T}\,X^\top X$ for the empirical covariance, and set $y := X\,w_\ast + \eta$ with $\eta \sim \mathcal{N}(0, \sigma^2 I_T)$ independent of both $w_\ast$ and $X$.
+
+**Identifying the Bayes estimator.** Set $m(X,y) := \mathbb{E}[w_\ast \mid X, y]$. By Lemma 9.8 applied to the random pair $\bigl(w_\ast,\,(X,y)\bigr)$ with weighting matrix $H$, every estimator $\hat w(X,y)$ satisfies $\mathbb{E}\,\lVert \hat w - w_\ast\rVert_H^2 \ge \mathbb{E}\,\lVert m(X,y) - w_\ast\rVert_H^2$. The conditional density of $w_\ast$ given $(X,y)$ is Gaussian (by Bayes' rule), so Lemma 9.8 also identifies $m(X,y)$ as the maximizer over $w_\ast$ of $p(w_\ast \mid X, y)$. By Bayes' rule, $p(w_\ast \mid X, y) \propto p(y \mid w_\ast, X)\,p(w_\ast)$ as a function of $w_\ast$ (the constant of proportionality $p(y \mid X)$ does not depend on $w_\ast$), and inserting the Gaussian densities $y \mid w_\ast, X \sim \mathcal{N}(X w_\ast, \sigma^2 I_T)$ and $w_\ast \sim \mathcal{N}(0, \tfrac{\sigma^2}{T\lambda} I_d)$ gives, on a log scale,
 
 $$
-\log p(w_\ast, y) \;=\; -\frac{1}{2\sigma^2}\,\lVert y - \Phi w_\ast\rVert^2 \;-\; \frac{T\lambda}{2\sigma^2}\,\lVert w_\ast\rVert^2 \;+\; \text{const}.
+\log p(w_\ast \mid X, y) \;=\; -\frac{1}{2\sigma^2}\,\lVert y - X\,w_\ast\rVert^2 \;-\; \frac{T\lambda}{2\sigma^2}\,\lVert w_\ast\rVert^2 \;+\; \text{const},
 $$
 
-The right-hand side is the negated ridge-regression cost, so the optimal estimator is
+where the constant collects all terms independent of $w_\ast$.
+
+Equivalently, $m(X,y)$ minimizes the ridge cost $\lVert y - X w\rVert^2 + T\lambda\,\lVert w\rVert^2$, so by the normal equations
 
 $$
-A_\ast(y) \;=\; (\Phi^\top \Phi + T\lambda I)^{-1}\,\Phi^\top y \;=\; \tfrac{1}{T}(H + \lambda I)^{-1}\,\Phi^\top y.
+m(X, y) \;=\; (X^\top X + T\lambda I)^{-1}\,X^\top y \;=\; \tfrac{1}{T}\,(\hat H + \lambda I)^{-1}\,X^\top y.
 $$
 
-Substituting $y = \Phi w_\ast + \eta$ and using the identity $(\Phi^\top\Phi + T\lambda I)^{-1}\Phi^\top\Phi - I = -T\lambda(\Phi^\top\Phi + T\lambda I)^{-1}$ gives the bias-variance decomposition
+**Computing the Bayes risk.** Substituting $y = X\,w_\ast + \eta$ and using the identity $(X^\top X + T\lambda I)^{-1}\,X^\top X - I = -T\lambda\,(X^\top X + T\lambda I)^{-1}$ gives the bias–variance decomposition
 
 $$
-A_\ast(y) - w_\ast \;=\; -\lambda(H+\lambda I)^{-1}w_\ast \;+\; \tfrac{1}{T}(H+\lambda I)^{-1}\Phi^\top \eta.
+m(X, y) - w_\ast \;=\; -\lambda\,(\hat H + \lambda I)^{-1}\,w_\ast \;+\; \tfrac{1}{T}\,(\hat H + \lambda I)^{-1}\,X^\top \eta.
 $$
 
-Independence of $w_\ast$ and $\eta$ kills the cross term in $\lVert\,\cdot\,\rVert_H^2$, and computing the two diagonal terms with $\mathbb{E}[w_\ast w_\ast^\top] = \tfrac{\sigma^2}{T\lambda}I$ and $\mathbb{E}[\eta\eta^\top] = \sigma^2 I_T$ yields
+Independence of $w_\ast$, $\eta$, and $X$ kills the cross term in $\lVert\,\cdot\,\rVert_H^2$. Computing the two diagonal contributions with $\mathbb{E}[w_\ast w_\ast^\top] = \tfrac{\sigma^2}{T\lambda}\,I$ and $\mathbb{E}[\eta\eta^\top] = \sigma^2 I_T$ yields, after the factorization $\lambda H + H^2 = H(\lambda I + H)$,
 
 $$
-\mathbb{E}\,\lVert A_\ast(y) - w_\ast\rVert_H^2
-\;=\; \frac{\sigma^2}{T}\Bigl[\lambda\,\operatorname{Tr}\!\bigl((H+\lambda I)^{-2}H\bigr) + \operatorname{Tr}\!\bigl((H+\lambda I)^{-2}H^2\bigr)\Bigr]
-\;=\; \frac{\sigma^2}{T}\,\operatorname{Tr}\!\bigl((H+\lambda I)^{-1}H\bigr),
+\mathbb{E}_{w_\ast, \eta \mid X}\,\lVert m(X, y) - w_\ast\rVert_H^2 \;=\; \frac{\sigma^2}{T}\,\mathrm{Tr}\!\bigl[(\hat H + \lambda I)^{-1}\, H\bigr].
 $$
 
-where the second equality factors $\lambda H + H^2 = H(\lambda I + H)$. Letting $\lambda \downarrow 0$, the trace converges to $\operatorname{Tr}(I_d) = d$ since $H \succ 0$, and inserting the factor of $\tfrac12$ from the excess-risk identity completes the proof. <span style="float: right;">$\square$</span>
+**Averaging over $X$.** Operator convexity of $M \mapsto M^{-1}$ on $\mathbb{S}^d_{++}$, applied to the random PSD matrix $\hat H + \lambda I$ with mean $H + \lambda I$, gives the operator Jensen inequality
+
+$$
+\mathbb{E}_X\!\bigl[(\hat H + \lambda I)^{-1}\bigr] \;\succeq\; (H + \lambda I)^{-1}.
+$$
+
+Taking the trace against $H \succ 0$ and letting $\lambda \downarrow 0$:
+
+$$
+\mathbb{E}_X\,\mathrm{Tr}\!\bigl[(\hat H + \lambda I)^{-1}\, H\bigr] \;\ge\; \mathrm{Tr}\!\bigl[(H + \lambda I)^{-1}\, H\bigr] \;\xrightarrow{\lambda \downarrow 0}\; \mathrm{Tr}\!\bigl[H^{-1}\, H\bigr] \;=\; d.
+$$
+
+Inserting the factor of $\tfrac{1}{2}$ from the excess-risk identity completes the proof. <span style="float: right;">$\square$</span>
 
 The matching with Theorem 8.2 is direct: under the well-specified Gaussian-noise model, the variance term collapses to $4\sigma^2 d/(T-t)$ and the lower bound to $\sigma^2 d/(2T)$, so the two differ only by an absolute constant. No stochastic algorithm processing $T$ samples can beat the $\sigma^2 d/T$ rate of streaming SGD on this problem; in particular, neither tail averaging, mini-batching, nor any more elaborate scheme can extract more than $O(\sigma^2 d/T)$ excess risk.
 
-Theorem 9.8 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; the elegant Bayesian-Gaussian-prior proof we follow is due to Mourtada [Mou22].
+Theorem 9.9 is the random-design, well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for linear regression; the elegant Bayesian-Gaussian-prior proof we follow adapts Mourtada's [Mou22] fixed-design argument, with the single extra operator-Jensen step needed to handle a random design.
 
 ---
 
@@ -3010,7 +3053,7 @@ The results discussed in these notes are largely classical in numerical optimiza
 - **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behaviour of this density determines the asymptotic exponent.
 - **Stochastic gradient descent for least squares.** The constant-stepsize, tail-averaged SGD analysis in Section 8 follows the Markov-chain/covariance approach of [JKK+18], which establishes minimax optimality of tail-averaged SGD for the linear regression problem.
 - **Lower bounds for first-order methods.** The tridiagonal chain quadratic and the rotation argument behind Lemma 9.1 and Theorem 9.2 are due to Nemirovski and Yudin [NY83]; modern textbook treatments appear in Nesterov [Nes04, Nes18]. The same construction yields the matching $\Omega(\sqrt{\kappa}\,\log(1/\varepsilon))$ lower bound for general smooth strongly convex minimization beyond the quadratic class.
-- **Lower bounds for stochastic algorithms on least squares.** The matching minimax lower bound in Theorem 9.8 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; we follow the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
+- **Lower bounds for stochastic algorithms on least squares.** The matching minimax lower bound in Theorem 9.9 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; we follow the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
 - **Interpolation and randomized Kaczmarz.** The randomized Kaczmarz algorithm of Theorem 8.6 is due to Strohmer and Vershynin [SV09], building on the classical cyclic method of Kaczmarz [Kac37]; the connection between Kaczmarz and importance-sampled SGD on interpolation least squares was articulated by Needell, Srebro, and Ward [NSW16], and the broader family of randomized iterative methods is unified by Gower and Richtárik [GR15].
 - **High-dimensional limits of streaming SGD.** The autonomous-ODE reduction in §10.1--10.2 is an old idea in the physics literature on two-layer neural networks going back to Saad and Solla [SS95], and has been given a rigorous and general formulation by Ben Arous, Gheissari, and Jagannath [BAGJ22]. The homogenized-SGD SDE and the Volterra risk curve of §10.3--10.5 are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a] and were further developed in [Paq+22b, CP23]; the lecture notes [Paq23] provide the expository synthesis we have followed.
 
