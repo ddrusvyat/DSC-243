@@ -2599,7 +2599,7 @@ Combining the Gauss quadrature reduction of Lemma 9.6 with the atomic optimality
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.7 (Optimality of CG up to low-degree moments).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a positive Borel measure $\mu$ on $(0,\beta]$ supported on at least $2t+3$ distinct points. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance on $\mathbb{R}^{2t+2}$ whose spectral error measure $\mu_{A,x^\ast}$ agrees with $\mu$ on $\mathcal{P}_{4t+3}$ and whose $t$-th iterate after initialization $x_0 = 0$ satisfies*
+**Theorem 9.7 (Optimality of CG up to low-degree moments).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a positive Borel measure $\mu$ on $(0,\beta]$ supported on at least $2t+3$ distinct points. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance on $\mathbb{R}^{2t+2}$ whose spectral error measure $\mu\_{A,x^\ast}$ agrees with $\mu$ on $\mathcal{P}\_{4t+3}$ and whose $t$-th iterate after initialization $x_0 = 0$ satisfies*
 
 $$
 f(x_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
@@ -2613,13 +2613,13 @@ $$
 \mu_N \;=\; \sum_{j=1}^N w_j\,\delta_{\theta_j}, \qquad 0 < \theta_1 < \cdots < \theta_N \le \beta, \qquad w_j > 0,
 $$
 
-agrees with $\mu$ on $\mathcal{P}_{2N-1} = \mathcal{P}_{4t+3}$. Applying Theorem 9.5 to $\mu_N$, we obtain a convex quadratic instance on $\mathbb{R}^N$ whose spectral error measure equals $\mu_N$ exactly and whose $t$-th iterate satisfies
+agrees with $\mu$ on $\mathcal{P}\_{2N-1} = \mathcal{P}\_{4t+3}$. Applying Theorem 9.5 to $\mu_N$, we obtain a convex quadratic instance on $\mathbb{R}^N$ whose spectral error measure equals $\mu_N$ exactly and whose $t$-th iterate satisfies
 
 $$
 f(x_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu_N).
 $$
 
-For every $p \in \mathcal{P}_{2t+1}$, the integrand $\lambda\,p(\lambda)^2$ has degree at most $4t+3$, so the moment-matching identity gives $\mathcal{E}_{2t+1}(\mu_N) = \mathcal{E}_{2t+1}(\mu)$, completing the proof. <span style="float: right;">$\square$</span>
+For every $p \in \mathcal{P}\_{2t+1}$, the integrand $\lambda\,p(\lambda)^2$ has degree at most $4t+3$, so the moment-matching identity gives $\mathcal{E}\_{2t+1}(\mu_N) = \mathcal{E}\_{2t+1}(\mu)$, completing the proof. <span style="float: right;">$\square$</span>
 
 
 
