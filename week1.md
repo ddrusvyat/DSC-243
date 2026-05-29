@@ -2767,41 +2767,47 @@ $$
 
 </div>
 
-*Proof.* Define the stochastic gradient $g_{k+1} := (\langle w_k,x_{k+1}\rangle - y_{k+1})\,x_{k+1}$, so that the equality $w_{k+1}-w_k = -(\gamma/d)\,g_{k+1}$ holds. Write $v := w_k - w_\ast$ and $x := x_{k+1}$, $\eta := \eta_{k+1}$ for brevity. Substituting $y_{k+1} = \langle w_\ast, x\rangle + \eta$ into the residual yields the cleaner form
+*Proof.* Define the stochastic gradient $g_{k+1} := (\langle w_k,x_{k+1}\rangle - y_{k+1})\,x_{k+1}$, so that $w_{k+1}=w_k-(\gamma/d)g_{k+1}$. Write $v := w_k-w_\ast$. Since $L(w)=\tfrac{1}{2}\sigma^2+\tfrac{1}{2}\|w-w_\ast\|^2$, the one-step loss change is
+
+$$
+\begin{aligned}
+L(w_{k+1}) - L(w_k)
+&= \frac{1}{2}\left\|v-\frac{\gamma}{d}g_{k+1}\right\|^2 - \frac{1}{2}\|v\|^2 \\
+&= -\frac{\gamma}{d}\,\langle v,g_{k+1}\rangle + \frac{\gamma^2}{2d^2}\,\|g_{k+1}\|^2.
+\end{aligned}
+$$
+
+Thus it remains to compute the conditional first and second moments of $g_{k+1}$. For this, write $x := x_{k+1}$ and $\eta := \eta_{k+1}$ for brevity. Substituting $y_{k+1}=\langle w_\ast,x\rangle+\eta$ into the residual gives
 
 $$
 g_{k+1} \;=\; (\langle v, x\rangle - \eta)\,x \;=\; (v^\top x)\,x \;-\; \eta\,x.
 $$
 
-The conditional mean of $g_{k+1}$ is
+The conditional first moment is
 
 $$
-\mathbb{E}_k[g_{k+1}] \;=\; \mathbb{E}\bigl[(v^\top x)\,x\bigr] \;-\; \mathbb{E}[\eta\,x] \;=\; \mathbb{E}[xx^\top]\,v \;-\; 0 \;=\; v \;=\; w_k - w_\ast,
+\mathbb{E}_k[g_{k+1}] \;=\; \mathbb{E}\bigl[(v^\top x)\,x\bigr] \;-\; \mathbb{E}[\eta\,x] \;=\; \mathbb{E}[xx^\top]\,v \;-\; 0 \;=\; v.
 $$
 
-For the conditional second moment, expand the scalar squared term:
+For the conditional second moment, expand
 
 $$
 \|g_{k+1}\|^2 \;=\; (v^\top x - \eta)^2\,\|x\|^2 \;=\; (v^\top x)^2\,\|x\|^2 \;-\; 2\eta\,(v^\top x)\,\|x\|^2 \;+\; \eta^2\,\|x\|^2.
 $$
 
-The cross term vanishes in expectation by independence of $\eta$ from $x$ combined with $\mathbb{E}[\eta] = 0$. The pure-noise term gives $\mathbb{E}\bigl[\eta^2\,\|x\|^2\bigr] = \sigma^2 \cdot \mathbb{E}[\|x\|^2] = d\,\sigma^2$. The remaining quadratic term is computed using the Gaussian fourth-moment identity
+The cross term vanishes in expectation by independence of $\eta$ from $x$ combined with $\mathbb{E}[\eta]=0$. The pure-noise term gives $\mathbb{E}[\eta^2\|x\|^2]=\sigma^2\,\mathbb{E}[\|x\|^2]=d\sigma^2$. The remaining quadratic term is computed using the Gaussian fourth-moment identity
 
 $$
 \mathbb{E}\bigl[(v^\top x)^2\,\|x\|^2\bigr] \;=\; v^\top\,\mathbb{E}\bigl[\|x\|^2\,xx^\top\bigr]\,v \;=\; (d+2)\,\|v\|^2,
 $$
 
-where we used the equality $\mathbb{E}[\|x\|^2\,xx^\top] = (d+2)\,I_d$. Putting the three contributions together yields:
+where $\mathbb{E}[\|x\|^2xx^\top]=(d+2)I_d$. Hence
 
 $$
-\mathbb{E}_k\bigl[\|g_{k+1}\|^2\bigr] \;=\; (d+2)\,\|w_k - w_\ast\|^2 \;+\; d\,\sigma^2.
+\mathbb{E}_k\bigl[\|g_{k+1}\|^2\bigr] \;=\; (d+2)\,\|v\|^2 \;+\; d\,\sigma^2.
 $$
 
-We now compute the one-step change of the loss. Using the expression $L(w) = \tfrac{1}{2}\sigma^2 + \tfrac{1}{2}\lVert w-w_\ast\rVert^2$, expanding
- 
- $$L(w_{k+1}) - L(w_k) = \tfrac{1}{2}\lVert v - (\gamma/d)\,g_{k+1}\rVert^2 - \tfrac{1}{2}\lVert v\rVert^2 = -(\gamma/d)\,\langle v, g_{k+1}\rangle + (\gamma^2/(2d^2))\,\lVert g_{k+1}\rVert^2$$
-
- and taking conditional expectations gives
+Taking conditional expectations in the loss-increment identity gives
 
 $$
 \mathbb{E}_k\bigl[L(w_{k+1})-L(w_k)\bigr] \;=\; -\tfrac{\gamma}{d}\,\|w_k-w_\ast\|^2 \;+\; \tfrac{\gamma^2}{2d^2}\,\bigl((d+2)\,\|w_k-w_\ast\|^2 \;+\; d\,\sigma^2\bigr).
@@ -2860,7 +2866,7 @@ $$
 
 </div>
 
-*Proof.* Write $L_k := L(w_k)$ and
+*Proof.* Write $L_k := L(w_k)$ and define the two affine functions
 
 $$
 \begin{aligned}
@@ -2869,7 +2875,7 @@ G_d(u) &:= G(u) + \frac{2\gamma^2}{d}\,(u-L_\ast).
 \end{aligned}
 $$
 
-so
+Lemma 10.1 shows
 
 $$
 \mathbb{E}_k[L_{k+1}-L_k] \;=\; \frac{1}{d}\,G_d(L_k). 
@@ -2881,7 +2887,7 @@ $$
 \mathbb{E}_k\bigl[(L_{k+1}-L_k)^2\bigr] \;\le\; \frac{C_R}{d^2} \qquad \text{whenever } L_k \le R.
 $$
 
-Indeed, writing $v_k=w_k-w_\ast$ and $g_{k+1}=(v_k^\top x_{k+1}-\eta_{k+1})x_{k+1}$,
+Indeed, writing $v_k=w_k-w_\ast$ and $g_{k+1}=(v_k^\top x_{k+1}-\eta_{k+1})x_{k+1}$, we have 
 
 $$
 L_{k+1}-L_k
