@@ -3070,7 +3070,7 @@ $$
 
 To avoid distracting notation, we first argue up to the stopping time $\tau_R:=\inf\{k:L_k>R\}$, where $R$ is fixed. Thus all estimates below are read for $\ell\le Td\wedge\tau_R$. At the end we choose $R$ larger than the bounded deterministic curve $\phi_d([0,T])$ and remove the stopping.
 
-**Doob decomposition.** Split each increment of $L$ into its conditional mean and a martingale difference. Since Lemma 10.1 gives $\mathbb{E}_k[L_{k+1}-L_k]=d^{-1}G_d(L_k)$, we can write
+**Doob decomposition.** Split each increment of $L$ into its conditional mean and a martingale difference. Lemma 10.1 identifies the conditional mean of the increment $L_{k+1}-L_k$ as $d^{-1}G_d(L_k)$, so we can write
 
 $$
 \begin{aligned}
@@ -3093,7 +3093,11 @@ $$
 L_\ell \;=\; L_0 \;+\; \frac{1}{d}\sum_{k=0}^{\ell-1} G_d(L_k) \;+\; M_\ell,
 $$
 
-where $M_\ell := \sum_{k=0}^{\ell-1}\Delta_{k+1}$ is a **martingale**, meaning $\mathbb{E}_\ell[M_{\ell+1}]=M_\ell$.
+where $M_\ell := \sum_{k=0}^{\ell-1}\Delta_{k+1}$ is a **martingale**: its conditional mean given the past equals its current value,
+
+$$
+\mathbb{E}_\ell[M_{\ell+1}]=M_\ell.
+$$
 
 **Martingale piece vanishes.** Since conditional variance is bounded by conditional second moment, the fluctuation estimate gives
 
