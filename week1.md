@@ -2753,7 +2753,7 @@ $$
 L(w) = \tfrac{1}{2}\bigl(\sigma^2 + \|w-w_\ast\|^2\bigr), \qquad \nabla L(w) = w - w_\ast. \tag{44}
 $$
 
-Note that the optimal value is $L_{\ast}=\frac{1}{2}\sigma^2$. The following lemma computes the one-step change of the loss under $(43)$. Henceforth, we let $\mathbb{E}_k[\cdot]$ denote the expectation conditional on $\{(x_i,y_i)\}_{i\leq k}$.
+Note that the optimal value is $L_{\ast}=\frac{1}{2}\sigma^2$. The following lemma computes the one-step change of the loss under $(43)$. Henceforth, we let $\mathbb{E}_k[\cdot]$ denote the expectation conditional on the first $k$ samples $(x_1,y_1),\dots,(x_k,y_k)$.
 
 
 
