@@ -2850,6 +2850,10 @@ The function $\psi(t)$ is the candidate dimension-independent limit of the loss 
 
 ![Streaming SGD on isotropic Gaussian regression: concentration around the ODE limit](figures/sgd_high_d_ode_limit.png)
 
+To isolate the role of the dimension, the next figure instead *fixes* the stepsize at $\gamma = 1$ and varies $d \in \lbrace 50, 200, 800\rbrace$. The ODE limit $\psi(t)$ from $(46)$ is dimension-independent, so the same dashed curve appears in every panel; only the SGD interquantile band changes. As $d$ grows the band narrows around the ODE curve — empirically at the rate $1/\sqrt{d}$ predicted by the $O(d^{-2})$ per-step fluctuation in Lemma 10.1 — which is exactly the concentration asserted by Theorem 10.2.
+
+![Concentration of streaming SGD around the ODE limit as the dimension grows, for fixed stepsize](figures/sgd_high_d_concentration.png)
+
 ### Concentration around the ODE limit
 
 Lemma 10.1 already does most of the work. It says that the conditional drift of $L(w_k)$ is a function of $L(w_k)$ itself, with conditional fluctuations of order $1/d^2$ per step — the exact regime in which the random curve $L(w_{[td]})$ concentrates around the deterministic ODE solution $\psi$ of $(46)$.
