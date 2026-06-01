@@ -2864,39 +2864,39 @@ $$
 
 </div>
 
-*Proof.* Let $S_n:=\max_{0\le \ell\le n}|M_\ell|$. We first prove a bound for the event that $S_n$ crosses a fixed level $\lambda>0$.
+*Proof.* Let $S_n:=\max_{0\le \ell\le n}\lvert M_\ell\rvert$. We first prove a bound for the event that $S_n$ crosses a fixed level $\lambda>0$.
 
 Let $A_j$ be the event that the first crossing of level $\lambda$ occurs at time $j$:
 
 $$
-A_j:=\{|M_0|<\lambda,\ldots,|M_{j-1}|<\lambda,\ |M_j|\ge\lambda\}.
+A_j:=\{\lvert M_0\rvert<\lambda,\ldots,\lvert M_{j-1}\rvert<\lambda,\ \lvert M_j\rvert\ge\lambda\}.
 $$
 
-The events $A_0,\ldots,A_n$ are disjoint and their union is $\{S_n\ge\lambda\}$. On $A_j$ we have $|M_j|\ge\lambda$, so
+The events $A_0,\ldots,A_n$ are disjoint and their union is $\{S_n\ge\lambda\}$. On $A_j$ we have $\lvert M_j\rvert\ge\lambda$, so
 
 $$
-\lambda\,\mathbb{P}(A_j)\le \mathbb{E}\bigl[|M_j|\,\mathbf{1}_{A_j}\bigr].
+\lambda\,\mathbb{P}(A_j)\le \mathbb{E}\bigl[\lvert M_j\rvert\,\mathbf{1}_{A_j}\bigr].
 $$
 
 Because $A_j$ is determined by the information available at time $j$, the martingale property gives $\mathbb{E}[M_n\mid \text{time }j]=M_j$. By Jensen's inequality,
 
 $$
-|M_j|=\left|\mathbb{E}[M_n\mid \text{time }j]\right|
-\le \mathbb{E}[|M_n|\mid \text{time }j].
+\lvert M_j\rvert=\bigl\lvert\mathbb{E}[M_n\mid \text{time }j]\bigr\rvert
+\le \mathbb{E}\bigl[\lvert M_n\rvert\mid \text{time }j\bigr].
 $$
 
 Multiplying by $\mathbf{1}_{A_j}$ and taking expectations yields
 
 $$
-\mathbb{E}\bigl[|M_j|\,\mathbf{1}_{A_j}\bigr]
-\le \mathbb{E}\bigl[|M_n|\,\mathbf{1}_{A_j}\bigr].
+\mathbb{E}\bigl[\lvert M_j\rvert\,\mathbf{1}_{A_j}\bigr]
+\le \mathbb{E}\bigl[\lvert M_n\rvert\,\mathbf{1}_{A_j}\bigr].
 $$
 
 Summing over $j$ gives the maximal crossing estimate
 
 $$
 \lambda\,\mathbb{P}(S_n\ge\lambda)
-\le \mathbb{E}\bigl[|M_n|\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr].
+\le \mathbb{E}\bigl[\lvert M_n\rvert\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr].
 $$
 
 Now use the layer-cake identity $\mathbb{E}[S_n^2]=\int_0^\infty 2\lambda\,\mathbb{P}(S_n\ge\lambda)\,d\lambda$. Combining it with the previous display gives
@@ -2905,8 +2905,8 @@ $$
 \begin{aligned}
 \mathbb{E}[S_n^2]
 &= \int_0^\infty 2\lambda\,\mathbb{P}(S_n\ge\lambda)\,d\lambda \\
-&\le 2\int_0^\infty \mathbb{E}\bigl[|M_n|\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr]\,d\lambda \\
-&=2\,\mathbb{E}[|M_n|S_n]
+&\le 2\int_0^\infty \mathbb{E}\bigl[\lvert M_n\rvert\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr]\,d\lambda \\
+&=2\,\mathbb{E}\bigl[\lvert M_n\rvert\,S_n\bigr]
 \le 2\,\bigl(\mathbb{E}[M_n^2]\bigr)^{1/2}\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2}.
 \end{aligned}
 $$
@@ -2964,10 +2964,10 @@ $$
 z_\ell=z_0+h\sum_{k=0}^{\ell-1}G(z_k)+\xi_\ell.
 $$
 
-*If $\varepsilon_d:=\sup_{\ell\le Td}|\xi_\ell|\to0$ deterministically, then*
+*If $\varepsilon_d:=\sup_{\ell\le Td}\lvert\xi_\ell\rvert\to0$ deterministically, then*
 
 $$
-\sup_{\ell\le Td}|z_\ell-\phi(t_\ell)|\to0.
+\sup_{\ell\le Td}\lvert z_\ell-\phi(t_\ell)\rvert\to0.
 $$
 
 *The same conclusion holds in probability if $\varepsilon_d\xrightarrow{\mathbb{P}}0$.*
@@ -2984,13 +2984,13 @@ $$
 The last term is $O_T(h)$: since $\dot\phi=G(\phi)$ and $\phi$ stays bounded on $[0,T]$, the curve $\phi$ is Lipschitz on $[0,T]$, and therefore so is $G\circ\phi$. Hence
 
 $$
-|e_\ell|\le \frac{L_G}{d}\sum_{k=0}^{\ell-1}|e_k|+\varepsilon_d+o(1),
+\lvert e_\ell\rvert\le \frac{L_G}{d}\sum_{k=0}^{\ell-1}\lvert e_k\rvert+\varepsilon_d+o(1),
 $$
 
 uniformly for $\ell\le Td$. Applying the preceding discrete Gronwall lemma with $A=L_G$, $B=\varepsilon_d+o(1)$, and $h=1/d$ gives
 
 $$
-\sup_{\ell\le Td}|e_\ell|\le(\varepsilon_d+o(1))e^{L_GT}\to0.
+\sup_{\ell\le Td}\lvert e_\ell\rvert\le(\varepsilon_d+o(1))e^{L_GT}\to0.
 $$
 
 <span style="float: right;">$\square$</span>
@@ -3000,7 +3000,7 @@ $$
 **Theorem 10.2 (Deterministic limit of the loss).** *Fix $0<\gamma<2$, $\sigma > 0$, and consider streaming SGD $(43)$ on the isotropic Gaussian model of Lemma 10.1 from a deterministic initialization $w_0$ with $L(w_0)=O(1)$ as $d\to\infty$. Let $\phi_d : [0,\infty) \to \mathbb{R}$ be the solution of $(46)$ with initial condition $\phi_d(0) = L(w_0)$. Then for every $T > 0$,*
 
 $$
-\sup_{t \in [0,T]}\,\bigl|L(w_{[td]}) - \phi_d(t)\bigr| \;\xrightarrow[d\to\infty]{\mathbb{P}}\; 0.
+\sup_{t \in [0,T]}\,\bigl\lvert L(w_{[td]}) - \phi_d(t)\bigr\rvert \;\xrightarrow[d\to\infty]{\mathbb{P}}\; 0.
 $$
 
 *Consequently, if the deterministic initial losses satisfy $L(w_0) \to \psi_0$, then $L(w_{[td]})$ converges uniformly on compact time intervals in probability to the solution $\psi$ of $(46)$ with $\psi(0)=\psi_0$, given explicitly by $(46a)$.*
@@ -3022,7 +3022,7 @@ $$
 \mathbb{E}_k[L_{k+1}-L_k] \;=\; \frac{1}{d}\,G_d(L_k). 
 $$
 
-The function $G$ is affine, hence globally Lipschitz with constant $L_G := |\gamma^2 - 2\gamma|$. We will also use the following fluctuation estimate, obtained from the same Gaussian moments as Lemma 10.1:
+The function $G$ is affine, hence globally Lipschitz with constant $L_G := \lvert\gamma^2 - 2\gamma\rvert$. We will also use the following fluctuation estimate, obtained from the same Gaussian moments as Lemma 10.1:
 
 $$
 \mathbb{E}_k\bigl[(L_{k+1}-L_k)^2\bigr] \;\le\; \frac{C_R}{d^2} \qquad \text{whenever } L_k \le R.
@@ -3104,7 +3104,7 @@ $$
 Orthogonality of martingale differences then gives $\mathbb{E}[M_\ell^2] \le C_R \ell/d^2$ before the stopping time. Applying Doob's $L^2$ maximal inequality above with $\ell\leq Td\wedge\tau_R$ gives $\mathbb{E}[\sup_{\ell\le Td\wedge\tau_R} M_\ell^2] \le 4C_R T/d$. Hence
 
 $$
-\sup_{\ell\le Td\wedge\tau_R}\,|M_\ell| \;\xrightarrow{\mathbb{P}}\; 0.
+\sup_{\ell\le Td\wedge\tau_R}\,\lvert M_\ell\rvert \;\xrightarrow{\mathbb{P}}\; 0.
 $$
 
 **Comparison with the ODE.** Set $t_\ell:=\ell/d$. The Doob expansion can be rewritten as an approximate integral equation for the stopped loss curve:
@@ -3122,7 +3122,7 @@ $$
 We now check that the error term $\xi_\ell$ is uniformly small. The martingale estimate above gives
 
 $$
-\sup_{\ell\le Td\wedge\tau_R}|M_\ell|\xrightarrow{\mathbb{P}}0.
+\sup_{\ell\le Td\wedge\tau_R}\lvert M_\ell\rvert\xrightarrow{\mathbb{P}}0.
 $$
 
 Also, before the stopping time we have $L_k\le R$, so the finite-$d$ drift correction satisfies
@@ -3130,9 +3130,9 @@ Also, before the stopping time we have $L_k\le R$, so the finite-$d$ drift corre
 $$
 \begin{aligned}
 \sup_{\ell\le Td\wedge\tau_R}
-\left|\frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G_d(L_k)-G(L_k)\bigr]\right|
+\left\lvert\frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G_d(L_k)-G(L_k)\bigr]\right\rvert
 &= \sup_{\ell\le Td\wedge\tau_R}
-\left|\frac{1}{d}\sum_{k=0}^{\ell-1}\frac{2\gamma^2}{d}(L_k-L_\ast)\right| \\
+\left\lvert\frac{1}{d}\sum_{k=0}^{\ell-1}\frac{2\gamma^2}{d}(L_k-L_\ast)\right\rvert \\
 &\le \frac{C_R T}{d}.
 \end{aligned}
 $$
@@ -3140,13 +3140,13 @@ $$
 Together with the martingale bound, this shows
 
 $$
-\sup_{\ell\le Td\wedge\tau_R}|\xi_\ell|\xrightarrow[d\to\infty]{\mathbb{P}}0.
+\sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert\xrightarrow[d\to\infty]{\mathbb{P}}0.
 $$
 
 The ODE-stability lemma above applies to this approximate integral equation with $z_\ell=L_\ell$ and $\phi=\phi_d$. Therefore
 
 $$
-\sup_{\ell\le Td\wedge\tau_R}|L_\ell-\phi_d(t_\ell)|
+\sup_{\ell\le Td\wedge\tau_R}\lvert L_\ell-\phi_d(t_\ell)\rvert
 \xrightarrow[d\to\infty]{\mathbb{P}}0.
 $$
 
@@ -3161,15 +3161,15 @@ $$
 Choose $R>B_T+1$. If the stopped process exits before time $Td$, meaning $\tau_R\le Td$, then by definition $L_{\tau_R}>R$. On the other hand, $\phi_d(\tau_R/d)\le B_T$. Therefore, on the event $\{\tau_R\le Td\}$,
 
 $$
-\sup_{\ell\le Td\wedge\tau_R}|L_\ell-\phi_d(t_\ell)|
-\ge |L_{\tau_R}-\phi_d(\tau_R/d)|
+\sup_{\ell\le Td\wedge\tau_R}\lvert L_\ell-\phi_d(t_\ell)\rvert
+\ge \lvert L_{\tau_R}-\phi_d(\tau_R/d)\rvert
 > R-B_T
 > 1.
 $$
 
 But the stopped convergence proved above says that the left-hand side converges to zero in probability. Hence $\mathbb{P}(\tau_R\le Td)\to0$. With probability tending to one, the stopped and unstopped processes agree on the whole interval $[0,T]$, so the unstopped convergence follows.
 
-Finally, if $L(w_0)\to\psi_0$, then $(46a)$ shows $\sup_{t\le T}|\phi_d(t)-\psi(t)|\to0$, and the stated limiting conclusion follows by the triangle inequality. <span style="float: right;">$\square$</span>
+Finally, if $L(w_0)\to\psi_0$, then $(46a)$ shows $\sup_{t\le T}\lvert\phi_d(t)-\psi(t)\rvert\to0$, and the stated limiting conclusion follows by the triangle inequality. <span style="float: right;">$\square$</span>
 
 
 
@@ -3196,7 +3196,7 @@ For the rest of the section we work with streaming least squares under the follo
 *(ii) for every deterministic $B \in \mathbb{R}^{d\times d}$ and every $t \ge 0$,*
 
 $$
-\Pr\bigl(|x^\top Bx - \mathbb{E}[x^\top Bx]| \ge t\bigr) \;\le\; 2\exp\Bigl(-\min\Bigl\{\tfrac{t^2 d^{-4\varepsilon}}{\|B\|_F^2},\, \tfrac{t\,d^{-2\varepsilon}}{\|B\|_{\mathrm{op}}}\Bigr\}\Bigr);
+\Pr\bigl(\lvert x^\top Bx - \mathbb{E}[x^\top Bx]\rvert \ge t\bigr) \;\le\; 2\exp\Bigl(-\min\Bigl\{\tfrac{t^2 d^{-4\varepsilon}}{\|B\|_F^2},\, \tfrac{t\,d^{-2\varepsilon}}{\|B\|_{\mathrm{op}}}\Bigr\}\Bigr);
 $$
 
 *(iii) conditionally on $x$, $y = \langle x, w_\ast\rangle + \sigma w$ with $w$ centered, unit-variance, and sub-Gaussian with $\lVert w\rVert _{\psi_2} \le d^{\varepsilon}$;*
@@ -3226,7 +3226,7 @@ For the least-squares risk, $\nabla L(w) = H(w-w_\ast)$, so $(53)$ is a linear S
 **Definition 10.5 ($C^2$ norm).** *For a twice-differentiable function $q : \mathbb{R}^d \to \mathbb{C}$,*
 
 $$
-\|q\|_{C^2} := \sup_{x \in \mathbb{R}^d}\|\nabla^2 q(x)\|_{\mathrm{op}} + \|\nabla q(0)\| + |q(0)|. \tag{54}
+\|q\|_{C^2} := \sup_{x \in \mathbb{R}^d}\|\nabla^2 q(x)\|_{\mathrm{op}} + \|\nabla q(0)\| + \lvert q(0)\rvert. \tag{54}
 $$
 
 </div>
@@ -3238,7 +3238,7 @@ Every quadratic on $\mathbb{R}^d$ has finite $C^2$ norm, and the central compari
 **Theorem 10.6 (Streaming SGD vs. homogenized SGD).** *Under Assumption 10.3, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$ and every deterministic $w_0$ with $\lVert w_0\rVert  \le 1$, there is a constant $C = C(\lVert H\rVert _{\mathrm{op}})$ such that for every $n \le d\log d/C$, the streaming iterates $\lbrace w_k\rbrace _{k=0}^n$ and the homogenized SGD process $\lbrace X_t\rbrace _{t=0}^{n/d}$ (with the same initialization, driven by an independent Brownian motion) satisfy*
 
 $$
-\sup_{0\le k\le n}\bigl|q(w_k) - q(X_{k/d})\bigr| \;<\; \|q\|_{C^2}\cdot e^{Cn/d}\cdot d^{-1/2 + 9\varepsilon}, \tag{55}
+\sup_{0\le k\le n}\bigl\lvert q(w_k) - q(X_{k/d})\bigr\rvert \;<\; \|q\|_{C^2}\cdot e^{Cn/d}\cdot d^{-1/2 + 9\varepsilon}, \tag{55}
 $$
 
 *with overwhelming probability.*
@@ -3282,7 +3282,7 @@ The two terms in $(58)$ correspond to the two terms in $(53)$. The forcing $F(\g
 **Theorem 10.8 (Volterra risk curve).** *Under Assumption 10.3, for every $T > 0$ and every $\varepsilon' > 0$,*
 
 $$
-\sup_{0\le t \le T}\bigl|L(X_t) - \Psi(t)\bigr| \;<\; C(T, \|H\|_{\mathrm{op}})\cdot d^{-1/2 + \varepsilon'}, \tag{59}
+\sup_{0\le t \le T}\bigl\lvert L(X_t) - \Psi(t)\bigr\rvert \;<\; C(T, \|H\|_{\mathrm{op}})\cdot d^{-1/2 + \varepsilon'}, \tag{59}
 $$
 
 *with overwhelming probability.*
