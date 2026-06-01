@@ -2848,11 +2848,12 @@ The function $\psi(t)$ is the candidate dimension-independent limit of the loss 
 
 **Numerical illustration.** The figure below overlays the excess-risk trajectory $L(w_{[td]}) - L_\ast$ versus epoch $t$ for streaming SGD on the isotropic Gaussian model with $\sigma = 0.1$, $w_0 = 0$, $d = 400$, and three stepsizes $\gamma \in \lbrace 0.5, 1.0, 1.5\rbrace $. For each $\gamma$ the solid curve is the median over $30$ independent SGD trials, the shaded ribbon is the corresponding $10$–$90\%$ interquantile band, the dashed curve is the excess-risk ODE limit $\psi(t) - L_\ast$ from $(46)$, and the dotted horizontal line marks its stationary value $\psi_\infty - L_\ast = \gamma\sigma^2/(2(2-\gamma))$. In every case the band tracks its ODE limit closely, and the three regimes illustrate the bias–variance trade-off predicted by $(46)$: the decay rate $2\gamma-\gamma^2$ is maximized at $\gamma=1$, while the stationary risk $\psi_\infty$ is monotone increasing in $\gamma$ on $(0,2)$.
 
-![Streaming SGD on isotropic Gaussian regression: concentration around the ODE limit](figures/sgd_high_d_ode_limit.png)
+To isolate the role of the dimension, the companion figure on the right instead *fixes* the stepsize at $\gamma = 1$ and varies $d \in \lbrace 50, 200, 800\rbrace$. The ODE limit $\psi(t)$ from $(46)$ is dimension-independent, so all three medians follow the same dashed curve; only the width of the SGD interquantile band changes. As $d$ grows the band narrows around the ODE curve — empirically at the rate $1/\sqrt{d}$ predicted by the $O(d^{-2})$ per-step fluctuation in Lemma 10.1 — which is exactly the concentration asserted by Theorem 10.2.
 
-To isolate the role of the dimension, the next figure instead *fixes* the stepsize at $\gamma = 1$ and varies $d \in \lbrace 50, 200, 800\rbrace$. The ODE limit $\psi(t)$ from $(46)$ is dimension-independent, so the same dashed curve appears in every panel; only the SGD interquantile band changes. As $d$ grows the band narrows around the ODE curve — empirically at the rate $1/\sqrt{d}$ predicted by the $O(d^{-2})$ per-step fluctuation in Lemma 10.1 — which is exactly the concentration asserted by Theorem 10.2.
-
-![Concentration of streaming SGD around the ODE limit as the dimension grows, for fixed stepsize](figures/sgd_high_d_concentration.png)
+<div style="display:flex; flex-wrap:wrap; gap:1em; align-items:flex-start; margin:1.5em 0;">
+  <img src="figures/sgd_high_d_ode_limit.png" alt="Streaming SGD concentration around the ODE limit, varying the stepsize" style="flex:1 1 320px; max-width:49%; height:auto;">
+  <img src="figures/sgd_high_d_concentration.png" alt="Concentration of streaming SGD around the ODE limit as the dimension grows, for fixed stepsize" style="flex:1 1 320px; max-width:49%; height:auto;">
+</div>
 
 ### Concentration around the ODE limit
 

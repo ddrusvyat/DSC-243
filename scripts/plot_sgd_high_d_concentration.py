@@ -80,17 +80,15 @@ def main():
     n_trials = 200
 
     rng_master = np.random.default_rng(1)
-    sgd_color = plt.cm.viridis(0.35)
+    colors = plt.cm.viridis(np.linspace(0.15, 0.80, len(dims)))
 
-    fig, axes = plt.subplots(
-        1, len(dims), figsize=(13.5, 4.6), sharey=True
-    )
+    fig, ax = plt.subplots(figsize=(8.2, 5.6))
 
     psi_inf = 0.5 * gamma * sigma ** 2 / (2 - gamma)
     t_grid = np.linspace(0, n_epochs, 600)
     psi = ode_solution(t_grid, gamma, sigma, 0.5)
 
-    for ax, d in zip(axes, dims):
+    for d, color in zip(dims, colors):
         w_star = np.zeros(d)
         w_star[0] = 1.0
         w0 = np.zeros(d)
@@ -103,22 +101,9 @@ def main():
         med = np.median(R, axis=0)
         lo, hi = np.quantile(R, [0.1, 0.9], axis=0)
 
-        ax.fill_between(
-            epochs, lo, hi, color=sgd_color, alpha=0.30, linewidth=0,
-            label="streaming SGD\n10-90% band",
-        )
-        ax.plot(epochs, med, "-", color=sgd_color, linewidth=1.6,
-                label="SGD median")
-        ax.plot(t_grid, psi, "--", color="black", linewidth=1.6,
-                label=r"ODE limit $\psi(t)$")
-        ax.axhline(psi_inf, color="black", linewidth=0.9, linestyle=":",
-                   alpha=0.7, label=r"$\psi_\infty$")
-
-        ax.set_yscale("log")
-        ax.set_xlim(0, n_epochs)
-        ax.set_xlabel(r"epoch $t = k/d$", fontsize=12)
-        ax.set_title(rf"$d = {d}$", fontsize=13)
-        ax.grid(True, which="both", alpha=0.25)
+        ax.fill_between(epochs, lo, hi, color=color, alpha=0.28, linewidth=0)
+        ax.plot(epochs, med, "-", color=color, linewidth=1.6,
+                label=rf"streaming SGD, $d={d}$")
 
         band_width = float(np.max((hi - lo)[epochs >= 2.0]))
         print(
@@ -127,16 +112,25 @@ def main():
             f"max band width (t>=2) = {band_width:.3e}"
         )
 
-    axes[0].set_ylabel(r"excess risk $L(w_{[td]}) - L(w_\ast)$", fontsize=12)
-    axes[-1].legend(fontsize=9.5, loc="upper right", framealpha=0.95)
-    fig.suptitle(
-        rf"Concentration of streaming SGD as $d$ grows "
-        rf"(fixed $\gamma={gamma}$, $\sigma={sigma}$, $w_0=0$; "
-        rf"median and 10-90% band over {n_trials} trials)",
-        fontsize=12.5,
-    )
+    ax.plot(t_grid, psi, "--", color="black", linewidth=1.6,
+            label=r"ODE limit $\psi(t)$")
+    ax.axhline(psi_inf, color="black", linewidth=0.9, linestyle=":",
+               alpha=0.7, label=r"$\psi_\infty$")
 
-    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    ax.set_yscale("log")
+    ax.set_xlim(0, n_epochs)
+    ax.set_xlabel(r"epoch $t = k/d$", fontsize=12)
+    ax.set_ylabel(r"excess risk $L(w_{[td]}) - L(w_\ast)$", fontsize=12)
+    ax.set_title(
+        rf"Concentration as $d$ grows "
+        rf"(fixed $\gamma={gamma}$, $\sigma={sigma}$, $w_0=0$; "
+        rf"10-90% band over {n_trials} trials)",
+        fontsize=11.5,
+    )
+    ax.grid(True, which="both", alpha=0.25)
+    ax.legend(fontsize=9.5, loc="upper right", framealpha=0.95)
+
+    fig.tight_layout()
     out = FIGURES_DIR / "sgd_high_d_concentration.png"
     fig.savefig(out, dpi=150, bbox_inches="tight")
     plt.close(fig)
