@@ -2856,6 +2856,147 @@ Lemma 10.1 already does most of the work. It says that the conditional drift of 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
+**Lemma (Doob's $L^2$ maximal inequality).** *Let $(M_\ell)_{\ell\ge0}$ be a square-integrable martingale with $M_0=0$. Then for every $n\ge0$,*
+
+$$
+\mathbb{E}\!\left[\max_{0\le \ell\le n} M_\ell^2\right] \;\le\; 4\,\mathbb{E}[M_n^2].
+$$
+
+</div>
+
+*Proof.* Let $S_n:=\max_{0\le \ell\le n}|M_\ell|$. We first prove a bound for the event that $S_n$ crosses a fixed level $\lambda>0$.
+
+Let $A_j$ be the event that the first crossing of level $\lambda$ occurs at time $j$:
+
+$$
+A_j:=\{|M_0|<\lambda,\ldots,|M_{j-1}|<\lambda,\ |M_j|\ge\lambda\}.
+$$
+
+The events $A_0,\ldots,A_n$ are disjoint and their union is $\{S_n\ge\lambda\}$. On $A_j$ we have $|M_j|\ge\lambda$, so
+
+$$
+\lambda\,\mathbb{P}(A_j)\le \mathbb{E}\bigl[|M_j|\,\mathbf{1}_{A_j}\bigr].
+$$
+
+Because $A_j$ is determined by the information available at time $j$, the martingale property gives $\mathbb{E}[M_n\mid \text{time }j]=M_j$. By Jensen's inequality,
+
+$$
+|M_j|=\left|\mathbb{E}[M_n\mid \text{time }j]\right|
+\le \mathbb{E}[|M_n|\mid \text{time }j].
+$$
+
+Multiplying by $\mathbf{1}_{A_j}$ and taking expectations yields
+
+$$
+\mathbb{E}\bigl[|M_j|\,\mathbf{1}_{A_j}\bigr]
+\le \mathbb{E}\bigl[|M_n|\,\mathbf{1}_{A_j}\bigr].
+$$
+
+Summing over $j$ gives the maximal crossing estimate
+
+$$
+\lambda\,\mathbb{P}(S_n\ge\lambda)
+\le \mathbb{E}\bigl[|M_n|\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr].
+$$
+
+Now use the layer-cake identity $\mathbb{E}[S_n^2]=\int_0^\infty 2\lambda\,\mathbb{P}(S_n\ge\lambda)\,d\lambda$. Combining it with the previous display gives
+
+$$
+\begin{aligned}
+\mathbb{E}[S_n^2]
+&= \int_0^\infty 2\lambda\,\mathbb{P}(S_n\ge\lambda)\,d\lambda \\
+&\le 2\int_0^\infty \mathbb{E}\bigl[|M_n|\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr]\,d\lambda \\
+&=2\,\mathbb{E}[|M_n|S_n]
+\le 2\,\bigl(\mathbb{E}[M_n^2]\bigr)^{1/2}\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2}.
+\end{aligned}
+$$
+
+If $\mathbb{E}[S_n^2]=0$ there is nothing to prove. Otherwise, divide by $\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2}$ to get $\mathbb{E}[S_n^2]\le 4\,\mathbb{E}[M_n^2]$. Since $S_n^2=\max_{0\le\ell\le n}M_\ell^2$, this is the desired inequality. <span style="float: right;">$\square$</span>
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma (Discrete Gronwall inequality).** *Let $a_0,\ldots,a_n$ be nonnegative numbers. Suppose that for some $A,B\ge0$ and step size $h>0$,*
+
+$$
+a_\ell \;\le\; B + Ah\sum_{k=0}^{\ell-1}a_k,
+\qquad \ell=0,\ldots,n.
+$$
+
+*Then*
+
+$$
+\max_{0\le\ell\le n}a_\ell \;\le\; B\,e^{Ahn}.
+$$
+
+</div>
+
+*Proof.* Define
+
+$$
+b_\ell:=B+Ah\sum_{k=0}^{\ell-1}a_k.
+$$
+
+Then $a_\ell\le b_\ell$ by assumption, and
+
+$$
+b_{\ell+1}=b_\ell+Ah\,a_\ell\le (1+Ah)b_\ell.
+$$
+
+Since $b_0=B$, induction gives
+
+$$
+b_\ell\le B(1+Ah)^\ell\le B e^{Ah\ell}.
+$$
+
+Thus $a_\ell\le b_\ell\le B e^{Ah\ell}\le B e^{Ahn}$ for every $\ell\le n$. <span style="float: right;">$\square$</span>
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma (Stability of approximate ODE solutions).** *Let $G:\mathbb{R}\to\mathbb{R}$ be Lipschitz with constant $L_G$, let $h=1/d$, and set $t_\ell=\ell h$. Suppose $\phi$ solves*
+
+$$
+\phi(t)=z_0+\int_0^t G(\phi(s))\,ds,
+$$
+
+*and a discrete curve $(z_\ell)$ satisfies, for all $\ell\le Td$,*
+
+$$
+z_\ell=z_0+h\sum_{k=0}^{\ell-1}G(z_k)+\xi_\ell.
+$$
+
+*If $\varepsilon_d:=\sup_{\ell\le Td}|\xi_\ell|\to0$ deterministically, then*
+
+$$
+\sup_{\ell\le Td}|z_\ell-\phi(t_\ell)|\to0.
+$$
+
+*The same conclusion holds in probability if $\varepsilon_d\xrightarrow{\mathbb{P}}0$.*
+
+</div>
+
+*Proof.* Subtract the integral equation for $\phi$ from the discrete equation for $z_\ell$. With $e_\ell:=z_\ell-\phi(t_\ell)$, we get
+
+$$
+e_\ell
+=h\sum_{k=0}^{\ell-1}\bigl[G(z_k)-G(\phi(t_k))\bigr]+\xi_\ell-\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}\bigl[G(\phi(s))-G(\phi(t_k))\bigr]\,ds.
+$$
+
+The last term is $O_T(h)$: since $\dot\phi=G(\phi)$ and $\phi$ stays bounded on $[0,T]$, the curve $\phi$ is Lipschitz on $[0,T]$, and therefore so is $G\circ\phi$. Hence
+
+$$
+|e_\ell|\le \frac{L_G}{d}\sum_{k=0}^{\ell-1}|e_k|+\varepsilon_d+o(1),
+$$
+
+uniformly for $\ell\le Td$. Applying the preceding discrete Gronwall lemma with $A=L_G$, $B=\varepsilon_d+o(1)$, and $h=1/d$ gives
+
+$$
+\sup_{\ell\le Td}|e_\ell|\le(\varepsilon_d+o(1))e^{L_GT}\to0.
+$$
+
+<span style="float: right;">$\square$</span>
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
 **Theorem 10.2 (Deterministic limit of the loss).** *Fix $0<\gamma<2$, $\sigma > 0$, and consider streaming SGD $(43)$ on the isotropic Gaussian model of Lemma 10.1 from a deterministic initialization $w_0$ with $L(w_0)=O(1)$ as $d\to\infty$. Let $\phi_d : [0,\infty) \to \mathbb{R}$ be the solution of $(46)$ with initial condition $\phi_d(0) = L(w_0)$. Then for every $T > 0$,*
 
 $$
@@ -2894,55 +3035,141 @@ L_{k+1}-L_k
 =-\frac{\gamma}{d}\,\langle v_k,g_{k+1}\rangle+\frac{\gamma^2}{2d^2}\,\|g_{k+1}\|^2.
 $$
 
-If $L_k\le R$, then $\|v_k\|$ is bounded in terms of $R$ and $\sigma$. The identities $\mathbb{E}_k[\langle v_k,g_{k+1}\rangle^2]=3\|v_k\|^4+\sigma^2\|v_k\|^2$ and $\mathbb{E}_k[\|g_{k+1}\|^4]\le C_R d^2$ then imply the displayed bound by Cauchy--Schwarz.
+If $L_k\le R$, then $\|v_k\|^2=2(L_k-L_\ast)$ is bounded by a constant depending only on $R$ and $\sigma$. The first term in the loss increment is controlled by
+
+$$
+\begin{aligned}
+\mathbb{E}_k\bigl[\langle v_k,g_{k+1}\rangle^2\bigr]
+&= \mathbb{E}\bigl[((v_k^\top x)^2-\eta\,v_k^\top x)^2\bigr] \\
+&= 3\|v_k\|^4+\sigma^2\|v_k\|^2 \\
+&\le C_R.
+\end{aligned}
+$$
+
+For the second term, use $g_{k+1}=(v_k^\top x-\eta)x$. Since $v_k^\top x-\eta$ is Gaussian with variance $\|v_k\|^2+\sigma^2\le C_R$, its eighth moment is bounded by a constant depending only on $R$ and $\sigma$, while $\mathbb{E}\|x\|^8=O(d^4)$. By Cauchy--Schwarz,
+
+$$
+\begin{aligned}
+\mathbb{E}_k\|g_{k+1}\|^4
+&= \mathbb{E}\bigl[(v_k^\top x-\eta)^4\|x\|^4\bigr] \\
+&\le \Bigl(\mathbb{E}(v_k^\top x-\eta)^8\Bigr)^{1/2}\Bigl(\mathbb{E}\|x\|^8\Bigr)^{1/2} \\
+&\le C_R d^2.
+\end{aligned}
+$$
+
+Therefore
+
+$$
+\begin{aligned}
+\mathbb{E}_k\bigl[(L_{k+1}-L_k)^2\bigr]
+&\le \frac{2\gamma^2}{d^2}\,\mathbb{E}_k\bigl[\langle v_k,g_{k+1}\rangle^2\bigr]
+    +\frac{\gamma^4}{2d^4}\,\mathbb{E}_k\|g_{k+1}\|^4 \\
+&\le \frac{C_R}{d^2}.
+\end{aligned}
+$$
 
 To avoid distracting notation, we first argue up to the stopping time $\tau_R:=\inf\{k:L_k>R\}$, where $R$ is fixed. Thus all estimates below are read for $\ell\le Td\wedge\tau_R$. At the end we choose $R$ larger than the bounded deterministic curve $\phi_d([0,T])$ and remove the stopping.
 
-**Doob decomposition.** Split each increment of $L$ into its conditional mean and a martingale difference,
+**Doob decomposition.** Split each increment of $L$ into its conditional mean and a martingale difference. Since Lemma 10.1 gives $\mathbb{E}_k[L_{k+1}-L_k]=d^{-1}G_d(L_k)$, we can write
 
 $$
-L_{k+1} - L_k \;=\; \frac{1}{d}\,G_d(L_k) \;+\; \Delta M_{k+1}, \qquad \Delta M_{k+1} := L_{k+1} - \mathbb{E}_k[L_{k+1}],
+\begin{aligned}
+L_{k+1} - L_k
+&= \mathbb{E}_k[L_{k+1}-L_k]
+    +\Bigl((L_{k+1}-L_k)-\mathbb{E}_k[L_{k+1}-L_k]\Bigr) \\
+&= \frac{1}{d}\,G_d(L_k)+\Delta_{k+1},
+\end{aligned}
 $$
 
-and sum from $k = 0$ to $k = \ell - 1$ with $\ell := \lfloor td\rfloor$:
+where
+
+$$
+\Delta_{k+1}:=(L_{k+1}-L_k)-\mathbb{E}_k[L_{k+1}-L_k]=L_{k+1}-\mathbb{E}_k[L_{k+1}].
+$$
+
+Summing from $k = 0$ to $k = \ell - 1$ with $\ell := \lfloor td\rfloor$ gives
 
 $$
 L_\ell \;=\; L_0 \;+\; \frac{1}{d}\sum_{k=0}^{\ell-1} G_d(L_k) \;+\; M_\ell,
 $$
 
-where $M_\ell := \sum_{k=0}^{\ell-1}\Delta M_{k+1}$ is a martingale.
+where $M_\ell := \sum_{k=0}^{\ell-1}\Delta_{k+1}$ is a **martingale**, meaning $\mathbb{E}_\ell[M_{\ell+1}]=M_\ell$.
 
 **Martingale piece vanishes.** Since conditional variance is bounded by conditional second moment, the fluctuation estimate gives
 
 $$
-\mathbb{E}_k[\Delta M_{k+1}^2] \;\le\; \mathbb{E}_k\bigl[(L_{k+1}-L_k)^2\bigr] \;\le\; \frac{C_R}{d^2}.
+\mathbb{E}_k[\Delta_{k+1}^2] \;\le\; \mathbb{E}_k\bigl[(L_{k+1}-L_k)^2\bigr] \;\le\; \frac{C_R}{d^2}.
 $$
 
-Orthogonality of martingale differences then gives $\mathbb{E}[M_\ell^2] \le C_R \ell/d^2 \le C_R T/d$ before the stopping time, and Doob's $L^2$ maximal inequality lifts this to $\mathbb{E}[\sup_{\ell\le Td\wedge\tau_R} M_\ell^2] \le 4C_R T/d$. Hence
+Orthogonality of martingale differences then gives $\mathbb{E}[M_\ell^2] \le C_R \ell/d^2$ before the stopping time. Applying Doob's $L^2$ maximal inequality above with $\ell\leq Td\wedge\tau_R$ gives $\mathbb{E}[\sup_{\ell\le Td\wedge\tau_R} M_\ell^2] \le 4C_R T/d$. Hence
 
 $$
 \sup_{\ell\le Td\wedge\tau_R}\,|M_\ell| \;\xrightarrow{\mathbb{P}}\; 0.
 $$
 
-**Comparison with the ODE.** Set $t_\ell := \ell/d$ and $e_\ell := L_\ell - \phi_d(t_\ell)$. The integrated form $\phi_d(t_\ell) = L_0 + \int_0^{t_\ell} G(\phi_d(s))\,ds$ minus the Doob expansion above produces
+**Comparison with the ODE.** Set $t_\ell:=\ell/d$. The Doob expansion can be rewritten as an approximate integral equation for the stopped loss curve:
 
 $$
-e_\ell \;=\; \frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G(L_k) - G(\phi_d(t_k))\bigr] \;+\; r_\ell,
+\begin{aligned}
+L_\ell
+&=L_0+\frac{1}{d}\sum_{k=0}^{\ell-1}G(L_k)+\xi_\ell,
+\qquad \ell\le Td\wedge\tau_R, \\
+\xi_\ell
+&:=M_\ell+\frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G_d(L_k)-G(L_k)\bigr].
+\end{aligned}
 $$
 
-where $r_\ell$ collects three small terms: the martingale piece $M_\ell$, the finite-$d$ drift correction $\frac{1}{d}\sum_{k=0}^{\ell-1}[G_d(L_k)-G(L_k)]$, and the forward-Euler truncation error $\sum_k \int_{t_k}^{t_{k+1}}[G(\phi_d(s)) - G(\phi_d(t_k))]\,ds$. On the stopped interval, the drift correction is at most $C_R T/d$, the martingale term is $o_{\mathbb{P}}(1)$ uniformly in $\ell\le Td\wedge\tau_R$, and the Euler error is deterministic $O(1/d)$ because $G\circ\phi_d$ is $C^1$ on $[0,T]$. Therefore $\sup_{\ell\le Td\wedge\tau_R}|r_\ell|\xrightarrow{\mathbb{P}}0$. Lipschitz continuity of $G$ yields
+We now check that the error term $\xi_\ell$ is uniformly small. The martingale estimate above gives
 
 $$
-|e_\ell| \;\le\; \tfrac{L_G}{d}\sum_{k=0}^{\ell-1}|e_k| \;+\; \sup_{j\le Td\wedge\tau_R}|r_j|,
+\sup_{\ell\le Td\wedge\tau_R}|M_\ell|\xrightarrow{\mathbb{P}}0.
 $$
 
-and the discrete Gronwall inequality (at mesh $\Delta t = 1/d$ over horizon $T$) gives
+Also, before the stopping time we have $L_k\le R$, so the finite-$d$ drift correction satisfies
 
 $$
-\sup_{\ell\le Td\wedge\tau_R}|e_\ell| \;\le\; \sup_{j\le Td\wedge\tau_R}|r_j|\,e^{L_G T} \;\xrightarrow[d\to\infty]{\mathbb{P}}\; 0.
+\begin{aligned}
+\sup_{\ell\le Td\wedge\tau_R}
+\left|\frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G_d(L_k)-G(L_k)\bigr]\right|
+&= \sup_{\ell\le Td\wedge\tau_R}
+\left|\frac{1}{d}\sum_{k=0}^{\ell-1}\frac{2\gamma^2}{d}(L_k-L_\ast)\right| \\
+&\le \frac{C_R T}{d}.
+\end{aligned}
 $$
 
-This proves concentration around $\phi_d$ up to the stopping level $R$. Because $L(w_0)=O(1)$ and $0<\gamma<2$, the explicit formula for $\phi_d$ shows that $B_T:=\sup_d\sup_{t\le T}\phi_d(t)<\infty$. Choose $R>B_T+1$. If $\tau_R\le Td$, then at the stopping time $L_{\tau_R}>R$ while $\phi_d(\tau_R/d)\le B_T$, so $\sup_{\ell\le Td\wedge\tau_R}|L_\ell-\phi_d(t_\ell)|>1$. The stopped convergence therefore implies $\mathbb{P}(\tau_R\le Td)\to0$, and the unstopped process satisfies the same limit. Finally, if $L(w_0)\to\psi_0$, then $(46a)$ shows $\sup_{t\le T}|\phi_d(t)-\psi(t)|\to 0$, and the stated limiting conclusion follows by the triangle inequality. <span style="float: right;">$\square$</span>
+Together with the martingale bound, this shows
+
+$$
+\sup_{\ell\le Td\wedge\tau_R}|\xi_\ell|\xrightarrow[d\to\infty]{\mathbb{P}}0.
+$$
+
+The ODE-stability lemma above applies to this approximate integral equation with $z_\ell=L_\ell$ and $\phi=\phi_d$. Therefore
+
+$$
+\sup_{\ell\le Td\wedge\tau_R}|L_\ell-\phi_d(t_\ell)|
+\xrightarrow[d\to\infty]{\mathbb{P}}0.
+$$
+
+This proves concentration around $\phi_d$ up to the stopping level $R$. It remains to check that, for a large enough fixed $R$, the stopping time is unlikely to occur.
+
+Because $L(w_0)=O(1)$ and $0<\gamma<2$, the explicit formula $(46a)$ gives a deterministic bound on the limiting ODE curves over the time interval $[0,T]$:
+
+$$
+B_T:=\sup_d\sup_{0\le t\le T}\phi_d(t)<\infty.
+$$
+
+Choose $R>B_T+1$. If the stopped process exits before time $Td$, meaning $\tau_R\le Td$, then by definition $L_{\tau_R}>R$. On the other hand, $\phi_d(\tau_R/d)\le B_T$. Therefore, on the event $\{\tau_R\le Td\}$,
+
+$$
+\sup_{\ell\le Td\wedge\tau_R}|L_\ell-\phi_d(t_\ell)|
+\ge |L_{\tau_R}-\phi_d(\tau_R/d)|
+> R-B_T
+> 1.
+$$
+
+But the stopped convergence proved above says that the left-hand side converges to zero in probability. Hence $\mathbb{P}(\tau_R\le Td)\to0$. With probability tending to one, the stopped and unstopped processes agree on the whole interval $[0,T]$, so the unstopped convergence follows.
+
+Finally, if $L(w_0)\to\psi_0$, then $(46a)$ shows $\sup_{t\le T}|\phi_d(t)-\psi(t)|\to0$, and the stated limiting conclusion follows by the triangle inequality. <span style="float: right;">$\square$</span>
 
 
 
