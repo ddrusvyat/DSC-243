@@ -2952,48 +2952,55 @@ Thus $a_\ell\le b_\ell\le B e^{C\ell}\le B e^{Cn}$ for every $\ell\le n$. <span 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma (Stability of approximate ODE solutions).** *Let $G:\mathbb{R}\to\mathbb{R}$ be Lipschitz with constant $L_G$, let $h=1/d$, and set $t_\ell=\ell h$. Suppose $\phi$ solves*
+**Lemma (Stability of approximate ODE solutions).** *Let $G:\mathbb{R}\to\mathbb{R}$ be Lipschitz with constant $L_G$. Fix a stepsize $h>0$ and a horizon $T>0$, and set $t_\ell=\ell h$ and $n=\lfloor T/h\rfloor$. Suppose $\phi$ solves*
 
 $$
-\phi(t)=z_0+\int_0^t G(\phi(s))\,ds,
+\phi(t)=z_0+\int_0^t G(\phi(s))\,ds,\qquad t\in[0,T],
 $$
 
-*and a discrete curve $(z_\ell)$ satisfies, for all $\ell\le Td$,*
+*and a discrete curve $(z_\ell)_{0\le\ell\le n}$ satisfies*
 
 $$
 z_\ell=z_0+h\sum_{k=0}^{\ell-1}G(z_k)+\xi_\ell.
 $$
 
-*If $\varepsilon_d:=\sup_{\ell\le Td}\lvert\xi_\ell\rvert\to0$ deterministically, then*
+*Write $\varepsilon:=\max_{0\le\ell\le n}\lvert\xi_\ell\rvert$ for the largest residual and $M:=\sup_{t\in[0,T]}\lvert G(\phi(t))\rvert$. Then*
 
 $$
-\sup_{\ell\le Td}\lvert z_\ell-\phi(t_\ell)\rvert\to0.
+\max_{0\le\ell\le n}\lvert z_\ell-\phi(t_\ell)\rvert\;\le\;\Bigl(\varepsilon+\tfrac{1}{2}L_G M T\,h\Bigr)\,e^{L_G T}.
 $$
-
-*The same conclusion holds in probability if $\varepsilon_d\xrightarrow{\mathbb{P}}0$.*
 
 </div>
 
-*Proof.* Subtract the integral equation for $\phi$ from the discrete equation for $z_\ell$. With $e_\ell:=z_\ell-\phi(t_\ell)$, we get
+*Proof.* Subtract the integral equation for $\phi$ from the discrete equation for $z_\ell$. With $e_\ell:=z_\ell-\phi(t_\ell)$ and $\int_0^{t_\ell}G(\phi(s))\,ds=\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}G(\phi(s))\,ds$, we get
 
 $$
 e_\ell
 =h\sum_{k=0}^{\ell-1}\bigl[G(z_k)-G(\phi(t_k))\bigr]+\xi_\ell-\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}\bigl[G(\phi(s))-G(\phi(t_k))\bigr]\,ds.
 $$
 
-The last term is $O_T(h)$: since $\dot\phi=G(\phi)$ and $\phi$ stays bounded on $[0,T]$, the curve $\phi$ is Lipschitz on $[0,T]$, and therefore so is $G\circ\phi$. Hence
+We bound the three pieces. For the first, $L_G$-Lipschitzness gives $\lvert G(z_k)-G(\phi(t_k))\rvert\le L_G\lvert e_k\rvert$. For the second, $\lvert\xi_\ell\rvert\le\varepsilon$. For the last piece — the Euler discretization error — note that $\dot\phi=G(\phi)$ gives $\lvert\phi(s)-\phi(t_k)\rvert=\bigl\lvert\int_{t_k}^{s}G(\phi(r))\,dr\bigr\rvert\le M\,(s-t_k)$, so each summand obeys
 
 $$
-\lvert e_\ell\rvert\le \frac{L_G}{d}\sum_{k=0}^{\ell-1}\lvert e_k\rvert+\varepsilon_d+o(1),
+\Bigl\lvert\int_{t_k}^{t_{k+1}}\bigl[G(\phi(s))-G(\phi(t_k))\bigr]\,ds\Bigr\rvert
+\le L_G\int_{t_k}^{t_{k+1}}M\,(s-t_k)\,ds=\tfrac{1}{2}L_G M\,h^2,
 $$
 
-uniformly for $\ell\le Td$. Applying the preceding discrete Gronwall lemma with rate $C=L_G/d$ and $B=\varepsilon_d+o(1)$, and using $Cn=L_G T$ at $n=\lfloor Td\rfloor$, gives
+and the $\ell\le n\le T/h$ such terms sum to at most $\tfrac{1}{2}L_G M T\,h$. Altogether,
 
 $$
-\sup_{\ell\le Td}\lvert e_\ell\rvert\le(\varepsilon_d+o(1))e^{L_GT}\to0.
+\lvert e_\ell\rvert\le L_G h\sum_{k=0}^{\ell-1}\lvert e_k\rvert+\varepsilon+\tfrac{1}{2}L_G M T\,h.
 $$
 
-<span style="float: right;">$\square$</span>
+Apply the discrete Gronwall lemma with rate $C=L_G h$ and constant $B=\varepsilon+\tfrac{1}{2}L_G M T\,h$. Since $Cn=L_G h\,\lfloor T/h\rfloor\le L_G T$, this yields
+
+$$
+\max_{0\le\ell\le n}\lvert e_\ell\rvert\le\Bigl(\varepsilon+\tfrac{1}{2}L_G M T\,h\Bigr)e^{L_G T},
+$$
+
+as claimed. <span style="float: right;">$\square$</span>
+
+In the application below the stepsize is $h=1/d$, the horizon $T$ is fixed, and $M$ is bounded uniformly in $d$, so the bound reads $\bigl(\varepsilon+O(1/d)\bigr)e^{L_G T}$; it tends to $0$ as soon as the residual $\varepsilon$ does, and in probability if $\varepsilon\xrightarrow{\mathbb{P}}0$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -3147,7 +3154,7 @@ $$
 \sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert\xrightarrow[d\to\infty]{\mathbb{P}}0.
 $$
 
-The ODE-stability lemma above applies to this approximate integral equation with $z_\ell=L_\ell$ and $\phi=\phi_d$. Therefore
+The ODE-stability lemma above applies to this approximate integral equation with $z_\ell=L_\ell$, $\phi=\phi_d$, stepsize $h=1/d$, and residual $\varepsilon=\sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert$; here $M=\sup_{[0,T]}\lvert G(\phi_d)\rvert$ is bounded uniformly in $d$ because $\phi_d$ stays bounded on $[0,T]$ (uniformly in $d$, as quantified just below) and $G$ is affine. The lemma bounds the discrepancy by $\bigl(\varepsilon+O(1/d)\bigr)e^{L_G T}$, and since $\varepsilon\xrightarrow{\mathbb{P}}0$ we conclude
 
 $$
 \sup_{\ell\le Td\wedge\tau_R}\lvert L_\ell-\phi_d(t_\ell)\rvert
