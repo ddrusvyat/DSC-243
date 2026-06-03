@@ -2915,17 +2915,17 @@ If $\mathbb{E}[S_n^2]=0$ there is nothing to prove. Otherwise, divide by $\bigl(
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma (Discrete Gronwall inequality).** *Let $a_0,\ldots,a_n$ be nonnegative numbers. Suppose that for some $A,B\ge0$ and step size $h>0$,*
+**Lemma (Discrete Gronwall inequality).** *Let $a_0,\ldots,a_n$ be nonnegative numbers. Suppose that for some constants $B,C\ge0$,*
 
 $$
-a_\ell \;\le\; B + Ah\sum_{k=0}^{\ell-1}a_k,
+a_\ell \;\le\; B + C\sum_{k=0}^{\ell-1}a_k,
 \qquad \ell=0,\ldots,n.
 $$
 
 *Then*
 
 $$
-\max_{0\le\ell\le n}a_\ell \;\le\; B\,e^{Ahn}.
+\max_{0\le\ell\le n}a_\ell \;\le\; B\,e^{Cn}.
 $$
 
 </div>
@@ -2933,22 +2933,22 @@ $$
 *Proof.* Define
 
 $$
-b_\ell:=B+Ah\sum_{k=0}^{\ell-1}a_k.
+b_\ell:=B+C\sum_{k=0}^{\ell-1}a_k.
 $$
 
 Then $a_\ell\le b_\ell$ by assumption, and
 
 $$
-b_{\ell+1}=b_\ell+Ah\,a_\ell\le (1+Ah)b_\ell.
+b_{\ell+1}=b_\ell+C\,a_\ell\le (1+C)b_\ell.
 $$
 
 Since $b_0=B$, induction gives
 
 $$
-b_\ell\le B(1+Ah)^\ell\le B e^{Ah\ell}.
+b_\ell\le B(1+C)^\ell\le B e^{C\ell}.
 $$
 
-Thus $a_\ell\le b_\ell\le B e^{Ah\ell}\le B e^{Ahn}$ for every $\ell\le n$. <span style="float: right;">$\square$</span>
+Thus $a_\ell\le b_\ell\le B e^{C\ell}\le B e^{Cn}$ for every $\ell\le n$. <span style="float: right;">$\square$</span>
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -2987,7 +2987,7 @@ $$
 \lvert e_\ell\rvert\le \frac{L_G}{d}\sum_{k=0}^{\ell-1}\lvert e_k\rvert+\varepsilon_d+o(1),
 $$
 
-uniformly for $\ell\le Td$. Applying the preceding discrete Gronwall lemma with $A=L_G$, $B=\varepsilon_d+o(1)$, and $h=1/d$ gives
+uniformly for $\ell\le Td$. Applying the preceding discrete Gronwall lemma with rate $C=L_G/d$ and $B=\varepsilon_d+o(1)$, and using $Cn=L_G T$ at $n=\lfloor Td\rfloor$, gives
 
 $$
 \sup_{\ell\le Td}\lvert e_\ell\rvert\le(\varepsilon_d+o(1))e^{L_GT}\to0.
