@@ -3014,22 +3014,19 @@ $$
 
 </div>
 
-*Proof.* Write $L_k := L(w_k)$ and define the two affine functions
+*Proof.* Write $L_k := L(w_k)$ and let
 
 $$
-\begin{aligned}
-G(u) &:= -2\gamma\,(u - L_\ast) + \gamma^2\,u, \\
-G_d(u) &:= G(u) + \frac{2\gamma^2}{d}\,(u-L_\ast),
-\end{aligned}
+G(u) := -2\gamma\,(u - L_\ast) + \gamma^2\,u
 $$
 
-so that Lemma 10.1 reads
+be the velocity field of the limiting ODE $(46)$, so that $\phi_d$ solves $\dot\phi_d=G(\phi_d)$ with $\phi_d(0)=L(w_0)$. It is affine, hence globally Lipschitz with constant $L_G := \lvert\gamma^2 - 2\gamma\rvert$. By Lemma 10.1, the conditional drift of the loss is this field plus a nonnegative finite-$d$ remainder,
 
 $$
-\mathbb{E}_k[L_{k+1}-L_k] \;=\; \frac{1}{d}\,G_d(L_k). 
+\mathbb{E}_k[L_{k+1}-L_k] \;=\; \frac{1}{d}\,G(L_k) \;+\; r_k, \qquad r_k := \frac{2\gamma^2}{d^2}\,(L_k-L_\ast),
 $$
 
-The leading field $G$ is affine, hence globally Lipschitz with constant $L_G := \lvert\gamma^2 - 2\gamma\rvert$; it is exactly the velocity field of the limiting ODE $(46)$, so that $\phi_d$ solves $\dot\phi_d=G(\phi_d)$ with $\phi_d(0)=L(w_0)$.
+which is determined by the first $k$ samples.
 
 **Strategy.** We will rewrite the loss curve $L_\ell$ (with $\ell=\lfloor td\rfloor$) as an approximate Euler discretization of this ODE — that is, in the precise form required by the ODE-stability lemma above — and then show the residual is uniformly small. So that the moments below stay controlled, we fix a level $R$ and run the argument up to the stopping time
 
@@ -3039,14 +3036,14 @@ $$
 
 Every estimate below is therefore read for $\ell\le Td\wedge\tau_R$; at the very end we choose $R$ large enough that the stopping is asymptotically irrelevant.
 
-**Doob decomposition.** Split each increment of $L$ into its conditional mean and a martingale difference. Using the conditional mean $d^{-1}G_d(L_k)$ of the increment $L_{k+1}-L_k$ from Lemma 10.1,
+**Doob decomposition.** Split each increment of $L$ into its conditional mean and a martingale difference. Using the drift just recorded,
 
 $$
 \begin{aligned}
 L_{k+1} - L_k
 &= \mathbb{E}_k[L_{k+1}-L_k]
     +\Bigl((L_{k+1}-L_k)-\mathbb{E}_k[L_{k+1}-L_k]\Bigr) \\
-&= \frac{1}{d}\,G_d(L_k)+\Delta_{k+1},
+&= \frac{1}{d}\,G(L_k)+r_k+\Delta_{k+1},
 \end{aligned}
 $$
 
@@ -3056,19 +3053,13 @@ $$
 \Delta_{k+1}:=(L_{k+1}-L_k)-\mathbb{E}_k[L_{k+1}-L_k]=L_{k+1}-\mathbb{E}_k[L_{k+1}].
 $$
 
-Summing from $k = 0$ to $k = \ell - 1$ gives
-
-$$
-L_\ell \;=\; L_0 \;+\; \frac{1}{d}\sum_{k=0}^{\ell-1} G_d(L_k) \;+\; M_\ell,
-$$
-
-where $M_\ell := \sum_{k=0}^{\ell-1}\Delta_{k+1}$ is a **martingale**: its conditional mean given the past equals its current value,
+The partial sums $M_\ell := \sum_{k=0}^{\ell-1}\Delta_{k+1}$ form a **martingale**: the conditional mean given the past equals the current value,
 
 $$
 \mathbb{E}_\ell[M_{\ell+1}]=M_\ell.
 $$
 
-Finally, replacing $G_d$ by its leading part $G$ and absorbing the difference into a residual, and setting $t_\ell:=\ell/d$, this becomes
+Summing the increment identity from $k=0$ to $\ell-1$ and setting $t_\ell:=\ell/d$ therefore gives
 
 $$
 \begin{aligned}
@@ -3076,7 +3067,7 @@ L_\ell
 &=L_0+\frac{1}{d}\sum_{k=0}^{\ell-1}G(L_k)+\xi_\ell,
 \qquad \ell\le Td\wedge\tau_R, \\
 \xi_\ell
-&:=M_\ell+\frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G_d(L_k)-G(L_k)\bigr].
+&:=M_\ell+\sum_{k=0}^{\ell-1}r_k.
 \end{aligned}
 $$
 
@@ -3086,18 +3077,14 @@ $$
 \sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert\xrightarrow[d\to\infty]{\mathbb{P}}0.
 $$
 
-The residual has two pieces — a deterministic drift correction and the martingale $M_\ell$ — which we treat in turn.
+The residual has two pieces — the finite-$d$ drift correction $\sum_k r_k$ and the martingale $M_\ell$ — which we treat in turn.
 
-**Drift correction.** Before the stopping time $L_k\le R$, so this piece is $O(1/d)$ uniformly:
+**Drift correction.** Before the stopping time $L_k\le R$, so each remainder obeys $0\le r_k\le 2\gamma^2(R-L_\ast)/d^2$, and the accumulated correction is $O(1/d)$ uniformly:
 
 $$
-\begin{aligned}
-\sup_{\ell\le Td\wedge\tau_R}
-\left\lvert\frac{1}{d}\sum_{k=0}^{\ell-1}\bigl[G_d(L_k)-G(L_k)\bigr]\right\rvert
-&= \sup_{\ell\le Td\wedge\tau_R}
-\left\lvert\frac{1}{d}\sum_{k=0}^{\ell-1}\frac{2\gamma^2}{d}(L_k-L_\ast)\right\rvert \\
-&\le \frac{C_R T}{d}.
-\end{aligned}
+\sup_{\ell\le Td\wedge\tau_R}\;\sum_{k=0}^{\ell-1}r_k
+\;\le\; Td\cdot\frac{2\gamma^2(R-L_\ast)}{d^2}
+\;=\;\frac{2\gamma^2(R-L_\ast)\,T}{d}.
 $$
 
 **Martingale piece.** To control $M_\ell$ we need a second-moment bound on the increments, namely the fluctuation estimate
@@ -3158,7 +3145,7 @@ $$
 \sup_{\ell\le Td\wedge\tau_R}\,\lvert M_\ell\rvert \;\xrightarrow{\mathbb{P}}\; 0.
 $$
 
-Together with the drift bound $C_R T/d\to0$, this proves $\sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert\xrightarrow{\mathbb{P}}0$.
+Together with the $O(1/d)$ drift bound above, this proves $\sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert\xrightarrow{\mathbb{P}}0$.
 
 **Comparison with the ODE.** The ODE-stability lemma above now applies to the approximate integral equation, with discrete curve $z_\ell=L_\ell$, solution $\phi=\phi_d$, stepsize $h=1/d$, and residual $\varepsilon=\sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert$; the constant $\sup_{t\in[0,T]}\lvert G(\phi_d(t))\rvert$ is bounded uniformly in $d$ because $\phi_d$ stays bounded on $[0,T]$ (uniformly in $d$, as quantified just below) and $G$ is affine. The lemma bounds the discrepancy by $\bigl(\varepsilon+O(1/d)\bigr)e^{L_G T}$, and since $\varepsilon\xrightarrow{\mathbb{P}}0$ we conclude
 
