@@ -2735,7 +2735,7 @@ Theorem 9.9 is the random-design, well-specified Gaussian-noise instance of the 
 
 ## 10. High-Dimensional Limits of Streaming SGD {#sec-10}
 
-The analysis of Section 8 fixed the dimension $d$ and let the number of samples grow, producing a non-asymptotic *rate* for the loss where the constants ($R^2$, $\sigma_{\mathrm{MLE}}^2$, $\rho_{\mathrm{misspec}}$, …) absorb all of the $d$-dependence into scalar summary statistics. In particular the well-specified setting, the dominant variance term scales as $\frac{\sigma^2 d}{t}$ after $t$ iterations. In particular, if the number of iterations $t$ is of constant order, the variance of of constant order. In this section, we focus precisely on this regime but where $d$ tends to infinity. More precisely, we study the **proportional regime** $d \to \infty$ with $k = td$ for $t \in [0,\infty)$ fixed. With the canonical stepsize $\gamma_k = \gamma/d$, the central phenomenon is that in this scaling the random curve $t \mapsto L(w_{[td]}) - L(w_\ast)$ concentrates as $d \to \infty$ around a *deterministic* limit that depends on the problem only through a few summary statistics and the spectral measure of the feature covariance $H$. Where Section 8 returns a single rate constant, this section returns a full loss trajectory, and in particular an exact  transition between bias-dominated and variance-dominated phases.
+The last-iterate analysis in Section 8 fixed the dimension $d$ and let the number of samples grow. In the well-specified isotropic model, the last iterate contracts geometrically until it reaches a stochastic noise floor whose size is proportional to the stepsize times $d\sigma^2$. Thus, in high dimension, the natural way to keep this floor at constant order is to use a stepsize of size $\gamma/d$. With this scaling, each SGD step makes only an $O(1/d)$ change, so the natural time variable is the **epoch time** $t=k/d$. This section studies precisely this **proportional regime**: $d \to \infty$ with $k = td$ for $t \in [0,\infty)$ fixed. The central phenomenon is that the random last-iterate curve $t \mapsto L(w_{[td]}) - L(w_\ast)$ concentrates as $d \to \infty$ around a deterministic limit. Where Section 8 gives a last-iterate rate bound for each fixed $d$, this section identifies the limiting loss trajectory itself, including the transition from bias-dominated behavior to the stochastic noise floor.
 
 Throughout this section we work with streaming SGD as usual: at each step a fresh sample $(x_{k+1}, y_{k+1}) \sim \mathcal{D}$ is drawn iid from the data distribution, and the iterate is updated by
 
@@ -2762,8 +2762,10 @@ Note that the optimal value is $L_{\ast}=\frac{1}{2}\sigma^2$. The following lem
 **Lemma 10.1 (One-step update).** *Let $L_\ast := L(w_\ast) = \tfrac{1}{2}\sigma^2$ denote the noise floor. The streaming iterates $(43)$ satisfy*
 
 $$
-d\cdot \mathbb{E}_k\bigl[L(w_{k+1}) - L(w_k)\bigr] \;=\; -2\gamma\,\bigl(L(w_k) - L_\ast\bigr) \;+\; \gamma^2\,L(w_k) \;+\; \frac{2\gamma^2}{d}\,\bigl(L(w_k)-L_\ast\bigr). \tag{45}
+d\cdot \mathbb{E}_k\bigl[L(w_{k+1}) - L(w_k)\bigr] \;=\; -2\gamma\,\bigl(L(w_k) - L_\ast\bigr) \;+\; \gamma^2\,L(w_k) \;+\; \frac{\rho_k}{d}, \tag{45}
 $$
+
+*where $\rho_k$ depends on the iterate only through $L(w_k)$, is determined by the first $k$ samples, and is bounded, $0\le \rho_k\le 2\gamma^2\,L(w_k)$; the correction $\rho_k/d$ is thus of order $1/d$.*
 
 </div>
 
@@ -2817,15 +2819,15 @@ Multiplying by $d$ and rewriting using $\tfrac{1}{2}\|w_k - w_\ast\|^2 = L(w_k) 
 
 $$
 d\,\mathbb{E}_k\bigl[L(w_{k+1})-L(w_k)\bigr]
-=(-2\gamma+\gamma^2)\bigl(L(w_k)-L_\ast\bigr)+\gamma^2 L_\ast+\frac{2\gamma^2}{d}\bigl(L(w_k)-L_\ast\bigr),
+=(-2\gamma+\gamma^2)\bigl(L(w_k)-L_\ast\bigr)+\gamma^2 L_\ast+\frac{2\gamma^2}{d}\bigl(L(w_k)-L_\ast\bigr).
 $$
 
-which is exactly $(45)$. <span style="float: right;">$\square$</span>
+The first two terms combine into the leading drift $-2\gamma(L(w_k)-L_\ast)+\gamma^2 L(w_k)$, and the last term equals $\rho_k/d$ with $\rho_k=2\gamma^2(L(w_k)-L_\ast)$. It is nonnegative, depends on the iterate only through $L(w_k)$, and since $L_\ast\ge0$ obeys $\rho_k\le 2\gamma^2 L(w_k)$. This is $(45)$. <span style="float: right;">$\square$</span>
 
-Now, the important point is that the right-hand side of $(45)$ depends on the iterate **only through the scalar $L(w_k)$**. Let us see now informally what happens to the dynamics $(45)$ as we let $d$ and $k$ both tend to infinity at a proportional scaling. To this end, define the function $\psi_d(t) := \mathbb{E}[L(w_{[td]})]$ indexed by *epoch time* $t = k/d$. Then taking expectations in $(45)$ yields the exact recursion
+Now, the important point is that the right-hand side of $(45)$ depends on the iterate **only through the scalar $L(w_k)$**. Let us see now informally what happens to the dynamics $(45)$ as we let $d$ and $k$ both tend to infinity at a proportional scaling. To this end, define the function $\psi_d(t) := \mathbb{E}[L(w_{[td]})]$ indexed by *epoch time* $t = k/d$. Then taking expectations in $(45)$ and using that the remainder is of order $1/d$ yields the recursion
 
 $$
-\psi_d\!\bigl(t + \tfrac{1}{d}\bigr) - \psi_d(t) \;=\; \frac{1}{d}\Bigl(-2\gamma\,\bigl(\psi_d(t) - L_\ast\bigr) + \gamma^2\,\psi_d(t) + \frac{2\gamma^2}{d}\bigl(\psi_d(t)-L_\ast\bigr)\Bigr).
+\psi_d\!\bigl(t + \tfrac{1}{d}\bigr) - \psi_d(t) \;=\; \frac{1}{d}\Bigl(-2\gamma\,\bigl(\psi_d(t) - L_\ast\bigr) + \gamma^2\,\psi_d(t)\Bigr) + O\!\left(\frac{1}{d^2}\right).
 $$
 
 Dividing by the time increment $1/d$, the left-hand side is the forward Euler difference quotient for the time derivative $\dot\psi_d(t)$ with step $\Delta t = 1/d$. As $d\to\infty$ this step shrinks to zero and the right-hand side converges to a continuous drift in $\psi$, so the limiting curve $\psi$ solves the one-dimensional ODE
@@ -2852,11 +2854,26 @@ The function $\psi(t)$ is the candidate dimension-independent limit of the loss 
 
 ### Concentration around the ODE limit
 
-Lemma 10.1 already does most of the work. It says that the conditional drift of $L(w_k)$ is a function of $L(w_k)$ itself, with conditional fluctuations of order $1/d^2$ per step — the exact regime in which the random curve $L(w_{[td]})$ concentrates around the deterministic ODE solution $\psi$ of $(46)$.
+It remains to show that the loss itself $L(w_{[td]})$, rather than its expectation, concentrates around a deterministic limit. In order to establish this result, we require a few preliminaries on martingales and discrete approximation of ODE solutions. We begin with the following standard definition.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma (Doob's $L^2$ maximal inequality).** *Let $(M_\ell)_{\ell\ge0}$ be a square-integrable martingale with $M_0=0$. Then for every $n\ge0$,*
+**Definition (Square-integrable martingale).** *A sequence of random variables $(M_\ell)_{\ell\ge0}$ is a **martingale** if each $M_\ell$ is integrable ($\mathbb{E}\lvert M_\ell\rvert<\infty$) and its conditional expectation given the entire past equals its current value:*
+
+$$
+\mathbb{E}[M_{\ell+1}\mid M_0,M_1,\ldots,M_\ell]=M_\ell \qquad\text{for every }\ell\ge0.
+$$
+
+*It is **square-integrable** if in addition $\mathbb{E}[M_\ell^2]<\infty$ for every $\ell\ge0$.*
+</div>
+
+
+The next lemma bounds the supremum of a martingale by the second moment of its last term.
+
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma (Doob's $L^2$ maximal inequality).** *Let $(M_\ell)_{\ell\ge0}$ be a square-integrable martingale with $M_0=0$. Then for every $n\ge0$, it holds:*
 
 $$
 \mathbb{E}\!\left[\max_{0\le \ell\le n} M_\ell^2\right] \;\le\; 4\,\mathbb{E}[M_n^2].
@@ -2864,25 +2881,38 @@ $$
 
 </div>
 
-*Proof.* Let $S_n:=\max_{0\le \ell\le n}\lvert M_\ell\rvert$. We first prove a bound for the event that $S_n$ crosses a fixed level $\lambda>0$.
+*Proof.* Define $S_n:=\max_{0\le \ell\le n}\lvert M_\ell\rvert$. Our goal tail identity for the second moment:
 
-Let $A_j$ be the event that the first crossing of level $\lambda$ occurs at time $j$:
+$$
+\mathbb{E}[S_n^2]=\int_0^\infty 2\lambda\,\mathbb{P}(S_n\ge\lambda)\,d\lambda, \tag{47}
+$$
+
+which reduces the problem to controlling the tail $\mathbb{P}(S_n\ge\lambda)$ — the probability that the martingale reaches level $\lambda>0$ by time $n$. The crux of the proof is to show the **maximal crossing estimate**
+
+$$
+\lambda\,\mathbb{P}(S_n\ge\lambda)\;\le\; \mathbb{E}\bigl[\lvert M_n\rvert\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr]
+\qquad\text{for every }\lambda>0. \tag{$\ast$}
+$$
+
+
+
+**Proof of the crossing estimate $(\ast)$.** We decompose the event $\{S_n\ge\lambda\}$ according to the first time the level $\lambda$ is reached. Namely, let $A_j$ be the event that the first crossing of level $\lambda$ occurs at time $j$:
 
 $$
 A_j:=\{\lvert M_0\rvert<\lambda,\ldots,\lvert M_{j-1}\rvert<\lambda,\ \lvert M_j\rvert\ge\lambda\}.
 $$
 
-The events $A_0,\ldots,A_n$ are disjoint and their union is $\{S_n\ge\lambda\}$. On $A_j$ we have $\lvert M_j\rvert\ge\lambda$, so
+The events $A_0,\ldots,A_n$ are disjoint and their union is $\{S_n\ge\lambda\}$. On $A_j$ we have $\lvert M_j\rvert\ge\lambda$, and therefore
 
 $$
 \lambda\,\mathbb{P}(A_j)\le \mathbb{E}\bigl[\lvert M_j\rvert\,\mathbf{1}_{A_j}\bigr].
 $$
 
-Because $A_j$ is determined by the information available at time $j$, the martingale property gives $\mathbb{E}[M_n\mid \text{time }j]=M_j$. By Jensen's inequality,
+Because $A_j$ is determined by $M_0,\ldots,M_j$, iterating the martingale property gives $\mathbb{E}[M_n\mid M_0,\ldots,M_j]=M_j$ for every $n\ge j$. By Jensen's inequality, we deduce
 
 $$
-\lvert M_j\rvert=\bigl\lvert\mathbb{E}[M_n\mid \text{time }j]\bigr\rvert
-\le \mathbb{E}\bigl[\lvert M_n\rvert\mid \text{time }j\bigr].
+\lvert M_j\rvert=\bigl\lvert\mathbb{E}[M_n\mid M_0,\ldots,M_j]\bigr\rvert
+\le \mathbb{E}\bigl[\lvert M_n\rvert\mid M_0,\ldots,M_j\bigr].
 $$
 
 Multiplying by $\mathbf{1}_{A_j}$ and taking expectations yields
@@ -2892,14 +2922,9 @@ $$
 \le \mathbb{E}\bigl[\lvert M_n\rvert\,\mathbf{1}_{A_j}\bigr].
 $$
 
-Summing over $j$ gives the maximal crossing estimate
+Summing over $j=0,\ldots,n$ and using disjointness gives $(\ast)$.
 
-$$
-\lambda\,\mathbb{P}(S_n\ge\lambda)
-\le \mathbb{E}\bigl[\lvert M_n\rvert\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr].
-$$
-
-Now use the layer-cake identity $\mathbb{E}[S_n^2]=\int_0^\infty 2\lambda\,\mathbb{P}(S_n\ge\lambda)\,d\lambda$. Combining it with the previous display gives
+**Conclusion.** Substituting $(\ast)$ into the identity $(47)$ and applying Cauchy--Schwarz, yields
 
 $$
 \begin{aligned}
@@ -2907,22 +2932,24 @@ $$
 &= \int_0^\infty 2\lambda\,\mathbb{P}(S_n\ge\lambda)\,d\lambda \\
 &\le 2\int_0^\infty \mathbb{E}\bigl[\lvert M_n\rvert\,\mathbf{1}_{\{S_n\ge\lambda\}}\bigr]\,d\lambda \\
 &=2\,\mathbb{E}\bigl[\lvert M_n\rvert\,S_n\bigr]
-\le 2\,\bigl(\mathbb{E}[M_n^2]\bigr)^{1/2}\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2}.
+\le 2\,\bigl(\mathbb{E}[M_n^2]\bigr)^{1/2}\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2},
 \end{aligned}
 $$
 
-If $\mathbb{E}[S_n^2]=0$ there is nothing to prove. Otherwise, divide by $\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2}$ to get $\mathbb{E}[S_n^2]\le 4\,\mathbb{E}[M_n^2]$. Since $S_n^2=\max_{0\le\ell\le n}M_\ell^2$, this is the desired inequality. <span style="float: right;">$\square$</span>
+where the middle equality uses $\int_0^\infty \mathbf{1}_{\{S_n\ge\lambda\}}\,d\lambda = S_n$. If $\mathbb{E}[S_n^2]=0$ there is nothing to prove. Otherwise, divide by $\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2}$ to get $\mathbb{E}[S_n^2]\le 4\,\mathbb{E}[M_n^2]$. Since $S_n^2=\max_{0\le\ell\le n}M_\ell^2$, this is the desired inequality. <span style="float: right;">$\square$</span>
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma (Discrete Gronwall inequality).** *Let $a_0,\ldots,a_n$ be nonnegative numbers. Suppose that for some constants $B,C\ge0$,*
+Next, we will need the following helper lemma on growth of sequences. It can be understood as a discrete version of the observation that an estimate of the form $\dot{\phi}(t)\leq \phi(t)$ forces $\phi$ to grow at most exponentially in time $t$.
+
+**Lemma (Discrete Gronwall inequality).** *Let $a_0,\ldots,a_n$ be nonnegative numbers. Suppose that for some constants $B,C\ge0$, we have*
 
 $$
 a_\ell \;\le\; B + C\sum_{k=0}^{\ell-1}a_k,
-\qquad \ell=0,\ldots,n.
+\qquad \forall\ell=0,\ldots,n.
 $$
 
-*Then*
+*Then the estimate holds:*
 
 $$
 \max_{0\le\ell\le n}a_\ell \;\le\; B\,e^{Cn}.
@@ -2930,13 +2957,8 @@ $$
 
 </div>
 
-*Proof.* Define
-
-$$
-b_\ell:=B+C\sum_{k=0}^{\ell-1}a_k.
-$$
-
-Then $a_\ell\le b_\ell$ by assumption, and
+*Proof.* Define $
+b_\ell:=B+C\sum_{k=0}^{\ell-1}a_k.$ Then we have $a_\ell\le b_\ell$ by assumption, and $b_{\ell}$ satisfies the identity
 
 $$
 b_{\ell+1}=b_\ell+C\,a_\ell\le (1+C)b_\ell.
@@ -2948,23 +2970,26 @@ $$
 b_\ell\le B(1+C)^\ell\le B e^{C\ell}.
 $$
 
-Thus $a_\ell\le b_\ell\le B e^{C\ell}\le B e^{Cn}$ for every $\ell\le n$. <span style="float: right;">$\square$</span>
+We conclude $a_\ell\le b_\ell\le B e^{C\ell}\le B e^{Cn}$ for every $\ell\le n$, as claimed. <span style="float: right;">$\square$</span>
+
+The main use of the discrete Gronwall inequality is to establish consistency of discrete approximations of an ODE solution. This is the content of the following lemma.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma (Stability of approximate ODE solutions).** *Let $G:\mathbb{R}\to\mathbb{R}$ be Lipschitz with constant $L_G$. Fix a stepsize $h>0$ and a horizon $T>0$, and set $t_\ell=\ell h$ and $n=\lfloor T/h\rfloor$. Suppose $\phi$ solves*
+
+**Lemma (Stability of approximate ODE solutions).** *Consider a function $G:\mathbb{R}\to\mathbb{R}$ that is Lipschitz continuous with constant $L_G$. Fix a stepsize $h>0$ and a horizon $T>0$, and set $t_\ell=\ell h$ and $n=\lfloor T/h\rfloor$. Suppose $\phi$ solves the ODE*
 
 $$
-\phi(t)=z_0+\int_0^t G(\phi(s))\,ds,\qquad t\in[0,T],
+\phi(t)=z_0+\int_0^t G(\phi(s))\,ds,\qquad \forall t\in[0,T],
 $$
 
-*and a discrete curve $(z_\ell)_{0\le\ell\le n}$ satisfies*
+*Consider a discrete curve $(z_\ell)_{0\le\ell\le n}$ satisfying*
 
 $$
 z_\ell=z_0+h\sum_{k=0}^{\ell-1}G(z_k)+\xi_\ell.
 $$
 
-*Write $\varepsilon:=\max_{0\le\ell\le n}\lvert\xi_\ell\rvert$ for the largest residual and $M:=\sup_{t\in[0,T]}\lvert G(\phi(t))\rvert$. Then*
+*Write $\varepsilon:=\max_{0\le\ell\le n}\lvert\xi_\ell\rvert$ for the largest residual and set $M:=\sup_{t\in[0,T]}\lvert G(\phi(t))\rvert$. Then the estimate holds:*
 
 $$
 \max_{0\le\ell\le n}\lvert z_\ell-\phi(t_\ell)\rvert\;\le\;\Bigl(\varepsilon+\tfrac{1}{2}L_G M T\,h\Bigr)\,e^{L_G T}.
@@ -2972,27 +2997,27 @@ $$
 
 </div>
 
-*Proof.* Subtract the integral equation for $\phi$ from the discrete equation for $z_\ell$. With $e_\ell:=z_\ell-\phi(t_\ell)$ and $\int_0^{t_\ell}G(\phi(s))\,ds=\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}G(\phi(s))\,ds$, we get
+*Proof.* Subtract the integral equation for $\phi$ from the discrete equation for $z_\ell$. Defining $e_\ell:=z_\ell-\phi(t_\ell)$ and noting the equality $\int_0^{t_\ell}G(\phi(s))\,ds=\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}G(\phi(s))\,ds$, we thus obtain
 
 $$
 e_\ell
 =h\sum_{k=0}^{\ell-1}\bigl[G(z_k)-G(\phi(t_k))\bigr]+\xi_\ell-\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}\bigl[G(\phi(s))-G(\phi(t_k))\bigr]\,ds.
 $$
 
-We bound the three pieces. For the first, $L_G$-Lipschitzness gives $\lvert G(z_k)-G(\phi(t_k))\rvert\le L_G\lvert e_k\rvert$. For the second, $\lvert\xi_\ell\rvert\le\varepsilon$. For the last piece — the Euler discretization error — note that $\dot\phi=G(\phi)$ gives $\lvert\phi(s)-\phi(t_k)\rvert=\bigl\lvert\int_{t_k}^{s}G(\phi(r))\,dr\bigr\rvert\le M\,(s-t_k)$, so each summand obeys
+We bound the three terms in order. For the first, $L_G$-Lipschitzness gives $\lvert G(z_k)-G(\phi(t_k))\rvert\le L_G\lvert e_k\rvert$. For the second term, by assumption we have $\lvert\xi_\ell\rvert\le\varepsilon$. For the last term, Lipschtiz continuity of $G$ together with $M$-Lipschitz continuity of $\phi$ gives
 
 $$
 \Bigl\lvert\int_{t_k}^{t_{k+1}}\bigl[G(\phi(s))-G(\phi(t_k))\bigr]\,ds\Bigr\rvert
 \le L_G\int_{t_k}^{t_{k+1}}M\,(s-t_k)\,ds=\tfrac{1}{2}L_G M\,h^2,
 $$
 
-and the $\ell\le n\le T/h$ such terms sum to at most $\tfrac{1}{2}L_G M T\,h$. Altogether,
+Observe that the $\ell\le n\le T/h$ such terms sum to at most $\tfrac{1}{2}L_G M T\,h$. Summarizing, we have obtained the estimate
 
 $$
 \lvert e_\ell\rvert\le L_G h\sum_{k=0}^{\ell-1}\lvert e_k\rvert+\varepsilon+\tfrac{1}{2}L_G M T\,h.
 $$
 
-Apply the discrete Gronwall lemma with rate $C=L_G h$ and constant $B=\varepsilon+\tfrac{1}{2}L_G M T\,h$. Since $Cn=L_G h\,\lfloor T/h\rfloor\le L_G T$, this yields
+Apply the discrete Gronwall lemma with $C=L_G h$ and $B=\varepsilon+\tfrac{1}{2}L_G M T\,h$. Taking into accoun $Cn=L_G h\,\lfloor T/h\rfloor\le L_G T$, this yields
 
 $$
 \max_{0\le\ell\le n}\lvert e_\ell\rvert\le\Bigl(\varepsilon+\tfrac{1}{2}L_G M T\,h\Bigr)e^{L_G T},
@@ -3000,17 +3025,15 @@ $$
 
 as claimed. <span style="float: right;">$\square$</span>
 
-In the application below the stepsize is $h=1/d$, the horizon $T$ is fixed, and $M$ is bounded uniformly in $d$, so the bound reads $\bigl(\varepsilon+O(1/d)\bigr)e^{L_G T}$; it tends to $0$ as soon as the residual $\varepsilon$ does, and in probability if $\varepsilon\xrightarrow{\mathbb{P}}0$.
+We are now done with the preliminaries and are ready to prove the main result of the section.  
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 10.2 (Deterministic limit of the loss).** *Fix $0<\gamma<2$, $\sigma > 0$, and consider streaming SGD $(43)$ on the isotropic Gaussian model of Lemma 10.1 from a deterministic initialization $w_0$ with $L(w_0)=O(1)$ as $d\to\infty$. Let $\phi_d : [0,\infty) \to \mathbb{R}$ be the solution of $(46)$ with initial condition $\phi_d(0) = L(w_0)$. Then for every $T > 0$,*
+**Theorem 10.2 (Deterministic limit of the loss).** *Fix $0<\gamma<2$, $\sigma > 0$, and consider streaming SGD $(43)$ on the isotropic Gaussian model of Lemma 10.1 from a deterministic initialization $w_0$ whose initial loss converges, $L(w_0)\to\psi_0$ as $d\to\infty$. Let $\psi : [0,\infty) \to \mathbb{R}$ be the solution of $(46)$ with initial condition $\psi(0) = \psi_0$, given explicitly by $(46a)$. Then for every $T > 0$, it holds:*
 
 $$
-\sup_{t \in [0,T]}\,\bigl\lvert L(w_{[td]}) - \phi_d(t)\bigr\rvert \;\xrightarrow[d\to\infty]{\mathbb{P}}\; 0.
+\sup_{t \in [0,T]}\,\bigl\lvert L(w_{[td]}) - \psi(t)\bigr\rvert \;\xrightarrow[d\to\infty]{\mathbb{P}}\; 0.
 $$
-
-*Consequently, if the deterministic initial losses satisfy $L(w_0) \to \psi_0$, then $L(w_{[td]})$ converges uniformly on compact time intervals in probability to the solution $\psi$ of $(46)$ with $\psi(0)=\psi_0$, given explicitly by $(46a)$.*
 
 </div>
 
@@ -3020,13 +3043,13 @@ $$
 G(u) := -2\gamma\,(u - L_\ast) + \gamma^2\,u
 $$
 
-be the velocity field of the limiting ODE $(46)$, so that $\phi_d$ solves $\dot\phi_d=G(\phi_d)$ with $\phi_d(0)=L(w_0)$. It is affine, hence globally Lipschitz with constant $L_G := \lvert\gamma^2 - 2\gamma\rvert$. By Lemma 10.1, the conditional drift of the loss is this field plus a nonnegative finite-$d$ remainder,
+be the velocity field of the limiting ODE $(46)$, so that $\psi$ solves $\dot\psi=G(\psi)$ with $\psi(0)=\psi_0$. It is affine, hence globally Lipschitz with constant $L_G := \lvert\gamma^2 - 2\gamma\rvert$. Since $G$ is exactly the leading drift of Lemma 10.1, that lemma reads
 
 $$
-\mathbb{E}_k[L_{k+1}-L_k] \;=\; \frac{1}{d}\,G(L_k) \;+\; r_k, \qquad r_k := \frac{2\gamma^2}{d^2}\,(L_k-L_\ast),
+\mathbb{E}_k[L_{k+1}-L_k] \;=\; \frac{1}{d}\,G(L_k) \;+\; r_k, \qquad r_k := \frac{\rho_k}{d^2},
 $$
 
-which is determined by the first $k$ samples.
+where, by Lemma 10.1, the remainder $r_k\ge0$ is determined by the first $k$ samples and satisfies $r_k\le 2\gamma^2 L_k/d^2$.
 
 **Strategy.** We will rewrite the loss curve $L_\ell$ (with $\ell=\lfloor td\rfloor$) as an approximate Euler discretization of this ODE — that is, in the precise form required by the ODE-stability lemma above — and then show the residual is uniformly small. So that the moments below stay controlled, we fix a level $R$ and run the argument up to the stopping time
 
@@ -3064,27 +3087,27 @@ Summing the increment identity from $k=0$ to $\ell-1$ and setting $t_\ell:=\ell/
 $$
 \begin{aligned}
 L_\ell
-&=L_0+\frac{1}{d}\sum_{k=0}^{\ell-1}G(L_k)+\xi_\ell,
+&=\psi_0+\frac{1}{d}\sum_{k=0}^{\ell-1}G(L_k)+\xi_\ell,
 \qquad \ell\le Td\wedge\tau_R, \\
 \xi_\ell
-&:=M_\ell+\sum_{k=0}^{\ell-1}r_k.
+&:=(L_0-\psi_0)+M_\ell+\sum_{k=0}^{\ell-1}r_k,
 \end{aligned}
 $$
 
-This is exactly the approximate integral equation of the ODE-stability lemma, with discrete curve $z_\ell=L_\ell$, velocity field $G$, stepsize $h=1/d$, and residual $\xi_\ell$. The whole proof now reduces to showing that the residual is uniformly small,
+where we have written $L_0=\psi_0+(L_0-\psi_0)$ so that the discrete curve starts at the same value $\psi_0=\psi(0)$ as the ODE. This is exactly the approximate integral equation of the ODE-stability lemma, with discrete curve $z_\ell=L_\ell$, velocity field $G$, stepsize $h=1/d$, and residual $\xi_\ell$. The whole proof now reduces to showing that the residual is uniformly small,
 
 $$
 \sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert\xrightarrow[d\to\infty]{\mathbb{P}}0.
 $$
 
-The residual has two pieces — the finite-$d$ drift correction $\sum_k r_k$ and the martingale $M_\ell$ — which we treat in turn.
+The residual has three pieces — the initial gap $L_0-\psi_0$, the finite-$d$ drift correction $\sum_k r_k$, and the martingale $M_\ell$ — which we treat in turn. The initial gap is deterministic and vanishes by hypothesis, since $\lvert L_0-\psi_0\rvert=\lvert L(w_0)-\psi_0\rvert\to0$.
 
-**Drift correction.** Before the stopping time $L_k\le R$, so each remainder obeys $0\le r_k\le 2\gamma^2(R-L_\ast)/d^2$, and the accumulated correction is $O(1/d)$ uniformly:
+**Drift correction.** Before the stopping time $L_k\le R$, so each remainder obeys $0\le r_k\le 2\gamma^2 R/d^2$, and the accumulated correction is $O(1/d)$ uniformly:
 
 $$
 \sup_{\ell\le Td\wedge\tau_R}\;\sum_{k=0}^{\ell-1}r_k
-\;\le\; Td\cdot\frac{2\gamma^2(R-L_\ast)}{d^2}
-\;=\;\frac{2\gamma^2(R-L_\ast)\,T}{d}.
+\;\le\; Td\cdot\frac{2\gamma^2 R}{d^2}
+\;=\;\frac{2\gamma^2 R\,T}{d}.
 $$
 
 **Martingale piece.** To control $M_\ell$ we need a second-moment bound on the increments, namely the fluctuation estimate
@@ -3147,33 +3170,31 @@ $$
 
 Together with the $O(1/d)$ drift bound above, this proves $\sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert\xrightarrow{\mathbb{P}}0$.
 
-**Comparison with the ODE.** The ODE-stability lemma above now applies to the approximate integral equation, with discrete curve $z_\ell=L_\ell$, solution $\phi=\phi_d$, stepsize $h=1/d$, and residual $\varepsilon=\sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert$; the constant $\sup_{t\in[0,T]}\lvert G(\phi_d(t))\rvert$ is bounded uniformly in $d$ because $\phi_d$ stays bounded on $[0,T]$ (uniformly in $d$, as quantified just below) and $G$ is affine. The lemma bounds the discrepancy by $\bigl(\varepsilon+O(1/d)\bigr)e^{L_G T}$, and since $\varepsilon\xrightarrow{\mathbb{P}}0$ we conclude
+**Comparison with the ODE.** The ODE-stability lemma above now applies to the approximate integral equation, with discrete curve $z_\ell=L_\ell$, solution $\psi$, stepsize $h=1/d$, and residual $\varepsilon=\sup_{\ell\le Td\wedge\tau_R}\lvert\xi_\ell\rvert$; the constant $M=\sup_{t\in[0,T]}\lvert G(\psi(t))\rvert$ is finite because $\psi$ is bounded on $[0,T]$ and $G$ is affine. The lemma bounds the discrepancy by $\bigl(\varepsilon+O(1/d)\bigr)e^{L_G T}$, and since $\varepsilon\xrightarrow{\mathbb{P}}0$ we conclude
 
 $$
-\sup_{\ell\le Td\wedge\tau_R}\lvert L_\ell-\phi_d(t_\ell)\rvert
+\sup_{\ell\le Td\wedge\tau_R}\lvert L_\ell-\psi(t_\ell)\rvert
 \xrightarrow[d\to\infty]{\mathbb{P}}0.
 $$
 
-This proves concentration around $\phi_d$ up to the stopping level $R$. It remains to check that, for a large enough fixed $R$, the stopping time is unlikely to occur.
+This proves concentration around $\psi$ up to the stopping level $R$. It remains to check that, for a large enough fixed $R$, the stopping time is unlikely to occur.
 
-Because $L(w_0)=O(1)$ and $0<\gamma<2$, the explicit formula $(46a)$ gives a deterministic bound on the limiting ODE curves over the time interval $[0,T]$:
-
-$$
-B_T:=\sup_d\sup_{0\le t\le T}\phi_d(t)<\infty.
-$$
-
-Choose $R>B_T+1$. If the stopped process exits before time $Td$, meaning $\tau_R\le Td$, then by definition $L_{\tau_R}>R$. On the other hand, $\phi_d(\tau_R/d)\le B_T$. Therefore, on the event $\{\tau_R\le Td\}$,
+Because $0<\gamma<2$, the explicit formula $(46a)$ shows that $\psi$ is bounded on the time interval $[0,T]$:
 
 $$
-\sup_{\ell\le Td\wedge\tau_R}\lvert L_\ell-\phi_d(t_\ell)\rvert
-\ge \lvert L_{\tau_R}-\phi_d(\tau_R/d)\rvert
+B_T:=\sup_{0\le t\le T}\psi(t)<\infty.
+$$
+
+Choose $R>B_T+1$. If the stopped process exits before time $Td$, meaning $\tau_R\le Td$, then by definition $L_{\tau_R}>R$. On the other hand, $\psi(\tau_R/d)\le B_T$. Therefore, on the event $\{\tau_R\le Td\}$,
+
+$$
+\sup_{\ell\le Td\wedge\tau_R}\lvert L_\ell-\psi(t_\ell)\rvert
+\ge \lvert L_{\tau_R}-\psi(\tau_R/d)\rvert
 > R-B_T
 > 1.
 $$
 
-But the stopped convergence proved above says that the left-hand side converges to zero in probability. Hence $\mathbb{P}(\tau_R\le Td)\to0$. With probability tending to one, the stopped and unstopped processes agree on the whole interval $[0,T]$, so the unstopped convergence follows.
-
-Finally, if $L(w_0)\to\psi_0$, then $(46a)$ shows $\sup_{t\le T}\lvert\phi_d(t)-\psi(t)\rvert\to0$, and the stated limiting conclusion follows by the triangle inequality. <span style="float: right;">$\square$</span>
+But the stopped convergence proved above says that the left-hand side converges to zero in probability. Hence $\mathbb{P}(\tau_R\le Td)\to0$. With probability tending to one, the stopped and unstopped processes agree on the whole interval $[0,T]$, so the unstopped convergence follows, completing the proof. <span style="float: right;">$\square$</span>
 
 
 
@@ -3216,21 +3237,21 @@ Conditions (i)--(iv) are satisfied by isotropic Gaussian features with bounded s
 **Definition 10.4 (Homogenized SGD).** *Homogenized SGD with stepsize $\gamma$ and feature covariance $H$ is the $\mathbb{R}^d$-valued continuous-time process $(X_t)_{t\ge 0}$ with $X_0 = w_0$ solving*
 
 $$
-dX_t = -\gamma\,\nabla L(X_t)\,dt + \gamma\,\sqrt{\tfrac{2\,L(X_t)\,H}{d}}\;dB_t, \tag{53}
+dX_t = -\gamma\,\nabla L(X_t)\,dt + \gamma\,\sqrt{\tfrac{2\,L(X_t)\,H}{d}}\;dB_t, \tag{48}
 $$
 
 *where $(B_t)$ is a standard Brownian motion in $\mathbb{R}^d$ and $\sqrt{\,\cdot\,}$ is the PSD matrix square root.*
 
 </div>
 
-For the least-squares risk, $\nabla L(w) = H(w-w_\ast)$, so $(53)$ is a linear SDE with state-dependent Gaussian noise whose intensity is proportional to the current risk: near the optimum the noise vanishes and far from it the noise is large, mirroring the behavior of a single SGD step in expectation. The next definition specifies the class of test functions for which the comparison between SGD and homogenized SGD will hold quantitatively.
+For the least-squares risk, $\nabla L(w) = H(w-w_\ast)$, so $(48)$ is a linear SDE with state-dependent Gaussian noise whose intensity is proportional to the current risk: near the optimum the noise vanishes and far from it the noise is large, mirroring the behavior of a single SGD step in expectation. The next definition specifies the class of test functions for which the comparison between SGD and homogenized SGD will hold quantitatively.
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Definition 10.5 ($C^2$ norm).** *For a twice-differentiable function $q : \mathbb{R}^d \to \mathbb{C}$,*
 
 $$
-\|q\|_{C^2} := \sup_{x \in \mathbb{R}^d}\|\nabla^2 q(x)\|_{\mathrm{op}} + \|\nabla q(0)\| + \lvert q(0)\rvert. \tag{54}
+\|q\|_{C^2} := \sup_{x \in \mathbb{R}^d}\|\nabla^2 q(x)\|_{\mathrm{op}} + \|\nabla q(0)\| + \lvert q(0)\rvert. \tag{49}
 $$
 
 </div>
@@ -3242,14 +3263,14 @@ Every quadratic on $\mathbb{R}^d$ has finite $C^2$ norm, and the central compari
 **Theorem 10.6 (Streaming SGD vs. homogenized SGD).** *Under Assumption 10.3, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$ and every deterministic $w_0$ with $\lVert w_0\rVert  \le 1$, there is a constant $C = C(\lVert H\rVert _{\mathrm{op}})$ such that for every $n \le d\log d/C$, the streaming iterates $\lbrace w_k\rbrace _{k=0}^n$ and the homogenized SGD process $\lbrace X_t\rbrace _{t=0}^{n/d}$ (with the same initialization, driven by an independent Brownian motion) satisfy*
 
 $$
-\sup_{0\le k\le n}\bigl\lvert q(w_k) - q(X_{k/d})\bigr\rvert \;<\; \|q\|_{C^2}\cdot e^{Cn/d}\cdot d^{-1/2 + 9\varepsilon}, \tag{55}
+\sup_{0\le k\le n}\bigl\lvert q(w_k) - q(X_{k/d})\bigr\rvert \;<\; \|q\|_{C^2}\cdot e^{Cn/d}\cdot d^{-1/2 + 9\varepsilon}, \tag{50}
 $$
 
 *with overwhelming probability.*
 
 </div>
 
-The estimate $(55)$ is a pathwise comparison: every quadratic statistic of streaming SGD agrees with its homogenized counterpart up to $d^{-1/2 + 9\varepsilon}$, uniformly over exponentially many steps. Since the noise driving $X_t$ is independent of the noise driving $w_k$, $(55)$ is simultaneously a comparison theorem and a concentration-of-measure statement for $q(w_k)$. The proof in [Paq+22a] applies Itô calculus to a family of resolvent test functions and uses sub-exponential martingale concentration.
+The estimate $(50)$ is a pathwise comparison: every quadratic statistic of streaming SGD agrees with its homogenized counterpart up to $d^{-1/2 + 9\varepsilon}$, uniformly over exponentially many steps. Since the noise driving $X_t$ is independent of the noise driving $w_k$, $(50)$ is simultaneously a comparison theorem and a concentration-of-measure statement for $q(w_k)$. The proof in [Paq+22a] applies Itô calculus to a family of resolvent test functions and uses sub-exponential martingale concentration.
 
 ### The Volterra risk curve
 
@@ -3258,7 +3279,7 @@ Theorem 10.6 reduces streaming SGD to a $d$-dimensional linear SDE. Although the
 Let $Y_t$ denote gradient flow on $L$ from $w_0$, i.e. the solution of $\dot Y_t = -\nabla L(Y_t)$ with $Y_0 = w_0$. For least squares this is explicit:
 
 $$
-Y_t - w_\ast = e^{-tH}(w_0 - w_\ast), \qquad L(Y_t) = \tfrac{1}{2}\sigma^2 + \tfrac{1}{2}\bigl\langle H e^{-2tH},\,(w_0 - w_\ast)^{\otimes 2}\bigr\rangle. \tag{56}
+Y_t - w_\ast = e^{-tH}(w_0 - w_\ast), \qquad L(Y_t) = \tfrac{1}{2}\sigma^2 + \tfrac{1}{2}\bigl\langle H e^{-2tH},\,(w_0 - w_\ast)^{\otimes 2}\bigr\rangle. \tag{51}
 $$
 
 The function $F(t) := L(Y_t)$ decreases monotonically to $\tfrac{1}{2}\sigma^2$ at the rate set by the smallest positive eigenvalue of $H$.
@@ -3268,25 +3289,25 @@ The function $F(t) := L(Y_t)$ decreases monotonically to $\tfrac{1}{2}\sigma^2$ 
 **Definition 10.7 (Volterra risk model).** *With $F(t) := L(Y_t)$ and the **memory kernel***
 
 $$
-\mathcal{K}_\gamma(t) := \frac{\gamma^2}{d}\operatorname{Tr}\bigl(H^2\,e^{-2\gamma H t}\bigr), \tag{57}
+\mathcal{K}_\gamma(t) := \frac{\gamma^2}{d}\operatorname{Tr}\bigl(H^2\,e^{-2\gamma H t}\bigr), \tag{52}
 $$
 
 *the **Volterra risk model** $\Psi : [0,\infty) \to [0,\infty)$ is the unique solution of*
 
 $$
-\Psi(t) = F(\gamma t) + \int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds. \tag{58}
+\Psi(t) = F(\gamma t) + \int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds. \tag{53}
 $$
 
 </div>
 
-The two terms in $(58)$ correspond to the two terms in $(53)$. The forcing $F(\gamma t)$ is the noiseless gradient-flow risk run at speed $\gamma$. The convolution integral is the cumulative effect of the SGD noise: past risk $\Psi(s)$ drives the diffusion of $(53)$ with intensity $\mathcal{K}_\gamma(t-s)$. Both $F$ and $\mathcal{K}_\gamma$ are deterministic functionals of $(H, w_0, w_\ast, \sigma^2, \gamma)$.
+The two terms in $(53)$ correspond to the two terms in $(48)$. The forcing $F(\gamma t)$ is the noiseless gradient-flow risk run at speed $\gamma$. The convolution integral is the cumulative effect of the SGD noise: past risk $\Psi(s)$ drives the diffusion of $(48)$ with intensity $\mathcal{K}_\gamma(t-s)$. Both $F$ and $\mathcal{K}_\gamma$ are deterministic functionals of $(H, w_0, w_\ast, \sigma^2, \gamma)$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 10.8 (Volterra risk curve).** *Under Assumption 10.3, for every $T > 0$ and every $\varepsilon' > 0$,*
 
 $$
-\sup_{0\le t \le T}\bigl\lvert L(X_t) - \Psi(t)\bigr\rvert \;<\; C(T, \|H\|_{\mathrm{op}})\cdot d^{-1/2 + \varepsilon'}, \tag{59}
+\sup_{0\le t \le T}\bigl\lvert L(X_t) - \Psi(t)\bigr\rvert \;<\; C(T, \|H\|_{\mathrm{op}})\cdot d^{-1/2 + \varepsilon'}, \tag{54}
 $$
 
 *with overwhelming probability.*
@@ -3296,12 +3317,12 @@ $$
 Combining Theorems 10.6 and 10.8 gives the end-to-end statement: on the epoch scale $t = k/d$, and up to errors of order $d^{-1/2 + O(\varepsilon)}$, the random risk curve $L(w_{[td]})$ of streaming SGD agrees with the deterministic Volterra solution $\Psi(t)$. The whole $d$-dependence of the limit lives in the empirical spectral measure $\mu_H := \tfrac{1}{d}\sum_{i=1}^d \delta_{\lambda_i(H)}$ of the feature covariance, since
 
 $$
-\mathcal{K}_\gamma(t) = \gamma^2 \int_0^\infty \lambda^2 e^{-2\gamma\lambda t}\,\mu_H(d\lambda). \tag{60}
+\mathcal{K}_\gamma(t) = \gamma^2 \int_0^\infty \lambda^2 e^{-2\gamma\lambda t}\,\mu_H(d\lambda). \tag{55}
 $$
 
 If $\mu_H$ converges to a limiting measure $\mu$ (for instance the Marchenko--Pastur law of Section 7), then so do $\mathcal{K}_\gamma$ and $\Psi$, and the limiting risk curve becomes genuinely dimension-free. The spectral-density viewpoint that organized the deterministic average-case analysis of Section 7 reappears here as the high-dimensional limit of streaming SGD.
 
-**Numerical illustration.** The figure below plots streaming SGD on a least-squares problem with diagonal feature covariance $H = \mathrm{diag}(\lambda_1,\ldots,\lambda_d)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$), with $w_0 = 0$, $w_{\ast,i} = 1/\sqrt d$, $\sigma = 0.1$, $\gamma = 0.5$, and $d \in \lbrace 50, 200, 800, 3200\rbrace $. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. The dashed black curve is the Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(58)$ at $d = 1024$ (a proxy for the limiting kernel). As $d$ grows, the bands shrink around the deterministic Volterra curve.
+**Numerical illustration.** The figure below plots streaming SGD on a least-squares problem with diagonal feature covariance $H = \mathrm{diag}(\lambda_1,\ldots,\lambda_d)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$), with $w_0 = 0$, $w_{\ast,i} = 1/\sqrt d$, $\sigma = 0.1$, $\gamma = 0.5$, and $d \in \lbrace 50, 200, 800, 3200\rbrace $. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. The dashed black curve is the Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(53)$ at $d = 1024$ (a proxy for the limiting kernel). As $d$ grows, the bands shrink around the deterministic Volterra curve.
 
 ![Streaming SGD with correlated features: concentration around the Volterra limit](figures/sgd_volterra_limit.png)
 
