@@ -2765,7 +2765,7 @@ $$
 d\cdot \mathbb{E}_k\bigl[L(w_{k+1}) - L(w_k)\bigr] \;=\; -2\gamma\,\bigl(L(w_k) - L_\ast\bigr) \;+\; \gamma^2\,L(w_k) \;+\; \frac{\rho_k}{d}, \tag{45}
 $$
 
-*where $\rho_k$ depends on the iterate only through $L(w_k)$, is determined by the first $k$ samples, and is bounded, $0\le \rho_k\le 2\gamma^2\,L(w_k)$; the correction $\rho_k/d$ is thus of order $1/d$.*
+*where $\rho_k$ depends on the iterates only through $L(w_k)$ and satisfies $0\le \rho_k\le 2\gamma^2\,L(w_k)$.*
 
 </div>
 
@@ -3037,13 +3037,13 @@ $$
 
 </div>
 
-*Proof.* Write $L_k := L(w_k)$ and let
+*Proof.* Define $L_k := L(w_k)$ and define 
 
 $$
 G(u) := -2\gamma\,(u - L_\ast) + \gamma^2\,u
 $$
 
-be the velocity field of the limiting ODE $(46)$, so that $\psi$ solves $\dot\psi=G(\psi)$ with $\psi(0)=\psi_0$. It is affine, hence globally Lipschitz with constant $L_G := \lvert\gamma^2 - 2\gamma\rvert$. Since $G$ is exactly the leading drift of Lemma 10.1, that lemma reads
+to be the velocity field of the limiting ODE $(46)$, so that $\psi$ solves $\dot\psi=G(\psi)$ with $\psi(0)=\psi_0$. Note that $G$ is affine, hence globally Lipschitz with constant $L_G := \lvert\gamma^2 - 2\gamma\rvert$. Recall that Lemma 10.1 reads
 
 $$
 \mathbb{E}_k[L_{k+1}-L_k] \;=\; \frac{1}{d}\,G(L_k) \;+\; r_k, \qquad r_k := \frac{\rho_k}{d^2},
@@ -3059,7 +3059,7 @@ $$
 
 Every estimate below is therefore read for $\ell\le Td\wedge\tau_R$; at the very end we choose $R$ large enough that the stopping is asymptotically irrelevant.
 
-**Doob decomposition.** Split each increment of $L$ into its conditional mean and a martingale difference. Using the drift just recorded,
+**Doob decomposition.** Split each increment of $L$ into its conditional mean and a martingale difference:
 
 $$
 \begin{aligned}
@@ -3070,25 +3070,19 @@ L_{k+1} - L_k
 \end{aligned}
 $$
 
-where
+where we define
 
 $$
 \Delta_{k+1}:=(L_{k+1}-L_k)-\mathbb{E}_k[L_{k+1}-L_k]=L_{k+1}-\mathbb{E}_k[L_{k+1}].
 $$
 
-The partial sums $M_\ell := \sum_{k=0}^{\ell-1}\Delta_{k+1}$ form a **martingale**: the conditional mean given the past equals the current value,
-
-$$
-\mathbb{E}_\ell[M_{\ell+1}]=M_\ell.
-$$
-
-Summing the increment identity from $k=0$ to $\ell-1$ and setting $t_\ell:=\ell/d$ therefore gives
+The partial sums $M_\ell := \sum_{k=0}^{\ell-1}\Delta_{k+1}$ clearly form a **martingale**. Summing the increment identity from $k=0$ to $\ell-1$ and setting $t_\ell:=\ell/d$ therefore gives
 
 $$
 \begin{aligned}
 L_\ell
 &=\psi_0+\frac{1}{d}\sum_{k=0}^{\ell-1}G(L_k)+\xi_\ell,
-\qquad \ell\le Td\wedge\tau_R, \\
+\qquad \forall\ell\le Td\wedge\tau_R, \\
 \xi_\ell
 &:=(L_0-\psi_0)+M_\ell+\sum_{k=0}^{\ell-1}r_k,
 \end{aligned}
@@ -3102,7 +3096,7 @@ $$
 
 The residual has three pieces — the initial gap $L_0-\psi_0$, the finite-$d$ drift correction $\sum_k r_k$, and the martingale $M_\ell$ — which we treat in turn. The initial gap is deterministic and vanishes by hypothesis, since $\lvert L_0-\psi_0\rvert=\lvert L(w_0)-\psi_0\rvert\to0$.
 
-**Drift correction.** Before the stopping time $L_k\le R$, so each remainder obeys $0\le r_k\le 2\gamma^2 R/d^2$, and the accumulated correction is $O(1/d)$ uniformly:
+**Drift correction.** Before the stopping time $L_k\le R$, each remainder obeys $0\le r_k\le 2\gamma^2 R/d^2$. Therefore, we deduce:
 
 $$
 \sup_{\ell\le Td\wedge\tau_R}\;\sum_{k=0}^{\ell-1}r_k
@@ -3185,7 +3179,7 @@ $$
 B_T:=\sup_{0\le t\le T}\psi(t)<\infty.
 $$
 
-Choose $R>B_T+1$. If the stopped process exits before time $Td$, meaning $\tau_R\le Td$, then by definition $L_{\tau_R}>R$. On the other hand, $\psi(\tau_R/d)\le B_T$. Therefore, on the event $\{\tau_R\le Td\}$,
+Choose $R>B_T+1$. If the stopped process exits before time $Td$, meaning $\tau_R\le Td$, then by definition $L_{\tau_R}>R$. On the other hand, $\psi(\tau_R/d)\le B_T$. Therefore, on the event $\{\tau_R\le Td\}$, we have
 
 $$
 \sup_{\ell\le Td\wedge\tau_R}\lvert L_\ell-\psi(t_\ell)\rvert
@@ -3194,7 +3188,7 @@ $$
 > 1.
 $$
 
-But the stopped convergence proved above says that the left-hand side converges to zero in probability. Hence $\mathbb{P}(\tau_R\le Td)\to0$. With probability tending to one, the stopped and unstopped processes agree on the whole interval $[0,T]$, so the unstopped convergence follows, completing the proof. <span style="float: right;">$\square$</span>
+On the other hand, the stopped convergence proved above says that the left-hand side converges to zero in probability. Hence $\mathbb{P}(\tau_R\le Td)\to0$. With probability tending to one, the stopped and unstopped processes agree on the whole interval $[0,T]$, so the unstopped convergence follows, completing the proof. <span style="float: right;">$\square$</span>
 
 
 
@@ -3210,27 +3204,104 @@ The leading term involves the second spectral moment $\langle H^2, (w-w_\ast)^{\
 
 ### Homogenized SGD
 
-For the rest of the section we work with streaming least squares under the following data hypothesis, adapted from [Paq+22a].
+For the rest of the section we specialize to a Gaussian streaming model, which keeps every computation explicit while remaining a special case of the sub-Gaussian hypothesis of [Paq+22a].
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Assumption 10.3 (Streaming data).** *For some fixed $\varepsilon \in (0, 1/20)$:*
+**Assumption 10.3 (Gaussian streaming data).** *Fix $\varepsilon \in (0, 1/20)$. Each sample $(x,y)$ is drawn independently with*
 
-*(i) $\mathbb{E}[x] = 0$ and $H := \mathbb{E}[xx^\top]$ has operator norm bounded independently of $d$;*
+*(i) Gaussian features $x \sim \mathcal N(0, H)$, where $H := \mathbb{E}[xx^\top]$ has operator norm bounded independently of $d$;*
 
-*(ii) for every deterministic $B \in \mathbb{R}^{d\times d}$ and every $t \ge 0$,*
+*(ii) labels $y = \langle x, w_\ast\rangle + \sigma\zeta$ with $\zeta \sim \mathcal N(0,1)$ independent of $x$;*
 
-$$
-\Pr\bigl(\lvert x^\top Bx - \mathbb{E}[x^\top Bx]\rvert \ge t\bigr) \;\le\; 2\exp\Bigl(-\min\Bigl\{\tfrac{t^2 d^{-4\varepsilon}}{\|B\|_F^2},\, \tfrac{t\,d^{-2\varepsilon}}{\|B\|_{\mathrm{op}}}\Bigr\}\Bigr);
-$$
-
-*(iii) conditionally on $x$, $y = \langle x, w_\ast\rangle + \sigma w$ with $w$ centered, unit-variance, and sub-Gaussian with $\lVert w\rVert _{\psi_2} \le d^{\varepsilon}$;*
-
-*(iv) $\lVert w_\ast\rVert  \le d^{\varepsilon}$.*
+*(iii) bounded signal $\lVert w_\ast\rVert \le d^{\varepsilon}$.*
 
 </div>
 
-Conditions (i)--(iv) are satisfied by isotropic Gaussian features with bounded signal, and more generally by sub-Gaussian feature distributions with bounded covariance. We now define the continuous-time process which approximates streaming SGD in the high-dimensional limit; its drift is the population gradient and its instantaneous covariance matches the *expected* second-moment increment of a single SGD step, with lower-order corrections dropped.
+This Gaussian model is a special case of the general sub-Gaussian hypothesis of [Paq+22a]: the quadratic-form concentration used in their proof (a Hanson--Wright inequality) holds automatically for Gaussian $x$, and the fourth moment of $x$ is given exactly by Wick's formula. Consequently the moment computation below is exact, with no fourth-cumulant correction, and every result stated under Assumption 10.3 — in particular Theorem 10.6 — continues to hold for the broader sub-Gaussian class of [Paq+22a].
+
+To motivate the definition that follows, let us track a quadratic statistic $q:\mathbb{R}^d\to\mathbb{R}$ along streaming SGD and ask which continuous-time process reproduces its evolution. (Quadratics are exactly the test functions for which the comparison will hold; see Definition 10.5 and Theorem 10.6.) Write $u_k:=w_k-w_\ast$ for the centered iterate, and let the stochastic gradient and the one-step displacement be
+
+$$
+g_{k+1}=(\langle w_k,x_{k+1}\rangle-y_{k+1})\,x_{k+1},
+\qquad
+\delta_{k+1}:=w_{k+1}-w_k=-\frac{\gamma}{d}\,g_{k+1}.
+$$
+
+**Two conditional moments of a step.** Let $r:=y-\langle w_\ast,x\rangle$ denote the noise at the optimum (mean zero, variance $\sigma^2$, independent of $x$ by Assumption 10.3), so that $g_{k+1}=(x^\top u_k-r)\,x$. Taking conditional expectations $\mathbb{E}_k$ over the fresh sample,
+
+$$
+\mathbb{E}_k[g_{k+1}]=Hu_k=\nabla L(w_k),
+\qquad
+\mathbb{E}_k\bigl[g_{k+1}g_{k+1}^\top\bigr]=\mathbb{E}\bigl[(x^\top u_k)^2\,xx^\top\bigr]+\sigma^2 H.
+$$
+
+Since $x$ is Gaussian (Assumption 10.3), Wick's formula gives the exact identity $\mathbb{E}[(x^\top u)^2xx^\top]=(u^\top Hu)\,H+2Hu u^\top H$; combined with $2L(w)=\sigma^2+u^\top Hu$ this yields
+
+$$
+\mathbb{E}_k[\delta_{k+1}]=-\frac{\gamma}{d}\,\nabla L(w_k),
+\qquad
+\mathbb{E}_k\bigl[\delta_{k+1}\delta_{k+1}^\top\bigr]=\frac{\gamma^2}{d^2}\Bigl(2L(w_k)\,H+2Hu_ku_k^\top H\Bigr).
+$$
+
+**Evolution of the statistic.** Identify one step with a time increment $dt=1/d$ on the epoch clock $t=k/d$. Since $q$ is quadratic, its second-order Taylor expansion is *exact* (there is no remainder), so
+
+$$
+\frac{1}{dt}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]
+=d\,\nabla q^\top\mathbb{E}_k[\delta_{k+1}]+\frac{d}{2}\bigl\langle\nabla^2 q,\,\mathbb{E}_k[\delta_{k+1}\delta_{k+1}^\top]\bigr\rangle.
+$$
+
+Substituting the two moments,
+
+$$
+\frac{1}{dt}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]
+=-\gamma\,\nabla q^\top\nabla L(w_k)
++\frac{\gamma^2 L(w_k)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q\bigr)
++\frac{\gamma^2}{d}\,u_k^\top H\nabla^2 q\,Hu_k.
+$$
+
+**A tool from stochastic calculus.** The continuous-time side requires one result — Itô's formula — and this is the only place in the course where stochastic differential equations (SDEs) appear, so we spell it out from scratch. A *standard Brownian motion* $(B_t)_{t\ge 0}$ in $\mathbb{R}^d$ is the continuous-time process with $B_0=0$, independent increments, and $B_t-B_s\sim\mathcal N\bigl(0,(t-s)I\bigr)$ for $s<t$. It is the scaling limit of a random walk, and its defining feature is that over a small time $h$ the increment $B_{t+h}-B_t$ has size of order $\sqrt h$ (covariance $hI$), not $h$. A *stochastic differential equation*
+
+$$
+dX_t=b(X_t)\,dt+\Sigma(X_t)^{1/2}\,dB_t
+$$
+
+is shorthand for the integral equation $X_t=X_0+\int_0^t b(X_s)\,ds+\int_0^t \Sigma(X_s)^{1/2}\,dB_s$; infinitesimally it says the increment $X_{t+dt}-X_t$ is conditionally Gaussian with mean $b(X_t)\,dt$ and covariance $\Sigma(X_t)\,dt$. Because the Brownian increment is of order $\sqrt{dt}$, its square contributes at order $dt$, so the Taylor expansion of a statistic must be kept to second order — exactly as on the discrete side above. This is the content of the following lemma.
+
+<div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
+
+**Lemma (Itô's formula).** *Let $(X_t)_{t\ge0}$ solve the SDE $dX_t=b(X_t)\,dt+\Sigma(X_t)^{1/2}\,dB_t$ in $\mathbb{R}^d$, and let $q:\mathbb{R}^d\to\mathbb{R}$ be twice continuously differentiable. Then*
+
+$$
+dq(X_t)=\Bigl(\langle\nabla q(X_t),b(X_t)\rangle+\tfrac12\bigl\langle\nabla^2 q(X_t),\Sigma(X_t)\bigr\rangle\Bigr)\,dt+\bigl\langle\nabla q(X_t),\Sigma(X_t)^{1/2}\,dB_t\bigr\rangle.
+$$
+
+*In particular the $dB_t$ term has conditional mean zero, so the deterministic drift of $q(X_t)$ is governed by the **drift operator***
+
+$$
+\mathcal A q:=\langle\nabla q,b\rangle+\tfrac12\langle\nabla^2 q,\Sigma\rangle,
+\qquad\text{that is,}\qquad
+\frac{d}{dt}\,\mathbb{E}\,q(X_t)=\mathbb{E}\,\mathcal A q(X_t).
+$$
+
+</div>
+
+**The matching diffusion.** Apply the lemma to the candidate SDE $dX_t=-\gamma\nabla L(X_t)\,dt+\gamma\sqrt{2L(X_t)H/d}\,dB_t$, that is, with drift $b=-\gamma\nabla L$ and diffusion matrix $\Sigma=\gamma^2\tfrac{2L(X)H}{d}$. Its drift operator is
+
+$$
+\mathcal A q
+=-\gamma\,\nabla q^\top\nabla L
++\frac{\gamma^2 L(X)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q\bigr).
+$$
+
+Comparing the last two displays, **the drift terms agree exactly and the leading diffusion terms agree exactly**; the entire discrepancy is the single rank-one term
+
+$$
+\frac{1}{dt}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]-\mathcal A q(w_k)
+=\frac{\gamma^2}{d}\,u_k^\top H\nabla^2 q\,Hu_k.
+$$
+
+This term is of lower order: it carries the prefactor $1/d$ and is bounded by a constant multiple of $\|u_k\|^2$ once $\|H\|_{\mathrm{op}}$ and $\|\nabla^2 q\|_{\mathrm{op}}$ are bounded. Equivalently, the right surrogate is the diffusion whose drift is the population gradient and whose one-step covariance reproduces the dominant part $2L(w)H$ of the SGD second moment, discarding only the rank-one correction $2Hu_ku_k^\top H$. We record it as a definition.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 

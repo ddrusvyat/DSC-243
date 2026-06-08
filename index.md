@@ -44,7 +44,7 @@ The notes for the course are being developed. Here is the latest draft: [notes](
 <tr><td>1–3</td><td><ul><li>Gradient descent</li><li>Acceleration by Chebyshev stepsizes</li><li>Conjugate Gradient method</li></ul></td><td><a href="homework1.pdf">HW1</a></td></tr>
 <tr><td>4–6</td><td><ul><li>Improved rates under source and spectral conditions (e.g. Kernel regression)</li><li>Average case analysis (Marchenko Pastur Law)</li><li>Stochastic gradient method</li><li>Acceleration of SGD by averaging</li></ul></td><td><a href="homework2.pdf">HW2</a></td></tr>
 <tr><td>7-8</td><td><ul><li>Lower bound for deterministic algorithms</li><li>Lower bounds for deterministic algorithms with a prescribed spectral measure</li><li>Lower bounds for stochastic optimization</li></ul></td><td></td></tr>
-<tr><td>9-10</td><td><ul><li>High-dimensional limit of SGD and its consequences</li></ul></td><td></td></tr>
+<tr><td>9-10</td><td><ul><li>High-dimensional limit of SGD and consequences</li></ul></td><td></td></tr>
 </tbody>
 </table>
 {:/nomarkdown}
