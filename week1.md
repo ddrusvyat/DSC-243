@@ -3303,6 +3303,21 @@ $$
 
 This term is of lower order: it carries the prefactor $1/d$ and is bounded by a constant multiple of $\|u_k\|^2$ once $\|H\|_{\mathrm{op}}$ and $\|\nabla^2 q\|_{\mathrm{op}}$ are bounded. Equivalently, the right surrogate is the diffusion whose drift is the population gradient and whose one-step covariance reproduces the dominant part $2L(w)H$ of the SGD second moment, discarding only the rank-one correction $2Hu_ku_k^\top H$. We record it as a definition.
 
+**Matching statistics, not the raw increment.** It is worth stressing that homogenized SGD is *not* what one obtains by directly matching the first two conditional moments of the increment $\delta_{k+1}$. The mean again reproduces the drift $-\gamma\nabla L$, but the covariance does not reduce to $2L(w_k)H$. Using the two moments computed above and writing $\nabla L(w_k)=Hu_k$,
+
+$$
+\mathbb{E}_k\bigl[\delta_{k+1}\delta_{k+1}^\top\bigr]-\mathbb{E}_k[\delta_{k+1}]\,\mathbb{E}_k[\delta_{k+1}]^\top
+=\frac{\gamma^2}{d^2}\Bigl(2L(w_k)H+\nabla L(w_k)\nabla L(w_k)^\top\Bigr),
+$$
+
+so on the epoch clock the increment's covariance rate is $\tfrac{\gamma^2}{d}\bigl(2L(w_k)H+\nabla L\nabla L^\top\bigr)$. Matching it exactly would produce a *different*, more complicated SDE,
+
+$$
+dX_t=-\gamma\nabla L(X_t)\,dt+\frac{\gamma}{\sqrt d}\Bigl(2L(X_t)H+\nabla L(X_t)\nabla L(X_t)^\top\Bigr)^{1/2}dB_t,
+$$
+
+carrying the extra rank-one term $\nabla L\nabla L^\top=Hu_ku_k^\top H$ (the same correction as above, up to the $O(1/d)$ gap between covariance and second moment). Homogenized SGD discards precisely this term. The justification is the discrepancy bound: a rank-one diffusion along the single direction $\nabla L$ perturbs any quadratic statistic by only $O(1/d)$, whereas the retained $2L(w)H$ acts across all $\sim d$ eigendirections — its trace against $\nabla^2 q$ is $\Theta(d)$ for statistics like the risk. Tracking statistics, rather than the raw increment, is therefore the correct criterion: it keeps only the part of the noise that survives the high-dimensional limit.
+
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Definition 10.4 (Homogenized SGD).** *Homogenized SGD with stepsize $\gamma$ and feature covariance $H$ is the $\mathbb{R}^d$-valued continuous-time process $(X_t)_{t\ge 0}$ with $X_0 = w_0$ solving*
