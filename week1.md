@@ -3433,6 +3433,7 @@ Applying Ito's formula entrywise to $M_t$ yields the closed linear ODE for $M_t$
 $$
 \dot M_t = \underbrace{-\gamma\,(H M_t + M_t H)}_{\text{drift}} + \underbrace{\frac{2\gamma^2\,\mathbb{E}\,L(X_t)}{d}\,H}_{\text{diffusion } \Sigma}.
 $$
+
 This is a linear matrix ODE — a *differential Lyapunov equation* — and it can be solved by standard techniques: vectorize using $\operatorname{vec}(HM)=(I\otimes H)\operatorname{vec}M$ and $\operatorname{vec}(MH)=(H\otimes I)\operatorname{vec}M$ to obtain an ordinary linear system, then apply the variation of parameters method (see [Rug96, BBH19]). The end result is the following formula which describes $M_t$ in terms of an integral involving $M_s$ for $s<t$:
 
 $$
@@ -3444,11 +3445,13 @@ Passing now to the expected loss yields a very simple evolution equation. Namely
 $$
 F(s) := \tfrac12\sigma^2 + \tfrac12(w_0-w_\ast)^\top H e^{-2 s H}, \tag{52}
 $$
+
 which is exactly the loss along the noiseless gradient flow $\dot Y_t = -\gamma\nabla L(Y_t)$. The loss along the homogenized SGD then evolves according to the expression
 
 $$
 \mathbb{E}\,L(X_t) = F(\gamma t) + \int_0^t \frac{\gamma^2}{d}\operatorname{Tr}\!\bigl(H^2 e^{-2\gamma H(t-s)}\bigr)\,\mathbb{E}\,L(X_s)\,ds.
 $$
+
 This expression is an instance of a so-called Volterra renewal equation. 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
