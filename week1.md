@@ -2936,7 +2936,13 @@ $$
 \end{aligned}
 $$
 
-where the middle equality uses $\int_0^\infty \mathbf{1}_{\{S_n\ge\lambda\}}\,d\lambda = S_n$. If $\mathbb{E}[S_n^2]=0$ there is nothing to prove. Otherwise, divide by $\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2}$ to get $\mathbb{E}[S_n^2]\le 4\,\mathbb{E}[M_n^2]$. Since $S_n^2=\max_{0\le\ell\le n}M_\ell^2$, this is the desired inequality. <span style="float: right;">$\square$</span>
+where the middle equality uses the pointwise identity
+
+$$
+\int_0^\infty \mathbf{1}_{\{S_n\ge\lambda\}}\,d\lambda = S_n.
+$$
+
+If $\mathbb{E}[S_n^2]=0$ there is nothing to prove. Otherwise, divide by $\bigl(\mathbb{E}[S_n^2]\bigr)^{1/2}$ to get $\mathbb{E}[S_n^2]\le 4\,\mathbb{E}[M_n^2]$. Since $S_n^2=\max_{0\le\ell\le n}M_\ell^2$, this is the desired inequality. <span style="float: right;">$\square$</span>
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -3194,41 +3200,75 @@ On the other hand, the stopped convergence proved above says that the left-hand 
 
 ### Failure of the scalar reduction for correlated features
 
-Theorem 10.2 relies crucially on the fact that the conditional drift of $L(w_k)$ in the isotropic Gaussian model is itself a function of $L(w_k)$, which is what allowed us to compare the discrete chain to a scalar ODE. This breaks for correlated features $x \sim \mathcal{N}(0, H)$ with $H \neq I_d$. The Gaussian fourth-moment identity becomes $\mathbb{E}[(x^\top v)^2 xx^\top] = (v^\top H v)\,H + 2\,Hvv^\top H$, and with population loss $L(w) = \tfrac{1}{2}\sigma^2 + \tfrac{1}{2}\lVert w-w_\ast\rVert_H^2$ and noise floor $L_\ast = \tfrac{1}{2}\sigma^2$ the one-step drift of the excess loss is
+Theorem 10.2 relies crucially on the fact that the conditional drift of $L(w_k)$ in the isotropic Gaussian model is itself a function of $L(w_k)$ (Lemma 10.1), which is what allowed us to compare the discrete chain to a scalar autonomous ODE. This property breaks for correlated features $x \sim \mathcal{N}(0, H)$ with $H \neq I_d$. Namely, a quick computation shows that the analogue of Lemma 10.1 takes the form
 
 $$
-d\,\mathbb{E}_k\bigl[L(w_{k+1}) - L(w_k)\bigr] \;=\; -\gamma\,\bigl\langle H^2,\,(w_k-w_\ast)^{\otimes 2}\bigr\rangle \;+\; O(d^{-1}).
+d\,\mathbb{E}_k\bigl[L(w_{k+1}) - L(w_k)\bigr] \;=\; -\gamma\,(w_k-w_\ast)^\top H^2 (w_k-w_\ast) \;+\; O(d^{-1}).
 $$
 
-The leading term involves the second spectral moment $\langle H^2, (w-w_\ast)^{\otimes 2}\rangle$, which is *not* a function of the excess loss $L - L_\ast = \tfrac{1}{2}\langle H, (w-w_\ast)^{\otimes 2}\rangle$. Tracking it as an additional scalar does not help either: its drift involves $\langle H^3, (w-w_\ast)^{\otimes 2}\rangle$, and so on, so no finite collection of polynomial scalars in $w_k$ closes the dynamics. The right framework keeps the full $d$-dimensional iterate as the state and approximates it by a continuous-time SDE, to which we now turn.
+The leading term involves the second spectral moment $(w-w_\ast)^\top H^2 (w-w_\ast)$, which is *not* a function of the excess loss $L - L_\ast = \tfrac{1}{2}(w-w_\ast)^\top H (w-w_\ast)$. Tracking the second spectral moment as an additional scalar does not help either: its drift involves the third moment $(w-w_\ast)^\top H^3 (w-w_\ast)$, and so on. Indeed, no *finite* collection of polynomial functions of $w_k$ allows one to rewrite the dynamics in a self-consistent (closed) way. Each new scalar statistic spawns another with a higher power of $H$, so any closed description must retain the entire spectrum of $H$. We will now try to side-step this issue by establishing the following 
 
-### Homogenized SGD
 
-For the rest of the section we specialize to a Gaussian streaming model, which keeps every computation explicit while remaining a special case of the sub-Gaussian hypothesis of [Paq+22a].
+
+This motivates the two-step program for the rest of the section:
+
+- **Approximate SGD by an SDE.** Keep the full $d$-dimensional iterate as the state and approximate it (in a rigorous sense) by a continuous-time process — homogenized SGD.
+- **Find the limiting risk curve.** We will then see that the risk itself has a deterministic high-dimensional limit, described by a closed **Volterra integro-differential equation** which encodes the full spectrum of $H$ — precisely the information no finite set of scalar statistics can capture.
+
+These two results are quite difficult to prove. Therefore, instead of providing formal proofs, we will focus on developing an informal intuition and motivation.
+
+
+Throughout, we focus on the following Gaussian model of the data. 
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Assumption 10.3 (Gaussian streaming data).** *Fix $\varepsilon \in (0, 1/20)$. Each sample $(x,y)$ is drawn independently with*
+**Assumption 10.3 (Gaussian streaming data).** *Each sample $(x,y)$ is drawn independently with*
 
-*(i) Gaussian features $x \sim \mathcal N(0, H)$, where $H := \mathbb{E}[xx^\top]$ has operator norm bounded independently of $d$;*
+*(i) Gaussian features $x \sim \mathcal N(0, H)$, where $H := \mathbb{E}[xx^\top]$ has operator norm bounded by a quantity that is independent of $d$;*
 
-*(ii) labels $y = \langle x, w_\ast\rangle + \sigma\zeta$ with $\zeta \sim \mathcal N(0,1)$ independent of $x$;*
+*(ii) labels are $y = \langle x, w_\ast\rangle + \zeta$ with $\zeta \sim \mathcal N(0,\sigma^2)$ independent of $x$;*
 
-*(iii) bounded signal $\lVert w_\ast\rVert \le d^{\varepsilon}$.*
+*(iii) bounded signal: $\lVert w_\ast\rVert$ is bounded by a quantity independent of $d$.*
 
 </div>
 
-This Gaussian model is a special case of the general sub-Gaussian hypothesis of [Paq+22a]: the quadratic-form concentration used in their proof (a Hanson--Wright inequality) holds automatically for Gaussian $x$, and the fourth moment of $x$ is given exactly by Wick's formula. Consequently the moment computation below is exact, with no fourth-cumulant correction, and every result stated under Assumption 10.3 — in particular Theorem 10.6 — continues to hold for the broader sub-Gaussian class of [Paq+22a].
+#### Forming a companion SDE by moment matching
 
-To motivate the definition that follows, let us track a quadratic statistic $q:\mathbb{R}^d\to\mathbb{R}$ along streaming SGD and ask which continuous-time process reproduces its evolution. (Quadratics are exactly the test functions for which the comparison will hold; see Definition 10.5 and Theorem 10.6.) Write $u_k:=w_k-w_\ast$ for the centered iterate, and let the stochastic gradient and the one-step displacement be
+It helps to first recall the general heuristic that links a discrete stochastic recursion to a continuous-time process. Suppose a discrete stochastic process evolves by small random increments $w_{k+1}=w_k+\Delta_k$. Suppose that the natural unit of time packs many steps together — here a single epoch $t=k/d$ contains $\sim d$ steps, each of size $O(1/d)$. Attach the time $\Delta t = 1/d$ to a single step, and split each increment into its conditional mean and a mean-zero fluctuation:
+
+$$
+w_{k+1}=w_k+\underbrace{\mathbb{E}_k[\Delta_k]}_{=\;b(w_k)\,\Delta t}+\underbrace{\xi_k}_{\text{mean-zero}},
+\qquad \operatorname{Cov}_k(\xi_k)=\Sigma(w_k)\,\Delta t.
+$$
+
+The first piece is a deterministic drift step whose direction $b(w_k)$ is a function of the *current* iterate $w_k$ and the second is a random fluctuation. This suggests approximating the process by the stochastic differential equation (SDE)
+
+$$
+dX_t=b(X_t)\,dt+\Sigma(X_t)^{1/2}\,dB_t,
+$$
+
+whose drift and diffusion are exactly the per-step conditional mean and covariance measured per unit time:
+
+
+For readers unfamiliar with SDEs, the equation $dX_t=b(X_t)\,dt+\Sigma(X_t)^{1/2}\,dB_t$ is shorthand for the following statement: over an infinitesimal time $dt$, the state moves by a deterministic drift $b(X_t)\,dt$ plus a random Gaussian increment with mean zero and covariance $\Sigma(X_t)\,dt$. The randomness is supplied by *Brownian motion* $B_t$. This is the continuous-time process that starts at $B_0=0$ and such that for any times $s<t$, conditionally on the history up to time $s$, the increment $B_t-B_s$ is a mean-zero Gaussian vector with covariance $(t-s)I$. The recipe we just described is called **moment matching** (or the diffusion approximation). 
+
+
+
+
+It cannot be overstressed that the correspondence arising from moment matching is purely **heuristic**. Matching the first two infinitesimal moments makes a particular SDE *plausible* as a limit, but it proves nothing on its own: the argument ignores the non-Gaussianity of individual steps, the higher-order moments, and — most importantly — how all of these errors accumulate over the $\sim d$ steps that make up one epoch. Whether the process and the SDE actually remain close, and in what sense and at what rate, is a separate question that must be settled by a theorem.
+
+
+
+**Diffusion approximation of SGD.**
+Let us now implement the moment matching technique for the SGD iterates. To this end, write $u_k:=w_k-w_\ast$ for the centered iterate, and let the stochastic gradient and the one-step displacement be
 
 $$
 g_{k+1}=(\langle w_k,x_{k+1}\rangle-y_{k+1})\,x_{k+1},
 \qquad
-\delta_{k+1}:=w_{k+1}-w_k=-\frac{\gamma}{d}\,g_{k+1}.
+\Delta_k:=w_{k+1}-w_k=-\frac{\gamma}{d}\,g_{k+1}.
 $$
 
-**Two conditional moments of a step.** Let $r:=y-\langle w_\ast,x\rangle$ denote the noise at the optimum (mean zero, variance $\sigma^2$, independent of $x$ by Assumption 10.3), so that $g_{k+1}=(x^\top u_k-r)\,x$. Taking conditional expectations $\mathbb{E}_k$ over the fresh sample,
+Taking conditional expectations $\mathbb{E}_k$ over the fresh sample, a quick computation shows
 
 $$
 \mathbb{E}_k[g_{k+1}]=Hu_k=\nabla L(w_k),
@@ -3236,164 +3276,214 @@ $$
 \mathbb{E}_k\bigl[g_{k+1}g_{k+1}^\top\bigr]=\mathbb{E}\bigl[(x^\top u_k)^2\,xx^\top\bigr]+\sigma^2 H.
 $$
 
-Since $x$ is Gaussian (Assumption 10.3), Wick's formula gives the exact identity $\mathbb{E}[(x^\top u)^2xx^\top]=(u^\top Hu)\,H+2Hu u^\top H$; combined with $2L(w)=\sigma^2+u^\top Hu$ this yields
+Since $x$ is Gaussian, an elementary computation (Wick's formula) gives the exact identity $\mathbb{E}[(x^\top u)^2xx^\top]=(u^\top Hu)\,H+2Hu u^\top H$. Combined with the expression $2L(w)=\sigma^2+u^\top Hu$ this yields
 
 $$
-\mathbb{E}_k[\delta_{k+1}]=-\frac{\gamma}{d}\,\nabla L(w_k),
+\mathbb{E}_k[\Delta_k]=-\frac{\gamma}{d}\,\nabla L(w_k),
 \qquad
-\mathbb{E}_k\bigl[\delta_{k+1}\delta_{k+1}^\top\bigr]=\frac{\gamma^2}{d^2}\Bigl(2L(w_k)\,H+2Hu_ku_k^\top H\Bigr).
+\mathbb{E}_k\bigl[\Delta_k\Delta_k^\top\bigr]=\frac{\gamma^2}{d^2}\Bigl(2L(w_k)\,H+2Hu_ku_k^\top H\Bigr).
 $$
 
-**Evolution of the statistic.** Identify one step with a time increment $dt=1/d$ on the epoch clock $t=k/d$. Since $q$ is quadratic, its second-order Taylor expansion is *exact* (there is no remainder), so
+Moment matching now reads the drift and diffusion straight off the step. The drift is the conditional mean per unit time:
 
 $$
-\frac{1}{dt}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]
-=d\,\nabla q^\top\mathbb{E}_k[\delta_{k+1}]+\frac{d}{2}\bigl\langle\nabla^2 q,\,\mathbb{E}_k[\delta_{k+1}\delta_{k+1}^\top]\bigr\rangle.
+b(w_k)=d\,\mathbb{E}_k[\Delta_k]=-\gamma\,\nabla L(w_k).
 $$
 
-Substituting the two moments,
+The diffusion is the covariance of $\Delta_k$ per unit time:
 
 $$
-\frac{1}{dt}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]
-=-\gamma\,\nabla q^\top\nabla L(w_k)
-+\frac{\gamma^2 L(w_k)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q\bigr)
-+\frac{\gamma^2}{d}\,u_k^\top H\nabla^2 q\,Hu_k.
+\Sigma(w_k)=d\,\operatorname{Cov}_k(\Delta_k)=d\Bigl(\mathbb{E}_k[\Delta_k\Delta_k^\top]-\mathbb{E}_k[\Delta_k]\,\mathbb{E}_k[\Delta_k]^\top\Bigr)=\frac{\gamma^2}{d}\bigl(2L(w_k)H+Hu_ku_k^\top H\bigr).
 $$
 
-**A tool from stochastic calculus.** The continuous-time side requires one result — Itô's formula — and this is the only place in the course where stochastic differential equations (SDEs) appear, so we spell it out from scratch. A *standard Brownian motion* $(B_t)_{t\ge 0}$ in $\mathbb{R}^d$ is the continuous-time process with $B_0=0$, independent increments, and $B_t-B_s\sim\mathcal N\bigl(0,(t-s)I\bigr)$ for $s<t$. It is the scaling limit of a random walk, and its defining feature is that over a small time $h$ the increment $B_{t+h}-B_t$ has size of order $\sqrt h$ (covariance $hI$), not $h$. A *stochastic differential equation*
+Thus the diffusion SDE is given by
 
 $$
-dX_t=b(X_t)\,dt+\Sigma(X_t)^{1/2}\,dB_t
+dX_t=-\gamma\,\nabla L(X_t)\,dt+\frac{\gamma}{\sqrt d}\Bigl(2L(X_t)\,H+H(X_t-w_\ast)(X_t-w_\ast)^\top H\Bigr)^{1/2}\,dB_t.
 $$
 
-is shorthand for the integral equation $X_t=X_0+\int_0^t b(X_s)\,ds+\int_0^t \Sigma(X_s)^{1/2}\,dB_s$; infinitesimally it says the increment $X_{t+dt}-X_t$ is conditionally Gaussian with mean $b(X_t)\,dt$ and covariance $\Sigma(X_t)\,dt$. Because the Brownian increment is of order $\sqrt{dt}$, its square contributes at order $dt$, so the Taylor expansion of a statistic must be kept to second order — exactly as on the discrete side above. This is the content of the following lemma.
+The diffusion above splits into two parts: a **bulk** term $\tfrac{\gamma^2}{d}\,2L(X_t)H$ spread across all eigendirections of $H$, and a **rank-one** correction $\tfrac{\gamma^2}{d}H(X_t-w_\ast)(X_t-w_\ast)^\top H$ acting along the single direction $\nabla L(X_t)=H(X_t-w_\ast)$. The SDE built from the drift together with the bulk term alone is **homogenized SGD** (defined precisely below); the rank-one correction is dropped.
+
+
+
+**Numerical illustration.** As an illustration, we take a correlated-feature model — covariance $H=Q\Lambda Q^\top$, where $\Lambda=\operatorname{diag}(\lambda_i)$ has eigenvalues $\lambda_i=i/d$ and $Q$ is a Haar-random rotation (so $H$ is *not* diagonal and the features are correlated across all coordinates, not axis-aligned), label noise $\sigma=0.1$, a fixed signal $w_\ast$ of norm $\|w_\ast\|=1$, and start $w_0=0$ — and overlay two excess-risk curves. The solid curves (with $10$–$90\%$ band over independent trials) are streaming SGD, $t\mapsto L(w_{[td]})-L(w_\ast)$. The dashed curves are the diffusion approximation $L(X_t)-L(w_\ast)$, with $X_t$ solving the diffusion SDE above, simulated by Euler–Maruyama on the epoch clock with step $h=1/d$. *Left:* at fixed dimension $d=512$, the SDE reproduces the SGD curve across stepsizes $\gamma\in\{0.5,1,1.5\}$, matching both the decay rate and the stochastic noise floor. *Right:* at fixed $\gamma=1$, the two curves lock together more tightly as $d$ grows while the $10$–$90\%$ band narrows like $1/\sqrt d$. 
+
+![Streaming SGD versus its diffusion approximation with a randomly rotated covariance $H=Q\Lambda Q^\top$: the full diffusion SDE tracks the SGD risk curve across stepsizes (left) and ever more tightly as the dimension grows (right)](figures/sgd_vs_sde_highd.png)
+
+#### In what sense does the SDE approximate SGD?
+
+We now have a candidate continuous-time process and numerical evidence that it tracks SGD. But in what precise sense does $X_t$ approximate $w_k$? Certainly *Nnve in $\mathbb{R}^d$ but are driven by **different** sources of randomness — so as vectors they never stay close; their difference $\lVert w_k-X_{k/d}\rVert$ stays of order one. The right notion is agreement of *low-dimensional summaries*. Instead of comparing the full vectors, we compare smooth scalar **statistics** evaluated along the two trajectories: for a test function $q:\mathbb{R}^d\to\mathbb{R}$ we ask whether
+
+$$
+q(w_k)\;\approx\;q(X_{k/d}).
+$$
+
+These are exactly the observable quantities one cares about — the risk $L(w)=L(w_\ast)+\tfrac12(w-w_\ast)^\top H(w-w_\ast)$, squared norms, individual coordinates, projections onto fixed directions. We restrict to *quadratic* $q$: the natural and sufficient class, because it contains the risk, it is closed under the linear dynamics, and its second-order Taylor expansion is *exact*, leaving no higher-order remainder to control.
+
+The plan for the rest of the section follows this idea. We first compute how a quadratic $q$ changes in one SGD step, and how it changes instantaneously along the candidate SDE — the latter through **Itô's formula**. Comparing the two, the drift and the leading diffusion match exactly, and the only discrepancy is a single rank-one term of size $O(1/d)$, negligible in the limit. This pins down the process we keep — the definition of **homogenized SGD** — and culminates in the comparison result, Theorem 10.6, which makes "$q(w_k)\approx q(X_{k/d})$" quantitative.
+
+Setting the stage, let $q\colon\R^d\to\R$ be any quadratic function. As usual, we identify one iteration step with a time increment $h=1/d$ on the epoch clock $t=k/d$. We compute the expected one-step change of $q$ along the discrete trajectory — its drift rate. Since $q$ is quadratic, its second-order Taylor expansion is *exact*:
+
+$$
+\frac{1}{h}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]
+=d\,\nabla q(w_k)^\top\mathbb{E}_k[\Delta_k]+\frac{d}{2}\bigl\langle\nabla^2 q(w_k),\,\mathbb{E}_k[\Delta_k\Delta_k^\top]\bigr\rangle.
+$$
+
+Substituting the already computed expressions for the two moments of $\Delta_k$ yields
+
+$$
+\frac{1}{h}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]
+=-\gamma\,\nabla q(w_k)^\top\nabla L(w_k)
++\frac{\gamma^2 L(w_k)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q(w_k)\bigr)
++\frac{\gamma^2}{d}\,u_k^\top H\nabla^2 q(w_k)\,Hu_k. \tag{48}
+$$
+
+The right-hand side of $(48)$ is the **drift rate** of the statistic $q$ under streaming SGD — how fast $\mathbb{E}_k\,q$ moves per unit of epoch time. The first two terms are of **constant order**: the gradient term $-\gamma\,\nabla q(w_k)^\top\nabla L(w_k)$ is $O(1)$, and although the second carries an explicit $1/d$, its trace $\operatorname{Tr}(H\nabla^2 q(w_k))$ sums contributions from all $\sim d$ eigendirections, so it too is $O(1)$. The third term is  smaller: $u_k^\top H\nabla^2 q(w_k)\,Hu_k$ is a *single* quadratic form, bounded once $\|u_k\|$ and $\|H\|$ are, so with the $1/d$ prefactor it is only $O(1/d)$. Thus the third term becomes negligible in high dimensions.
+
+ The plan now is to compute the analogous drift rate for the diffusion approximation. This is immediate from Ito's calculus rule, summarized in the following lemma.
+
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Lemma (Itô's formula).** *Let $(X_t)_{t\ge0}$ solve the SDE $dX_t=b(X_t)\,dt+\Sigma(X_t)^{1/2}\,dB_t$ in $\mathbb{R}^d$, and let $q:\mathbb{R}^d\to\mathbb{R}$ be twice continuously differentiable. Then*
 
 $$
-dq(X_t)=\Bigl(\langle\nabla q(X_t),b(X_t)\rangle+\tfrac12\bigl\langle\nabla^2 q(X_t),\Sigma(X_t)\bigr\rangle\Bigr)\,dt+\bigl\langle\nabla q(X_t),\Sigma(X_t)^{1/2}\,dB_t\bigr\rangle.
+dq(X_t)=\Bigl(\langle\nabla q(X_t),b(X_t)\rangle+\tfrac12\bigl\langle\nabla^2 q(X_t),\Sigma(X_t)\bigr\rangle\Bigr)\,dt+\nabla q(X_t)^\top\Sigma(X_t)^{1/2}\,dB_t.
 $$
 
 *In particular the $dB_t$ term has conditional mean zero, so the deterministic drift of $q(X_t)$ is governed by the **drift operator***
 
 $$
-\mathcal A q:=\langle\nabla q,b\rangle+\tfrac12\langle\nabla^2 q,\Sigma\rangle,
-\qquad\text{that is,}\qquad
-\frac{d}{dt}\,\mathbb{E}\,q(X_t)=\mathbb{E}\,\mathcal A q(X_t).
+\frac{d}{dt}\,\mathbb{E}\,q(X_t)=\mathbb{E}[\langle\nabla q(X_t),b(X_t)\rangle+\tfrac12\langle\nabla^2 q(X_t),\Sigma(X_t)\rangle].
 $$
 
 </div>
 
-**The matching diffusion.** Apply the lemma to the candidate SDE $dX_t=-\gamma\nabla L(X_t)\,dt+\gamma\sqrt{2L(X_t)H/d}\,dB_t$, that is, with drift $b=-\gamma\nabla L$ and diffusion matrix $\Sigma=\gamma^2\tfrac{2L(X)H}{d}$. Its drift operator is
+Applying the lemma to the diffusion SDE yields
 
 $$
-\mathcal A q
-=-\gamma\,\nabla q^\top\nabla L
-+\frac{\gamma^2 L(X)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q\bigr).
+\frac{d}{dt}\,\mathbb{E}\,q(X_t)
+=\mathbb{E}\Bigl[-\gamma\,\nabla q(X_t)^\top\nabla L(X_t)
++\frac{\gamma^2 L(X_t)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q(X_t)\bigr)
++\frac{\gamma^2}{2d}\,u_t^\top H\nabla^2 q(X_t)\,Hu_t\Bigr]. \tag{49}
 $$
 
-Comparing the last two displays, **the drift terms agree exactly and the leading diffusion terms agree exactly**; the entire discrepancy is the single rank-one term
+Inside the bracket of $(49)$, the first two terms are exactly the leading $O(1)$ part of the discrete drift rate $(48)$; the last — from the rank-one part of $\Sigma$ — is a single quadratic form of order $1/d$. So along the diffusion the expected statistic evolves at the same rate as along SGD, up to an $O(1/d)$ rank-one correction.
 
-$$
-\frac{1}{dt}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]-\mathcal A q(w_k)
-=\frac{\gamma^2}{d}\,u_k^\top H\nabla^2 q\,Hu_k.
-$$
+Since the rank-one term is $O(1/d)$, it has no effect on the leading-order evolution of any quadratic statistic both along SGD and the diffusion approximation. We may therefore discard it and keep only the bulk $\tfrac{\gamma^2}{d}\,2L(X)H$ in the covariance of the SDE. The resulting process is called the **homogenized SGD** and it is indestinguoshable from the diffusion approximation in high dimensions on the level of quadratic statistics.
 
-This term is of lower order: it carries the prefactor $1/d$ and is bounded by a constant multiple of $\|u_k\|^2$ once $\|H\|_{\mathrm{op}}$ and $\|\nabla^2 q\|_{\mathrm{op}}$ are bounded. Equivalently, the right surrogate is the diffusion whose drift is the population gradient and whose one-step covariance reproduces the dominant part $2L(w)H$ of the SGD second moment, discarding only the rank-one correction $2Hu_ku_k^\top H$. We record it as a definition.
 
-**Matching statistics, not the raw increment.** It is worth stressing that homogenized SGD is *not* what one obtains by directly matching the first two conditional moments of the increment $\delta_{k+1}$. The mean again reproduces the drift $-\gamma\nabla L$, but the covariance does not reduce to $2L(w_k)H$. Using the two moments computed above and writing $\nabla L(w_k)=Hu_k$,
-
-$$
-\mathbb{E}_k\bigl[\delta_{k+1}\delta_{k+1}^\top\bigr]-\mathbb{E}_k[\delta_{k+1}]\,\mathbb{E}_k[\delta_{k+1}]^\top
-=\frac{\gamma^2}{d^2}\Bigl(2L(w_k)H+\nabla L(w_k)\nabla L(w_k)^\top\Bigr),
-$$
-
-so on the epoch clock the increment's covariance rate is $\tfrac{\gamma^2}{d}\bigl(2L(w_k)H+\nabla L\nabla L^\top\bigr)$. Matching it exactly would produce a *different*, more complicated SDE,
-
-$$
-dX_t=-\gamma\nabla L(X_t)\,dt+\frac{\gamma}{\sqrt d}\Bigl(2L(X_t)H+\nabla L(X_t)\nabla L(X_t)^\top\Bigr)^{1/2}dB_t,
-$$
-
-carrying the extra rank-one term $\nabla L\nabla L^\top=Hu_ku_k^\top H$ (the same correction as above, up to the $O(1/d)$ gap between covariance and second moment). Homogenized SGD discards precisely this term. The justification is the discrepancy bound: a rank-one diffusion along the single direction $\nabla L$ perturbs any quadratic statistic by only $O(1/d)$, whereas the retained $2L(w)H$ acts across all $\sim d$ eigendirections — its trace against $\nabla^2 q$ is $\Theta(d)$ for statistics like the risk. Tracking statistics, rather than the raw increment, is therefore the correct criterion: it keeps only the part of the noise that survives the high-dimensional limit.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Definition 10.4 (Homogenized SGD).** *Homogenized SGD with stepsize $\gamma$ and feature covariance $H$ is the $\mathbb{R}^d$-valued continuous-time process $(X_t)_{t\ge 0}$ with $X_0 = w_0$ solving*
 
 $$
-dX_t = -\gamma\,\nabla L(X_t)\,dt + \gamma\,\sqrt{\tfrac{2\,L(X_t)\,H}{d}}\;dB_t, \tag{48}
-$$
-
-*where $(B_t)$ is a standard Brownian motion in $\mathbb{R}^d$ and $\sqrt{\,\cdot\,}$ is the PSD matrix square root.*
-
-</div>
-
-For the least-squares risk, $\nabla L(w) = H(w-w_\ast)$, so $(48)$ is a linear SDE with state-dependent Gaussian noise whose intensity is proportional to the current risk: near the optimum the noise vanishes and far from it the noise is large, mirroring the behavior of a single SGD step in expectation. The next definition specifies the class of test functions for which the comparison between SGD and homogenized SGD will hold quantitatively.
-
-<div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
-
-**Definition 10.5 ($C^2$ norm).** *For a twice-differentiable function $q : \mathbb{R}^d \to \mathbb{C}$,*
-
-$$
-\|q\|_{C^2} := \sup_{x \in \mathbb{R}^d}\|\nabla^2 q(x)\|_{\mathrm{op}} + \|\nabla q(0)\| + \lvert q(0)\rvert. \tag{49}
+dX_t = -\gamma\,\nabla L(X_t)\,dt + \gamma\,\sqrt{\tfrac{2\,L(X_t)\,H}{d}}\;dB_t. \tag{50}
 $$
 
 </div>
 
-Every quadratic on $\mathbb{R}^d$ has finite $C^2$ norm, and the central comparison theorem of [Paq+22a] applies to all such test functions.
+We can now state the central theorem showing that the evolution of quadratic statistics along SGD and the homogenized SGD are indestinguishable in high dimensions. 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 10.6 (Streaming SGD vs. homogenized SGD).** *Under Assumption 10.3, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$ and every deterministic $w_0$ with $\lVert w_0\rVert  \le 1$, there is a constant $C = C(\lVert H\rVert _{\mathrm{op}})$ such that for every $n \le d\log d/C$, the streaming iterates $\lbrace w_k\rbrace _{k=0}^n$ and the homogenized SGD process $\lbrace X_t\rbrace _{t=0}^{n/d}$ (with the same initialization, driven by an independent Brownian motion) satisfy*
+**Theorem 10.6 (Streaming SGD vs. homogenized SGD).** *Under Assumption 10.3, for every quadratic $q : \mathbb{R}^d \to \mathbb{R}$, every $\varepsilon > 0$, and every deterministic initialization $w_0$ with $\lVert w_0\rVert  \le 1$, there is a constant $C = C(\lVert H\rVert _{\mathrm{op}}, \varepsilon)$ such that for every $n \le d\log d/C$, the SGD iterates $\lbrace w_k\rbrace _{k=0}^n$ and the homogenized SGD process $\lbrace X_t\rbrace _{t=0}^{n/d}$ with the same initialization satisfy*
 
 $$
-\sup_{0\le k\le n}\bigl\lvert q(w_k) - q(X_{k/d})\bigr\rvert \;<\; \|q\|_{C^2}\cdot e^{Cn/d}\cdot d^{-1/2 + 9\varepsilon}, \tag{50}
+\sup_{0\le k\le n}\bigl\lvert q(w_k) - q(X_{k/d})\bigr\rvert \;<\; \bigl(\|\nabla^2 q\|_{\mathrm{op}} + \|\nabla q(0)\|\bigr)\cdot e^{Cn/d}\cdot d^{-1/2 + \varepsilon}, \tag{51}
 $$
 
 *with overwhelming probability.*
 
 </div>
 
-The estimate $(50)$ is a pathwise comparison: every quadratic statistic of streaming SGD agrees with its homogenized counterpart up to $d^{-1/2 + 9\varepsilon}$, uniformly over exponentially many steps. Since the noise driving $X_t$ is independent of the noise driving $w_k$, $(50)$ is simultaneously a comparison theorem and a concentration-of-measure statement for $q(w_k)$. The proof in [Paq+22a] applies Itô calculus to a family of resolvent test functions and uses sub-exponential martingale concentration.
+Thus every quadratic statistic of streaming SGD agrees with its homogenized counterpart up to an order $O(d^{-1/2 + \varepsilon})$ error, uniformly over exponentially many steps. 
 
 ### The Volterra risk curve
+We would like to now use the ODE in order to describe the entire risk curve $t\mapsto L(X_t)$ where $X_t$ is the homogenized SGD. The first step is to apply Ito's formula with $q=L$ to deduce the expression: 
 
-Theorem 10.6 reduces streaming SGD to a $d$-dimensional linear SDE. Although the state space is $d$-dimensional, the *risk* $t\mapsto L(X_t)$ itself satisfies a closed scalar convolution equation determined by the gradient-flow risk curve and the spectrum of $H$.
+$$
+dL(X_t) = \Bigl(\tfrac{\gamma^2}{d}\operatorname{Tr}(H^2)\,L(X_t) - \gamma\,u_t^\top H^2 u_t\Bigr)\,dt + \gamma\sqrt{\tfrac{2L(X_t)}{d}}\;u_t^\top H^{3/2}\,dB_t.
+$$
+
+where we set $u_t := X_t - w_\ast$. Taking expectations annihilates the martingale and leaves an evolution equation for the expected loss,
+
+$$
+\frac{d}{dt}\,\mathbb{E}\,L(X_t) = \frac{\gamma^2}{d}\operatorname{Tr}(H^2)\,\mathbb{E}\,L(X_t) - \gamma\,\mathbb{E}\bigl[u_t^\top H^2 u_t\bigr].
+$$
+
+The problem is that this equation is *not* closed: the right-hand side involves $\mathbb{E}[u_t^\top H^2 u_t]$, which is not a function of $\mathbb{E}\,L(X_t)$ alone. There is however a simple fix: rather than tracking the scalar $L(X_t)$, we track the evolution of the entire matrix $M(t)=u_tu_t^{\top}$, from which the loss is recovered trivially by the formula
+
+$$
+L(X_t) = \tfrac12\sigma^2 + \tfrac12\,u_t^\top H u_t = \tfrac12\sigma^2 + \tfrac12\operatorname{Tr}\!\bigl(H M(t)\bigr).
+$$
+
+Carrying out this closure occupies the rest of the section, and the price of closure is that the scalar ODE turns into a convolution equation. We begin with the deterministic part of the dynamics.
 
 Let $Y_t$ denote gradient flow on $L$ from $w_0$, i.e. the solution of $\dot Y_t = -\nabla L(Y_t)$ with $Y_0 = w_0$. For least squares this is explicit:
 
 $$
-Y_t - w_\ast = e^{-tH}(w_0 - w_\ast), \qquad L(Y_t) = \tfrac{1}{2}\sigma^2 + \tfrac{1}{2}\bigl\langle H e^{-2tH},\,(w_0 - w_\ast)^{\otimes 2}\bigr\rangle. \tag{51}
+Y_t - w_\ast = e^{-tH}(w_0 - w_\ast), \qquad L(Y_t) = \tfrac{1}{2}\sigma^2 + \tfrac{1}{2}\bigl\langle H e^{-2tH},\,(w_0 - w_\ast)^{\otimes 2}\bigr\rangle. \tag{52}
 $$
 
 The function $F(t) := L(Y_t)$ decreases monotonically to $\tfrac{1}{2}\sigma^2$ at the rate set by the smallest positive eigenvalue of $H$.
+
+**Deriving the risk equation.** The convolution law is not an extra modeling assumption: it is forced by the drift formula $(49)$, and the shape of its kernel is dictated by the spectrum of $H$. Since $\nabla L(X_t) = Hu_t$, the centered iterate $u_t = X_t - w_\ast$ follows the linear SDE
+
+$$
+du_t = -\gamma\,H u_t\,dt + \gamma\,\sqrt{\tfrac{2L(X_t)}{d}}\;H^{1/2}\,dB_t,
+$$
+
+and the risk is the quadratic $L(X_t) = \tfrac12\sigma^2 + \tfrac12\,u_t^\top H u_t$.
+
+*Why the risk alone obeys no closed law.* The non-closure of the loss ODE above is structural. Differentiating the offending statistic $\mathbb{E}[u_t^\top H^2 u_t]$ pulls in $H^3$, then $H^4$, and so on: each derivative climbs one rung of the moment ladder $\mathbb{E}[u_t^\top H^k u_t]$. The ladder collapses to a single rung only when $H$ has one eigenvalue — the isotropic case, where the loss does satisfy the autonomous ODE $(46)$. For a genuine spectrum no finite scalar ODE can hold.
+
+*The closed object.* The cure is to carry all rungs at once in the second-moment matrix $M_t := \mathbb{E}[u_t u_t^\top]$, from which the risk is recovered by $\mathbb{E}\,L(X_t) = \tfrac12\sigma^2 + \tfrac12\operatorname{Tr}(H M_t)$. Applying $(49)$ across the quadratics $q_A(w)=\tfrac12(w-w_\ast)^\top A(w-w_\ast)$ — equivalently, Itô's formula to $u_t u_t^\top$, with no rank-one term since $X_t$ is homogenized — yields an *exact* linear equation,
+
+$$
+\dot M_t = \underbrace{-\gamma\,(H M_t + M_t H)}_{\text{drift}} + \underbrace{\frac{2\gamma^2\,\mathbb{E}\,L(X_t)}{d}\,H}_{\text{diffusion } \Sigma},
+\qquad M_0 = (w_0-w_\ast)(w_0-w_\ast)^\top.
+$$
+
+*Solving and projecting back.* Variation of constants gives
+
+$$
+M_t = e^{-\gamma H t}\,M_0\,e^{-\gamma H t} + \int_0^t \frac{2\gamma^2\,\mathbb{E}\,L(X_s)}{d}\;e^{-\gamma H(t-s)}\,H\,e^{-\gamma H(t-s)}\,ds.
+$$
+
+Contracting with $\tfrac12 H$ and restoring $\tfrac12\sigma^2$ collapses the matrix back to the scalar risk. The homogeneous term is exactly the gradient-flow risk $F(\gamma t)$ of $(52)$, and the integral becomes a convolution of the risk against $\tfrac{\gamma^2}{d}\operatorname{Tr}(H^2 e^{-2\gamma H\,\cdot})$:
+
+$$
+\mathbb{E}\,L(X_t) = F(\gamma t) + \int_0^t \frac{\gamma^2}{d}\operatorname{Tr}\!\bigl(H^2 e^{-2\gamma H(t-s)}\bigr)\,\mathbb{E}\,L(X_s)\,ds.
+$$
+
+The convolution is Duhamel's principle for the linear dynamics, and the kernel is the diffusion intensity — proportional to the risk itself, which is precisely why $L$ reappears inside its own equation. Read through the spectrum, $\tfrac{\gamma^2}{d}\operatorname{Tr}(H^2 e^{-2\gamma H t}) = \tfrac{\gamma^2}{d}\sum_i \lambda_i^2\, e^{-2\gamma\lambda_i t}$, the dichotomy is plain: a single eigenvalue gives a pure exponential — a memoryless, autonomous ODE — while a spread of eigenvalues superposes decay rates into genuine memory. The Volterra equation is the law that spectral spread demands.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Definition 10.7 (Volterra risk model).** *With $F(t) := L(Y_t)$ and the **memory kernel***
 
 $$
-\mathcal{K}_\gamma(t) := \frac{\gamma^2}{d}\operatorname{Tr}\bigl(H^2\,e^{-2\gamma H t}\bigr), \tag{52}
+\mathcal{K}_\gamma(t) := \frac{\gamma^2}{d}\operatorname{Tr}\bigl(H^2\,e^{-2\gamma H t}\bigr), \tag{53}
 $$
 
 *the **Volterra risk model** $\Psi : [0,\infty) \to [0,\infty)$ is the unique solution of*
 
 $$
-\Psi(t) = F(\gamma t) + \int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds. \tag{53}
+\Psi(t) = F(\gamma t) + \int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds. \tag{54}
 $$
 
 </div>
 
-The two terms in $(53)$ correspond to the two terms in $(48)$. The forcing $F(\gamma t)$ is the noiseless gradient-flow risk run at speed $\gamma$. The convolution integral is the cumulative effect of the SGD noise: past risk $\Psi(s)$ drives the diffusion of $(48)$ with intensity $\mathcal{K}_\gamma(t-s)$. Both $F$ and $\mathcal{K}_\gamma$ are deterministic functionals of $(H, w_0, w_\ast, \sigma^2, \gamma)$.
+The two terms in $(54)$ correspond to the two terms in $(50)$. The forcing $F(\gamma t)$ is the noiseless gradient-flow risk run at speed $\gamma$. The convolution integral is the cumulative effect of the SGD noise: past risk $\Psi(s)$ drives the diffusion of $(50)$ with intensity $\mathcal{K}_\gamma(t-s)$. Both $F$ and $\mathcal{K}_\gamma$ are deterministic functionals of $(H, w_0, w_\ast, \sigma^2, \gamma)$.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 10.8 (Volterra risk curve).** *Under Assumption 10.3, for every $T > 0$ and every $\varepsilon' > 0$,*
 
 $$
-\sup_{0\le t \le T}\bigl\lvert L(X_t) - \Psi(t)\bigr\rvert \;<\; C(T, \|H\|_{\mathrm{op}})\cdot d^{-1/2 + \varepsilon'}, \tag{54}
+\sup_{0\le t \le T}\bigl\lvert L(X_t) - \Psi(t)\bigr\rvert \;<\; C(T, \|H\|_{\mathrm{op}})\cdot d^{-1/2 + \varepsilon'}, \tag{55}
 $$
 
 *with overwhelming probability.*
@@ -3403,12 +3493,12 @@ $$
 Combining Theorems 10.6 and 10.8 gives the end-to-end statement: on the epoch scale $t = k/d$, and up to errors of order $d^{-1/2 + O(\varepsilon)}$, the random risk curve $L(w_{[td]})$ of streaming SGD agrees with the deterministic Volterra solution $\Psi(t)$. The whole $d$-dependence of the limit lives in the empirical spectral measure $\mu_H := \tfrac{1}{d}\sum_{i=1}^d \delta_{\lambda_i(H)}$ of the feature covariance, since
 
 $$
-\mathcal{K}_\gamma(t) = \gamma^2 \int_0^\infty \lambda^2 e^{-2\gamma\lambda t}\,\mu_H(d\lambda). \tag{55}
+\mathcal{K}_\gamma(t) = \gamma^2 \int_0^\infty \lambda^2 e^{-2\gamma\lambda t}\,\mu_H(d\lambda). \tag{56}
 $$
 
 If $\mu_H$ converges to a limiting measure $\mu$ (for instance the Marchenko--Pastur law of Section 7), then so do $\mathcal{K}_\gamma$ and $\Psi$, and the limiting risk curve becomes genuinely dimension-free. The spectral-density viewpoint that organized the deterministic average-case analysis of Section 7 reappears here as the high-dimensional limit of streaming SGD.
 
-**Numerical illustration.** The figure below plots streaming SGD on a least-squares problem with diagonal feature covariance $H = \mathrm{diag}(\lambda_1,\ldots,\lambda_d)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$), with $w_0 = 0$, $w_{\ast,i} = 1/\sqrt d$, $\sigma = 0.1$, $\gamma = 0.5$, and $d \in \lbrace 50, 200, 800, 3200\rbrace $. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. The dashed black curve is the Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(53)$ at $d = 1024$ (a proxy for the limiting kernel). As $d$ grows, the bands shrink around the deterministic Volterra curve.
+**Numerical illustration.** The figure below plots streaming SGD on a least-squares problem with diagonal feature covariance $H = \mathrm{diag}(\lambda_1,\ldots,\lambda_d)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$), with $w_0 = 0$, $w_{\ast,i} = 1/\sqrt d$, $\sigma = 0.1$, $\gamma = 0.5$, and $d \in \lbrace 50, 200, 800, 3200\rbrace $. For each $d$ the solid curve is the median over $30$ independent SGD trials and the shaded ribbon is the corresponding $10$–$90\%$ interquantile band. The dashed black curve is the Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(54)$ at $d = 1024$ (a proxy for the limiting kernel). As $d$ grows, the bands shrink around the deterministic Volterra curve.
 
 ![Streaming SGD with correlated features: concentration around the Volterra limit](figures/sgd_volterra_limit.png)
 
