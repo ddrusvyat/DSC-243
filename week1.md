@@ -13,7 +13,7 @@ math:
 
 ## Overview
 
-In these these notes we study optimization algorithms for the  **convex quadratic optiization problem**. This is the most basic and fundamental problem in numerical optimization. Surprisingly, many of the phenomena that hold for minimizing convex quadratics have direct analogues for highly nonlinear and complex models (e.g. deep learning). Since the objective function is a convex quadratic, this setting allows us to develop sharp intuition for convergence behavior using only basic linear algebraic tools. We will speak both about worst-case convergence rates of algorithms---depending only on extremal eigenvalues---and more refined guarantees that take into account the interaction between initialization and the shape of the entire spectrum.
+In these notes we study optimization algorithms for the  **convex quadratic optimization problem**. This is the most basic and fundamental problem in numerical optimization. Surprisingly, many of the phenomena that hold for minimizing convex quadratics have direct analogues for highly nonlinear and complex models (e.g. deep learning). Since the objective function is a convex quadratic, this setting allows us to develop sharp intuition for convergence behavior using only basic linear algebraic tools. We will speak both about worst-case convergence rates of algorithms---depending only on extremal eigenvalues---and more refined guarantees that take into account the interaction between initialization and the shape of the entire spectrum.
 
 ### Contents
 
@@ -616,7 +616,7 @@ $$f(x_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\ast\|^2 \tag{7}.$$
 
 </div>
 
-*Proof.* Writing out the the initial error $e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i$ in the eigen-basis of $A$ yields
+*Proof.* Writing out the initial error $e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i$ in the eigen-basis of $A$ yields
 
 $$
 f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in [0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
@@ -644,7 +644,7 @@ Note that an important feature of Theorem 6.1 is that the convergence bound invo
 
 ### Acceleration by Chebyshev stepsizes
 
-As in the positive definite case, the $O(1/k)$ rate of fixed-stepsize gradient descent can be improved by varying the stepsize across iterations. Recall that the Chebyshev stepsizes arose in the positive definite case from the fact the the Chebyshev polynomial of the first kind $T_k$ minimizes $\max_{\lambda \in [-1,1]} p(\lambda)^2$ over all degree at most $k$ polynomials with the same leading coefficient. In the positive semidefinite case, the Chebyshev polynomials of the second kind will play an analogous role.
+As in the positive definite case, the $O(1/k)$ rate of fixed-stepsize gradient descent can be improved by varying the stepsize across iterations. Recall that the Chebyshev stepsizes arose in the positive definite case from the fact that the Chebyshev polynomial of the first kind $T_k$ minimizes $\max_{\lambda \in [-1,1]} p(\lambda)^2$ over all degree at most $k$ polynomials with the same leading coefficient. In the positive semidefinite case, the Chebyshev polynomials of the second kind will play an analogous role.
 
 
 ### Chebyshev polynomials of the second kind
@@ -1285,7 +1285,7 @@ In all three regimes, the square-root edge behavior of Marchenko--Pastur yields 
 
 ### Extensions to the Krylov method
 
-We now turn to the analogous analysis for thje **Krylov method**. Passing directly to the limit under the reweighted spectral assumption $\nu_d\Rightarrow\nu$ of the earlier subsections, finding the best stepsize sequence is equivalent to solving the polynomial problem
+We now turn to the analogous analysis for the **Krylov method**. Passing directly to the limit under the reweighted spectral assumption $\nu_d\Rightarrow\nu$ of the earlier subsections, finding the best stepsize sequence is equivalent to solving the polynomial problem
 
 $$
 \mathcal{E}_k \;=\; \min_{\substack{p\in\mathcal{P}_k\\ p(0)=1}}\,\int_{0}^{\beta}\lambda\,p(\lambda)^2\,d\nu(\lambda), \tag{19}
@@ -1468,7 +1468,7 @@ Substituting into $(23)$ yields $(24)$. <span style="float: right;">$\square$</s
 Thus we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to the rate of gradient descent $O(k^{-(a+1)})$ in Theorem 7.2.
 
 
-**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\lbrace \tfrac{1}{2},1,\tfrac{3}{2}\rbrace $. For each $a$, we set $d=2 \times 10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretisation of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $x_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across a long time horizon. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps.
+**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\lbrace \tfrac{1}{2},1,\tfrac{3}{2}\rbrace $. For each $a$, we set $d=2 \times 10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretization of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $x_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across a long time horizon. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps.
 
 ![Sublinear convergence of GD and CG under power-law spectral density](figures/convergence_powerlaw.png)
 
@@ -1510,7 +1510,7 @@ $$
 \mathbb{E}\bigl[\|x\|^2\, xx^\top\bigr] \;\preceq\; R^2\, H. \tag{25}
 $$
 
-This section in essense asserts that a type of fourth moment of $x$ is bounded by the second moment. Three standard settings where $(25)$ holds are the following:
+This section in essence asserts that a type of fourth moment of $x$ is bounded by the second moment. Three standard settings where $(25)$ holds are the following:
 
 1. **Bounded features.** If $\lVert x\rVert  \le R$ almost surely, then $(25)$ holds.
 2. **Gaussian features.** If $x \sim \mathcal{N}(0, H)$, then Isserlis' formula gives
@@ -1539,7 +1539,7 @@ $$
 \rho_{\mathrm{misspec}} := \frac{d\,\lVert H^{-1/2}\Sigma H^{-1/2}\rVert_{\mathrm{op}}}{\operatorname{Tr}(H^{-1}\Sigma)}.
 $$
 
-The misspecification parameter $\rho_{\mathrm{misspec}}$ takes values in $[1,d]$ and measures how far the problem is from well specified. In particular, it equals $1$ in the additive-noise model $y = \langle w_\ast, x\rangle + \eta$ with $\eta$ independent of $x$ and $\mathbb{E}[\eta^2]=\sigma^2$ (since then $\Sigma = \sigma^2 H$). The following theorem quantifies last-iterate behvaior of the SGD.
+The misspecification parameter $\rho_{\mathrm{misspec}}$ takes values in $[1,d]$ and measures how far the problem is from well specified. In particular, it equals $1$ in the additive-noise model $y = \langle w_\ast, x\rangle + \eta$ with $\eta$ independent of $x$ and $\mathbb{E}[\eta^2]=\sigma^2$ (since then $\Sigma = \sigma^2 H$). The following theorem quantifies last-iterate behavior of the SGD.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -1725,7 +1725,7 @@ The bound $(32)$ displays the classical bias--variance tradeoff of stochastic le
 
 ![Tail-averaged constant-stepsize SGD: bias--variance decomposition](figures/sgd_tail_averaging.png)
 
-The animation below further visualizes the same comparison in two dimensions, on a fresh least-squares instance with $H = \mathrm{diag}(1, 0.25)$, $w_\ast = (2,-1)$, $w_0 = (-2.5, 2)$, $\sigma = 0.6$, stepsize $\gamma R^2 = 0.5$, and $T = 2000$ iterations (the viewport is zoomed onto $w_\ast$ and only every $100$th iterate is shown). All three methods run in the streaming setting of Theorems 8.1 and 8.2. Let us make the following observations, consistant with Theorems 8.1 and 8.2.
+The animation below further visualizes the same comparison in two dimensions, on a fresh least-squares instance with $H = \mathrm{diag}(1, 0.25)$, $w_\ast = (2,-1)$, $w_0 = (-2.5, 2)$, $\sigma = 0.6$, stepsize $\gamma R^2 = 0.5$, and $T = 2000$ iterations (the viewport is zoomed onto $w_\ast$ and only every $100$th iterate is shown). All three methods run in the streaming setting of Theorems 8.1 and 8.2. Let us make the following observations, consistent with Theorems 8.1 and 8.2.
 
 * GD glides smoothly down the contour ellipses and converges to $w_\ast$ at the geometric rate $e^{-\gamma\mu t}$.
 * SGD's last iterate contracts at the same geometric rate while it is far from $w_\ast$, but once it reaches a stepsize-dependent neighbourhood it is dominated by the gradient noise and oscillates around $w_\ast$ forever, never improving --- this is precisely the noise floor in Theorem 8.1.
@@ -1784,7 +1784,7 @@ $$
 \frac{2\,\operatorname{Tr}(C_\infty)}{\gamma\,(T-t)}. \tag{35}
 $$
 
-**Bounding the stationary covariance.** Recall that the sequence $\lbrace C_t\rbrace$ is monotone is PSD order. Combined with the trace bound $\operatorname{Tr}(C_t) \le \gamma\operatorname{Tr}(\Sigma)/\mu$ from Theorem 8.1, this yields full convergence in $\mathbb{R}^{d\times d}$ to some $C_{\infty}$. To see this, for any $u \in \mathbb{R}^d$, the scalar $u^\top C_t u$ is nondecreasing and bounded, hence convergent. The polarizatin identity then extends this to convergence of every bilinear form $u^\top C_t v$, and taking $u, v$ to be standard basis vectors shows that $C_t$ converges entrywise to a limit $C_\infty \succeq 0$. Continuity of the linear map $\mathcal{M}$ then lets us pass to the limit in $(31)$ to obtain the matrix fixed-point 
+**Bounding the stationary covariance.** Recall that the sequence $\lbrace C_t\rbrace$ is monotone in PSD order. Combined with the trace bound $\operatorname{Tr}(C_t) \le \gamma\operatorname{Tr}(\Sigma)/\mu$ from Theorem 8.1, this yields full convergence in $\mathbb{R}^{d\times d}$ to some $C_{\infty}$. To see this, for any $u \in \mathbb{R}^d$, the scalar $u^\top C_t u$ is nondecreasing and bounded, hence convergent. The polarization identity then extends this to convergence of every bilinear form $u^\top C_t v$, and taking $u, v$ to be standard basis vectors shows that $C_t$ converges entrywise to a limit $C_\infty \succeq 0$. Continuity of the linear map $\mathcal{M}$ then lets us pass to the limit in $(31)$ to obtain the matrix fixed-point 
 
 $$C_\infty = \mathcal{M}(C_\infty) + \gamma^2\Sigma,$$ 
 
@@ -2283,7 +2283,7 @@ Theorem 9.2 closes the gap in the *worst case*: no deterministic first-order met
 
 The answer is that the structured rate is tight: *the same residual polynomial that drives the CG upper bound also certifies a matching lower bound for every deterministic first-order method*, up to a constant shift $k \mapsto 2k+1$. Our goal is to show why this is the case. 
 
-We bgin by recalling from Section 7 the **spectral measure** $\mu := \sum_{i=1}^d c_i^2\,\delta_{\lambda_i}$ on $[0,\beta]$, where $c_i$ are the coordinates of the initial error $x_0 - x^\ast$ in the eigenbasis of $A$. Rewriting $(4b)$ as an integral against $\mu$ gives the spectral-measure form of the CG identity:
+We begin by recalling from Section 7 the **spectral measure** $\mu := \sum_{i=1}^d c_i^2\,\delta_{\lambda_i}$ on $[0,\beta]$, where $c_i$ are the coordinates of the initial error $x_0 - x^\ast$ in the eigenbasis of $A$. Rewriting $(4b)$ as an integral against $\mu$ gives the spectral-measure form of the CG identity:
 
 $$
 f(x_k^{\mathrm{CG}}) - f^\ast \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}~\int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda), \tag{61}
@@ -2743,7 +2743,7 @@ $$
 w_{k+1} \;=\; w_k \;-\; \frac{\gamma}{d}\,\bigl(\langle w_k, x_{k+1}\rangle - y_{k+1}\bigr)\,x_{k+1}, \qquad k = 0,1,2,\ldots \tag{43}
 $$
 
-This is the streaming least-squares iteration $(26)$ with stepsize $\gamma/d$ in place of $\gamma$. As before, we write $H := \mathbb{E}[xx^\top]$ for the feature covariance and $L(w) = \tfrac{1}{2}\mathbb{E}[(y-\langle w,x\rangle)^2]$ for the population loss, minimized at $w_\ast$. We begin by motivating the $1/d$ scaling of the stepsize $\gamma$ and will primarily focus on an isotropic problem where the covariance of the data is identity. This case is amanable to relatively straightforward analysis. The anisotropic case requires much more sophisticated tools and we will comment on it at the end of the section.
+This is the streaming least-squares iteration $(26)$ with stepsize $\gamma/d$ in place of $\gamma$. As before, we write $H := \mathbb{E}[xx^\top]$ for the feature covariance and $L(w) = \tfrac{1}{2}\mathbb{E}[(y-\langle w,x\rangle)^2]$ for the population loss, minimized at $w_\ast$. We begin by motivating the $1/d$ scaling of the stepsize $\gamma$ and will primarily focus on an isotropic problem where the covariance of the data is identity. This case is amenable to relatively straightforward analysis. The anisotropic case requires much more sophisticated tools and we will comment on it at the end of the section.
 
 ### The isotropic problem
 
@@ -3010,7 +3010,7 @@ e_\ell
 =h\sum_{k=0}^{\ell-1}\bigl[G(z_k)-G(\phi(t_k))\bigr]+\xi_\ell-\sum_{k=0}^{\ell-1}\int_{t_k}^{t_{k+1}}\bigl[G(\phi(s))-G(\phi(t_k))\bigr]\,ds.
 $$
 
-We bound the three terms in order. For the first, $L_G$-Lipschitzness gives $\lvert G(z_k)-G(\phi(t_k))\rvert\le L_G\lvert e_k\rvert$. For the second term, by assumption we have $\lvert\xi_\ell\rvert\le\varepsilon$. For the last term, Lipschtiz continuity of $G$ together with $M$-Lipschitz continuity of $\phi$ gives
+We bound the three terms in order. For the first, $L_G$-Lipschitzness gives $\lvert G(z_k)-G(\phi(t_k))\rvert\le L_G\lvert e_k\rvert$. For the second term, by assumption we have $\lvert\xi_\ell\rvert\le\varepsilon$. For the last term, Lipschitz continuity of $G$ together with $M$-Lipschitz continuity of $\phi$ gives
 
 $$
 \Bigl\lvert\int_{t_k}^{t_{k+1}}\bigl[G(\phi(s))-G(\phi(t_k))\bigr]\,ds\Bigr\rvert
@@ -3023,7 +3023,7 @@ $$
 \lvert e_\ell\rvert\le L_G h\sum_{k=0}^{\ell-1}\lvert e_k\rvert+\varepsilon+\tfrac{1}{2}L_G M T\,h.
 $$
 
-Apply the discrete Gronwall lemma with $C=L_G h$ and $B=\varepsilon+\tfrac{1}{2}L_G M T\,h$. Taking into accoun $Cn=L_G h\,\lfloor T/h\rfloor\le L_G T$, this yields
+Apply the discrete Gronwall lemma with $C=L_G h$ and $B=\varepsilon+\tfrac{1}{2}L_G M T\,h$. Taking into account $Cn=L_G h\,\lfloor T/h\rfloor\le L_G T$, this yields
 
 $$
 \max_{0\le\ell\le n}\lvert e_\ell\rvert\le\Bigl(\varepsilon+\tfrac{1}{2}L_G M T\,h\Bigr)e^{L_G T},
@@ -3379,7 +3379,7 @@ $$
 
 Inside the bracket of $(49)$, the first two terms are exactly the leading $O(1)$ part of the discrete drift rate $(48)$; the last — from the rank-one part of $\Sigma$ — is a single quadratic form of order $1/d$. So along the diffusion the expected statistic evolves at the same rate as along SGD, up to an $O(1/d)$ rank-one correction.
 
-Since the rank-one term is $O(1/d)$, it has no effect on the leading-order evolution of any quadratic statistic both along SGD and the diffusion approximation. We may therefore discard it and keep only the bulk $\tfrac{\gamma^2}{d}\,2L(X)H$ in the covariance of the SDE. The resulting process is called the **homogenized SGD** and it is indestinguishable from the diffusion approximation in high dimensions on the level of quadratic statistics.
+Since the rank-one term is $O(1/d)$, it has no effect on the leading-order evolution of any quadratic statistic both along SGD and the diffusion approximation. We may therefore discard it and keep only the bulk $\tfrac{\gamma^2}{d}\,2L(X)H$ in the covariance of the SDE. The resulting process is called the **homogenized SGD** and it is indistinguishable from the diffusion approximation in high dimensions on the level of quadratic statistics.
 
 
 
@@ -3393,7 +3393,7 @@ $$
 
 </div>
 
-We can now state the central theorem showing that the evolution of quadratic statistics along SGD and the homogenized SGD are indestinguishable in high dimensions. 
+We can now state the central theorem showing that the evolution of quadratic statistics along SGD and the homogenized SGD are indistinguishable in high dimensions. 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -3472,7 +3472,7 @@ $$
 
 
 
-Summarizing we have shown that the expected loss $\mathbb{E}L(w_k)$ along SGD is close to the expected loss $\mathbb{E}L(X_{d/k})$, with the latter being described be a solution of the Voterra integral equation $(54)$. Remarkably, the expectation can be dropped, yielding a deterministic equation for the loss that is an accurate approximation of the the loss along the SGD iterates. 
+Summarizing we have shown that the expected loss $\mathbb{E}L(w_k)$ along SGD is close to the expected loss $\mathbb{E}L(X_{k/d})$, with the latter being described by a solution of the Volterra integral equation $(54)$. Remarkably, the expectation can be dropped, yielding a deterministic equation for the loss that is an accurate approximation of the loss along the SGD iterates. 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -3518,7 +3518,7 @@ This closes the loop with the deterministic theory of Section 7. There, the aver
 
 **Reading off consequences.** There are now a number of observations we cn extract from the Volterra equation $(54)$ that apply to the streaming SGD. Throughout, write $\bar\lambda := \int \lambda\,\mu_H(d\lambda) = \tfrac{1}{d}\operatorname{Tr} H$ for the average eigenvalue of $H$.
 
-**1. Critical stepsize.** Let us first compute the maximal stepsize $\gamma$ that keeps the Voltera model bounded. To this end, a direct computation shows that the total mass of the memory kernel is
+**1. Critical stepsize.** Let us first compute the maximal stepsize $\gamma$ that keeps the Volterra model bounded. To this end, a direct computation shows that the total mass of the memory kernel is
 
 $$
 \int_0^\infty \mathcal{K}_\gamma(t)\,dt
@@ -3557,7 +3557,7 @@ $$
 
 As $t \to \infty$, the factor $\Psi(t-u)$ tends to $\Psi(\infty)$ for every fixed $u$; since $\Psi$ is bounded and $\mathcal{K}_\gamma$ is integrable, dominated convergence lets us pass the limit inside, and the right-hand side converges to $\Psi(\infty)\int_0^\infty \mathcal{K}_\gamma(u)\,du = \Psi(\infty)\cdot\tfrac{\gamma\bar\lambda}{2}$ by $(58)$. 
 
-Thus in the limit $t\to \infty$ the Voltera equation collapese to a scalar fixed-point equation:
+Thus in the limit $t\to \infty$ the Volterra equation collapses to a scalar fixed-point equation:
 
 $$
 \Psi(\infty) \;=\; \tfrac12\sigma^2 + \frac{\gamma\bar\lambda}{2}\,\Psi(\infty)
@@ -3572,10 +3572,10 @@ The floor is proportional to $\gamma$ for small stepsizes and blows up as $\gamm
 $$
 \int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds
 \;=\; \Psi(\infty)\int_0^t \mathcal{K}_\gamma(u)\,du
-\;+\; C\,e^{-\lambda^* t}\int_0^t e^{\lambda^* u}\,\mathcal{K}_\gamma(u)\,du,
+\;+\; C\,e^{-\lambda^* t}\int_0^t e^{\lambda^* u}\,\mathcal{K}_\gamma(u)\,du.
 $$
 
-since $\mathcal{K}_\gamma(t-s)\,e^{-\lambda^* s} = e^{-\lambda^* t}\cdot e^{\lambda^* u}\mathcal{K}_\gamma(u)$. Now let $t$ grow and compare the two sides of $(54)$ order by order. The constant terms reproduce the fixed-point equation of item 2 and cancel. Assuming the forcing decays faster than the ansatz (more on this below), the surviving terms of order $e^{-\lambda^* t}$ read
+ Now let $t$ grow and compare the two sides of $(54)$ order by order. The constant terms reproduce the fixed-point equation of item 2 and cancel. Assuming the forcing decays faster than the ansatz (more on this below), the surviving terms of order $e^{-\lambda^* t}$ read
 
 $$
 C\,e^{-\lambda^* t} \;=\; C\,e^{-\lambda^* t}\int_0^\infty e^{\lambda^* u}\,\mathcal{K}_\gamma(u)\,du.
@@ -3589,7 +3589,7 @@ $$
 \;=\; \gamma^2 \int \frac{\lambda^2}{2\gamma\lambda - \lambda^*}\,\mu_H(d\lambda) \;=\; 1, \tag{60}
 $$
 
-where the $t$-integral is computed as in $(58)$ and converges precisely when $\lambda^* < 2\gamma\lambda_{\min}$, with $\lambda_{\min} := \min_i \lambda_i(H)$. This restriction is exactly the standing assumption above: the forcing decays at the gradient-flow rate, $F(\gamma t) - \tfrac12\sigma^2 \sim e^{-2\gamma\lambda_{\min}t}$ by $(57)$, so it is negligible at order $e^{-\lambda^* t}$ only when $\lambda^* < 2\gamma\lambda_{\min}$. The root $\lambda^*(\gamma) \in (0, 2\gamma\lambda_{\min})$ of $(60)$ is the decay rate of the risk when it exists; when no root exists the noise is subdominant and the rate is that of the forcing, $2\gamma\lambda_{\min}$. The interesting feature of $(60)$ is its behavior in $\gamma$. The left-hand side increases in $\lambda^*$, and at $\gamma = \gamma_c$ the choice $\lambda^* = 0$ already makes it equal to $1$ by $(58)$: so as $\gamma \uparrow \gamma_c$ the rate $\lambda^*(\gamma)$ *decreases to zero* — near criticality the gradient noise, endlessly recycled through the convolution, throttles convergence. Since small $\gamma$ is also slow, the rate is maximized at an interior stepsize $\gamma_{\mathrm{opt}} < \gamma_c$: aggressive stepsizes are punished twice, by a slower transient and a higher floor $(59)$. For $H = I$ everything is explicit: $(60)$ reads $\gamma^2/(2\gamma - \lambda^*) = 1$, so $\lambda^*(\gamma) = 2\gamma - \gamma^2$ with optimum $\gamma_{\mathrm{opt}} = 1$ — exactly the decay rate of the scalar ODE $(46)$. (For the gapless power-law spectra of Section 7 there is no exponential rate at all; the forcing decays polynomially, and one-pass SGD inherits the average-case gradient-descent rates of Section 7, with noise only inflating constants and adding the floor.)
+where the $t$-integral is computed as in $(58)$ and converges precisely when $\lambda^* < 2\gamma\lambda_{\min}$, with $\lambda_{\min} := \min_i \lambda_i(H)$. This restriction is exactly the standing assumption above: the forcing decays at the gradient-flow rate, $F(\gamma t) - \tfrac12\sigma^2 \sim e^{-2\gamma\lambda_{\min}t}$ by $(57)$, so it is negligible at order $e^{-\lambda^* t}$ only when $\lambda^* < 2\gamma\lambda_{\min}$. The root $\lambda^*(\gamma) \in (0, 2\gamma\lambda_{\min})$ of $(60)$ is the decay rate of the risk when it exists; when no root exists the noise is subdominant and the rate is that of the forcing $2\gamma\lambda_{\min}$. 
 
 **4. Critical batch size (informal).** Mini-batching (Section 8) averages $B$ independent gradients per update, leaving the drift unchanged and dividing the memory kernel by $B$. Therefore the critical stepsize becomes
 
@@ -3603,7 +3603,7 @@ $$
 B_{\mathrm{crit}} \;=\; \frac{d\,\bar\lambda}{\lambda_{\max}} \;=\; \frac{\operatorname{Tr} H}{\lambda_{\max}(H)},
 $$
 
-One expects that past this threshold, larger batch sizes have a limited affect. This intuition can be made formal by showing that precisely at the value $B_{\mathrm{crit}}$, the discrete dynamics transition from noise-dominated to problem-dominated regimes. The complete argument based on a discrete Volterra equation can be found in [Lee+22].
+One expects that past this threshold, larger batch sizes have a limited effect. This intuition can be made formal by showing that precisely at the value $B_{\mathrm{crit}}$, the discrete dynamics transition from noise-dominated to problem-dominated regimes. The complete argument based on a discrete Volterra equation can be found in [Lee+22].
 
 **Numerical illustration.** The figure below exhibits this transition on the correlated-feature model of this section ($H = Q\Lambda Q^\top$, $\lambda_i = i/d$, Haar-random $Q$, $d = 1024$, $\sigma = 0.1$, $\|w_\ast\| = 1$, $w_0 = 0$), for which $\bar\lambda \approx \tfrac12$, $\lambda_{\max} = 1$, and hence $B_{\mathrm{crit}} = \operatorname{Tr}H/\lambda_{\max} \approx d/2 = 512$. For each batch size $B$, mini-batch streaming SGD is run at the stepsize $\gamma(B) = \tfrac18\min\lbrace 2B/\bar\lambda,\ 2d/\lambda_{\max}\rbrace$, and we record the number of updates needed to reach the excess risk $\varepsilon = 3\times 10^{-3}$. Below $B_{\mathrm{crit}}$ the count falls like $1/B$ (linear speedup, dashed guide); at $B_{\mathrm{crit}}$ (vertical line) it bends and plateaus, matching the update count of full-batch gradient descent run at the curvature-limited stepsize (dotted line). Larger batches past this point leave the iteration count unchanged.
 
@@ -3622,7 +3622,7 @@ The results discussed in these notes are largely classical in numerical optimiza
 - **Conjugate gradient and Krylov optimality.** Foundational CG/Krylov results originate in [HS52, Lan52]; modern treatments include [Saa03, Gre97].
 - **Source conditions and spectral-decay rates.** The source-condition framework and decay-dependent rates are standard in inverse problems and regularization theory; see [EHN96, Han95].
 - **Marchenko--Pastur asymptotics.** The limiting spectral law is due to [MP67], with modern expositions in [BS10, Ver18].
-- **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behaviour of this density determines the asymptotic exponent.
+- **Average-case optimization complexity.** The spectral-integral viewpoint used throughout Section 7 is closely tied to the average-case analysis framework developed by Pedregosa, Scieur, and Paquette and collaborators [PS20, SP20, PvMPP21, CGPSP22]: convergence rates are governed by the limiting spectral density of the Hessian rather than by extremal eigenvalues alone, and the edge/tail behavior of this density determines the asymptotic exponent.
 - **Stochastic gradient descent for least squares.** The constant-stepsize, tail-averaged SGD analysis in Section 8 follows the Markov-chain/covariance approach of [JKK+18], which establishes minimax optimality of tail-averaged SGD for the linear regression problem.
 - **Lower bounds for first-order methods.** The tridiagonal chain quadratic and the rotation argument behind Lemma 9.1 and Theorem 9.2 are due to Nemirovski and Yudin [NY83]; modern textbook treatments appear in Nesterov [Nes04, Nes18]. The same construction yields the matching $\Omega(\sqrt{\kappa}\,\log(1/\varepsilon))$ lower bound for general smooth strongly convex minimization beyond the quadratic class.
 - **Lower bounds for stochastic algorithms on least squares.** The matching minimax lower bound in Theorem 9.9 is the well-specified Gaussian-noise instance of the classical $\sigma^2 d/n$ minimax bound for fixed-design linear regression; we follow the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
