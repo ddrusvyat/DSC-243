@@ -3547,19 +3547,17 @@ $$
 
 Thus, stability is governed by the *average* eigenvalue — the aggregate gradient noise generated across the whole spectrum — and not by $\lambda_{\max}$. Indeed, with stepsize $\gamma/d$, the classical curvature constraint of gradient descent reads $\gamma < 2d/\lambda_{\max}$. For the isotropic model $H = I$ we recover the threshold $\gamma_c = 2$ of the scalar ODE $(46)$.
 
-**2. The noise floor.** Fix $\gamma < \gamma_c$, so that $\Psi$ is bounded, and let us compute the value $\Psi(\infty) := \lim_{t\to\infty}\Psi(t)$ that the risk settles at (taking for granted that the limit exists, which can be justified). The idea is simply to pass to the limit $t \to \infty$ on both sides of $(54)$ and see what equation survives.
+**2. The noise floor.** Consider the stable regime $\gamma < \gamma_c$, so that $\Psi$ is bounded. Let us compute the value $\Psi(\infty) := \lim_{t\to\infty}\Psi(t)$ that the risk settles at (taking for granted that the limit exists, which can be justified). We pass to the limit $t \to \infty$ on both sides of $(54)$. From the expression $(57)$ we have $F(\gamma t) = \tfrac12\sigma^2 + \tfrac12\int \lambda\, e^{-2\gamma t\lambda}\,\nu(d\lambda)$, and therefore $F(\gamma t) \to \tfrac12\sigma^2$.
 
-Start with the forcing term. By $(57)$ we have $F(\gamma t) = \tfrac12\sigma^2 + \tfrac12\int \lambda\, e^{-2\gamma t\lambda}\,\nu(d\lambda)$, and every exponential with $\lambda > 0$ decays to zero (while $\lambda = 0$ contributes nothing because of the $\lambda$ weight in front). Hence $F(\gamma t) \to \tfrac12\sigma^2$: in the long run the gradient-flow part of the risk is gone and only the label noise remains.
-
-Next the convolution term. Change variables $u := t - s$ to put the kernel's argument in the integrand:
+Next consider the convolution term. We change variables $u := t - s$ to put the kernel's argument in the integrand:
 
 $$
 \int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds \;=\; \int_0^t \mathcal{K}_\gamma(u)\,\Psi(t-u)\,du.
 $$
 
-As $t \to \infty$, the factor $\Psi(t-u)$ tends to $\Psi(\infty)$ for every fixed $u$; since $\Psi$ is bounded and $\mathcal{K}_\gamma$ is integrable, dominated convergence lets us pass the limit inside, and the right-hand side converges to $\Psi(\infty)\int_0^\infty \mathcal{K}_\gamma(u)\,du = \Psi(\infty)\cdot\tfrac{\gamma\bar\lambda}{2}$ by $(58)$. In words: at stationarity, the convolution simply weighs the (constant) risk by the total mass of the kernel.
+As $t \to \infty$, the factor $\Psi(t-u)$ tends to $\Psi(\infty)$ for every fixed $u$; since $\Psi$ is bounded and $\mathcal{K}_\gamma$ is integrable, dominated convergence lets us pass the limit inside, and the right-hand side converges to $\Psi(\infty)\int_0^\infty \mathcal{K}_\gamma(u)\,du = \Psi(\infty)\cdot\tfrac{\gamma\bar\lambda}{2}$ by $(58)$. 
 
-The Volterra equation thus collapses, in the limit, to a scalar fixed-point equation:
+Thus in the limit $t\to \infty$ the Voltera equation collapese to a scalar fixed-point equation:
 
 $$
 \Psi(\infty) \;=\; \tfrac12\sigma^2 + \frac{\gamma\bar\lambda}{2}\,\Psi(\infty)
@@ -3569,36 +3567,47 @@ $$
 
 The floor is proportional to $\gamma$ for small stepsizes and blows up as $\gamma \uparrow \gamma_c$. For $H = I$ it reduces to $\gamma\sigma^2/(2(2-\gamma))$, matching exactly the stationary value of the scalar ODE $(46)$.
 
-**3. Rate of convergence and stepsize criticality.** How fast $\Psi(t)$ approaches its floor is decided by a competition between the forcing and the kernel. The forcing $F(\gamma t)$ decays at the *gradient-flow* rate — $e^{-2\gamma\lambda_{\min} t}$ when $\lambda_{\min} := \min_i \lambda_i(H) > 0$ — while the homogeneous part of the renewal equation decays at the **Malthusian rate** $\lambda^*(\gamma)$, the root of
+**3. Rate of convergence and stepsize criticality.** At what exponential rate does $\Psi(t)$ approach its floor? Suppose as an ansatz that for large $t$ we have $\Psi(t) = \Psi(\infty) + C e^{-\lambda^* t}$ for some value $\lambda^* > 0$ and a constant $C \ne 0$, and substitute this guess into $(54)$. With the change of variables $u := t - s$, as in item 2, the convolution term splits into a constant piece and an exponential piece:
+
+$$
+\int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds
+\;=\; \Psi(\infty)\int_0^t \mathcal{K}_\gamma(u)\,du
+\;+\; C\,e^{-\lambda^* t}\int_0^t e^{\lambda^* u}\,\mathcal{K}_\gamma(u)\,du,
+$$
+
+since $\mathcal{K}_\gamma(t-s)\,e^{-\lambda^* s} = e^{-\lambda^* t}\cdot e^{\lambda^* u}\mathcal{K}_\gamma(u)$. Now let $t$ grow and compare the two sides of $(54)$ order by order. The constant terms reproduce the fixed-point equation of item 2 and cancel. Assuming the forcing decays faster than the ansatz (more on this below), the surviving terms of order $e^{-\lambda^* t}$ read
+
+$$
+C\,e^{-\lambda^* t} \;=\; C\,e^{-\lambda^* t}\int_0^\infty e^{\lambda^* u}\,\mathcal{K}_\gamma(u)\,du.
+$$
+
+Dividing through by $C e^{-\lambda^* t}$ forces the consistency condition
 
 $$
 \int_0^\infty e^{\lambda^* t}\,\mathcal{K}_\gamma(t)\,dt
-\;=\; \gamma^2 \int \int_0^\infty \lambda^2\, e^{-(2\gamma\lambda - \lambda^*)t}\,dt\,\mu_H(d\lambda)
-\;=\; \gamma^2 \int \frac{\lambda^2}{2\gamma\lambda - \lambda^*}\,\mu_H(d\lambda) \;=\; 1,
-\qquad \lambda^* \in (0,\, 2\gamma\lambda_{\min}), \tag{60}
+\;=\; \gamma^2 \int\int_0^\infty \lambda^2\, e^{-(2\gamma\lambda - \lambda^*)t}\,dt\,\mu_H(d\lambda)
+\;=\; \gamma^2 \int \frac{\lambda^2}{2\gamma\lambda - \lambda^*}\,\mu_H(d\lambda) \;=\; 1, \tag{60}
 $$
 
-when a root exists; the overall rate is the smaller of the two. For small $\gamma$ the kernel is light, no root exists, and the risk decays at the gradient-flow rate $2\gamma\lambda_{\min}$, which *increases* with $\gamma$ — noise is a spectator. Beyond a spectrum-dependent threshold the Malthusian root appears and takes over, and as $\gamma \uparrow \gamma_c$ it *decreases to zero*: near criticality the gradient noise, endlessly recycled through the convolution, throttles convergence. The rate is therefore maximized at an interior stepsize $\gamma_{\mathrm{opt}} < \gamma_c$ — aggressive stepsizes are punished twice, by a slower transient and a higher floor $(59)$. For $H = I$, equation $(60)$ reads $\gamma^2/(2\gamma - \lambda^*) = 1$, giving $\lambda^*(\gamma) = 2\gamma - \gamma^2$ with optimum $\gamma_{\mathrm{opt}} = 1$ — exactly the decay rate of the scalar ODE $(46)$. For the gapless power-law spectra of Section 7 ($\lambda_{\min} = 0$), the forcing decays only polynomially while the kernel mass stays $\gamma\bar\lambda/2 < 1$: the renewal structure then leaves the polynomial exponent untouched, so one-pass SGD inherits the average-case gradient-descent rates of Section 7, with noise only inflating constants and adding the floor.
+where the $t$-integral is computed as in $(58)$ and converges precisely when $\lambda^* < 2\gamma\lambda_{\min}$, with $\lambda_{\min} := \min_i \lambda_i(H)$. This restriction is exactly the standing assumption above: the forcing decays at the gradient-flow rate, $F(\gamma t) - \tfrac12\sigma^2 \sim e^{-2\gamma\lambda_{\min}t}$ by $(57)$, so it is negligible at order $e^{-\lambda^* t}$ only when $\lambda^* < 2\gamma\lambda_{\min}$. The root $\lambda^*(\gamma) \in (0, 2\gamma\lambda_{\min})$ of $(60)$ is the decay rate of the risk when it exists; when no root exists the noise is subdominant and the rate is that of the forcing, $2\gamma\lambda_{\min}$. The interesting feature of $(60)$ is its behavior in $\gamma$. The left-hand side increases in $\lambda^*$, and at $\gamma = \gamma_c$ the choice $\lambda^* = 0$ already makes it equal to $1$ by $(58)$: so as $\gamma \uparrow \gamma_c$ the rate $\lambda^*(\gamma)$ *decreases to zero* — near criticality the gradient noise, endlessly recycled through the convolution, throttles convergence. Since small $\gamma$ is also slow, the rate is maximized at an interior stepsize $\gamma_{\mathrm{opt}} < \gamma_c$: aggressive stepsizes are punished twice, by a slower transient and a higher floor $(59)$. For $H = I$ everything is explicit: $(60)$ reads $\gamma^2/(2\gamma - \lambda^*) = 1$, so $\lambda^*(\gamma) = 2\gamma - \gamma^2$ with optimum $\gamma_{\mathrm{opt}} = 1$ — exactly the decay rate of the scalar ODE $(46)$. (For the gapless power-law spectra of Section 7 there is no exponential rate at all; the forcing decays polynomially, and one-pass SGD inherits the average-case gradient-descent rates of Section 7, with noise only inflating constants and adding the floor.)
 
-**4. Critical batch size.** Suppose each update averages the gradient over a mini-batch of $B$ fresh samples. The drift of the diffusion is unchanged while the noise covariance — hence the kernel — is divided by $B$, so the kernel mass becomes $\gamma\bar\lambda/(2B)$ and the stability threshold scales linearly,
-
-$$
-\gamma_c(B) \;=\; \frac{2B}{\bar\lambda},
-$$
-
-a Volterra-style derivation of the *linear scaling rule* (stepsize proportional to batch size). Run at a fixed fraction of the threshold, $\gamma = \beta\,\gamma_c(B)$ with $\beta \in (0,1)$: the transient decays per epoch at the rate $2\gamma\lambda_{\min} = 4\beta B\lambda_{\min}/\bar\lambda$, so the number of *updates* to reach a fixed excess risk falls like $1/B$, while the number of *samples*,
+**4. Critical batch size (informal).** Mini-batching (Section 8) averages $B$ independent gradients per update, leaving the drift unchanged and dividing the memory kernel by $B$. Therefore the critical stepsize becomes
 
 $$
-n \;\approx\; \frac{\operatorname{Tr} H}{4\beta\,\lambda_{\min}}\,\log(1/\varepsilon),
+\gamma_c(B) \;=\; \frac{2B}{\bar\lambda}.
 $$
 
-is independent of $B$ — mini-batching is a perfect parallelizer. But this cannot continue forever: the discrete iteration must still respect the deterministic curvature constraint $\gamma < 2d/\lambda_{\max}$, which no amount of gradient averaging relaxes. The two ceilings cross at the **critical batch size**
+However, we also know that due to discretization effects in the noiseless setting, we can not allow a stepsize larger than $\gamma= 2d/\lambda_{\max}(H)$. Equating the two quantities yields the **critical batch size**
 
 $$
 B_{\mathrm{crit}} \;=\; \frac{d\,\bar\lambda}{\lambda_{\max}} \;=\; \frac{\operatorname{Tr} H}{\lambda_{\max}(H)},
 $$
 
-the *effective rank* of the covariance. Below $B_{\mathrm{crit}}$ the noise ceiling binds and parallelism is free; above it the stepsize is pinned by curvature, the number of updates plateaus at the gradient-descent complexity $\sim \tfrac{\lambda_{\max}}{4\beta\lambda_{\min}}\log(1/\varepsilon)$, and the extra samples in each batch are wasted. In one sentence: *mini-batching buys linear speedup exactly until SGD has turned into gradient descent.* For $H = I$ this gives $B_{\mathrm{crit}} = d$; this is the same batch-saturation phenomenon we observed empirically for tail-averaged SGD in Section 8.
+One expects that past this threshold, larger batch sizes have a limited affect. This intuition can be made formal by showing that precisely at the value $B_{\mathrm{crit}}$, the discrete dynamics transition from noise-dominated to problem-dominated regimes. The complete argument based on a discrete Volterra equation can be found in [Lee+22].
+
+**Numerical illustration.** The figure below exhibits this transition on the correlated-feature model of this section ($H = Q\Lambda Q^\top$, $\lambda_i = i/d$, Haar-random $Q$, $d = 1024$, $\sigma = 0.1$, $\|w_\ast\| = 1$, $w_0 = 0$), for which $\bar\lambda \approx \tfrac12$, $\lambda_{\max} = 1$, and hence $B_{\mathrm{crit}} = \operatorname{Tr}H/\lambda_{\max} \approx d/2 = 512$. For each batch size $B$, mini-batch streaming SGD is run at the stepsize $\gamma(B) = \tfrac18\min\lbrace 2B/\bar\lambda,\ 2d/\lambda_{\max}\rbrace$, and we record the number of updates needed to reach the excess risk $\varepsilon = 3\times 10^{-3}$. Below $B_{\mathrm{crit}}$ the count falls like $1/B$ (linear speedup, dashed guide); at $B_{\mathrm{crit}}$ (vertical line) it bends and plateaus, matching the update count of full-batch gradient descent run at the curvature-limited stepsize (dotted line). Larger batches past this point leave the iteration count unchanged.
+
+![Batch size saturation of streaming SGD: the number of updates to reach a fixed excess risk falls like one over the batch size until the critical batch size, then plateaus at the complexity of full-batch gradient descent](figures/sgd_critical_batch.png)
 
 The scalar-ODE reduction of Theorem 10.2 is in the spirit of Ben Arous, Gheissari, and Jagannath [BAGJ22] and goes back, in the neural-network context, to Saad and Solla [SS95]. The homogenized SGD comparison and the Volterra risk curve are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a, Paq+22b], with extensions in Collins-Woodfin and Paquette [CP23]. The stepsize-criticality analysis of the Volterra equation appears in Paquette, Lee, Pedregosa, and Paquette [PLPP21], and the batch-size saturation analysis in Lee, Cheng, Paquette, and Paquette [Lee+22]. We have followed the lecture-note synthesis of Paquette [Paq23].
 
