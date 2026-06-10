@@ -3308,10 +3308,10 @@ $$
 Thus the diffusion SDE is given by
 
 $$
-dX_t=-\gamma\,\nabla L(X_t)\,dt+\frac{\gamma}{\sqrt d}\Bigl(2L(X_t)\,H+H(X_t-w_\ast)(X_t-w_\ast)^\top H\Bigr)^{1/2}\,dB_t.
+dX_t=-\gamma\,\nabla L(X_t)\,dt+\frac{\gamma}{\sqrt d}\Bigl(2L(X_t)\,H+\nabla L(X_t)\nabla L(X_t)^\top \Bigr)^{1/2}\,dB_t.
 $$
 
-The diffusion above splits into two parts: a **bulk** term $\tfrac{\gamma^2}{d}\,2L(X_t)H$ spread across all eigendirections of $H$, and a **rank-one** correction $\tfrac{\gamma^2}{d}H(X_t-w_\ast)(X_t-w_\ast)^\top H$ acting along the single direction $\nabla L(X_t)=H(X_t-w_\ast)$. The SDE built from the drift together with the bulk term alone is **homogenized SGD** (defined precisely below); the rank-one correction is dropped.
+The diffusion above splits into two parts: a **bulk** term $\tfrac{\gamma^2}{d}\,2L(X_t)H$ spread across all eigendirections of $H$, and a **rank-one** correction $\nabla L(X_t)\nabla L(X_t)^\top$ acting along the single direction $\nabla L(X_t)$. The SDE built from the drift together with the bulk term alone is **homogenized SGD** (defined precisely below); the rank-one correction is dropped.
 
 
 
@@ -3335,7 +3335,7 @@ Setting the stage, let $q\colon\mathbb{R}^d\to\mathbb{R}$ be any quadratic funct
 
 $$
 \frac{1}{h}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]
-=d\,\nabla q(w_k)^\top\mathbb{E}_k[\Delta_k]+\frac{d}{2}\bigl\langle\nabla^2 q(w_k),\,\mathbb{E}_k[\Delta_k\Delta_k^\top]\bigr\rangle.
+=d\,\nabla q(w_k)^\top\mathbb{E}_k[\Delta_k]+\frac{d}{2}\bigl\langle\nabla^2 q,\,\mathbb{E}_k[\Delta_k\Delta_k^\top]\bigr\rangle.
 $$
 
 Substituting the already computed expressions for the two moments of $\Delta_k$ yields
@@ -3343,11 +3343,11 @@ Substituting the already computed expressions for the two moments of $\Delta_k$ 
 $$
 \frac{1}{h}\,\mathbb{E}_k\bigl[q(w_{k+1})-q(w_k)\bigr]
 =-\gamma\,\nabla q(w_k)^\top\nabla L(w_k)
-+\frac{\gamma^2 L(w_k)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q(w_k)\bigr)
-+\frac{\gamma^2}{d}\,u_k^\top H\nabla^2 q(w_k)\,Hu_k. \tag{48}
++\frac{\gamma^2 L(w_k)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q\bigr)
++\frac{\gamma^2}{d}\,u_k^\top H\nabla^2 q\,Hu_k. \tag{48}
 $$
 
-The right-hand side of $(48)$ is the **drift rate** of the statistic $q$ under streaming SGD — how fast $\mathbb{E}_k\,q$ moves per unit of epoch time. The first two terms are of **constant order**: the gradient term $-\gamma\,\nabla q(w_k)^\top\nabla L(w_k)$ is $O(1)$, and although the second carries an explicit $1/d$, its trace $\operatorname{Tr}(H\nabla^2 q(w_k))$ sums contributions from all $\sim d$ eigendirections, so it too is $O(1)$. The third term is  smaller: $u_k^\top H\nabla^2 q(w_k)\,Hu_k$ is a *single* quadratic form, bounded once $\|u_k\|$ and $\|H\|$ are, so with the $1/d$ prefactor it is only $O(1/d)$. Thus the third term becomes negligible in high dimensions.
+The right-hand side of $(48)$ is the **drift rate** of the statistic $q$ under streaming SGD — how fast $\mathbb{E}_k\,q$ moves per unit of epoch time. The first two terms are of **constant order**: the gradient term $-\gamma\,\nabla q(w_k)^\top\nabla L(w_k)$ is $O(1)$, and although the second carries an explicit $1/d$, its trace $\operatorname{Tr}(H\nabla^2 q)$ sums contributions from all $\sim d$ eigendirections, so it too is $O(1)$. The third term is  smaller: $u_k^\top H\nabla^2 q\,Hu_k$ is a *single* quadratic form, bounded once $\|u_k\|$ and $\|H\|$ are, so with the $1/d$ prefactor it is only $O(1/d)$. Thus the third term becomes negligible in high dimensions.
 
  The plan now is to compute the analogous drift rate for the diffusion approximation. This is immediate from Ito's calculus rule, summarized in the following lemma.
 
@@ -3373,13 +3373,13 @@ Applying the lemma to the diffusion SDE yields
 $$
 \frac{d}{dt}\,\mathbb{E}\,q(X_t)
 =\mathbb{E}\Bigl[-\gamma\,\nabla q(X_t)^\top\nabla L(X_t)
-+\frac{\gamma^2 L(X_t)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q(X_t)\bigr)
-+\frac{\gamma^2}{2d}\,u_t^\top H\nabla^2 q(X_t)\,Hu_t\Bigr]. \tag{49}
++\frac{\gamma^2 L(X_t)}{d}\operatorname{Tr}\!\bigl(H\nabla^2 q\bigr)
++\frac{\gamma^2}{2d}\,u_t^\top H\nabla^2 q\,Hu_t\Bigr]. \tag{49}
 $$
 
 Inside the bracket of $(49)$, the first two terms are exactly the leading $O(1)$ part of the discrete drift rate $(48)$; the last — from the rank-one part of $\Sigma$ — is a single quadratic form of order $1/d$. So along the diffusion the expected statistic evolves at the same rate as along SGD, up to an $O(1/d)$ rank-one correction.
 
-Since the rank-one term is $O(1/d)$, it has no effect on the leading-order evolution of any quadratic statistic both along SGD and the diffusion approximation. We may therefore discard it and keep only the bulk $\tfrac{\gamma^2}{d}\,2L(X)H$ in the covariance of the SDE. The resulting process is called the **homogenized SGD** and it is indestinguoshable from the diffusion approximation in high dimensions on the level of quadratic statistics.
+Since the rank-one term is $O(1/d)$, it has no effect on the leading-order evolution of any quadratic statistic both along SGD and the diffusion approximation. We may therefore discard it and keep only the bulk $\tfrac{\gamma^2}{d}\,2L(X)H$ in the covariance of the SDE. The resulting process is called the **homogenized SGD** and it is indestinguishable from the diffusion approximation in high dimensions on the level of quadratic statistics.
 
 
 
@@ -3443,7 +3443,7 @@ $$
 Passing now to the expected loss yields a very simple evolution equation. Namely define
 
 $$
-F(s) := \tfrac12\sigma^2 + \tfrac12(w_0-w_\ast)^\top H e^{-2 s H}, \tag{52}
+F(s) := \tfrac12\sigma^2 + \tfrac12(w_0-w_\ast)^\top H e^{-2 s H}(w_0-w_\ast), \tag{52}
 $$
 
 which is exactly the loss along the noiseless gradient flow $\dot Y_t = -\gamma\nabla L(Y_t)$. The loss along the homogenized SGD then evolves according to the expression
@@ -3512,11 +3512,95 @@ Hence the entire limiting risk curve — kernel, forcing, and therefore the solu
 
 This closes the loop with the deterministic theory of Section 7. There, the average-case complexity of gradient descent and conjugate gradients on a quadratic was dictated by the spectral density of the Hessian, with the small-eigenvalue (soft-edge) behavior fixing the asymptotic rate. The same spectral data now governs the high-dimensional limit of *streaming* SGD: the forcing $F$ is the noiseless gradient-flow risk — the continuous-time, full-gradient object of Section 7, read off the very same integrals $(57)$ — while the convolution in $(54)$ layers on the accumulated effect of the one-pass gradient noise, again as a spectral integral $(56)$ against $\mu_H$. 
 
-**Numerical illustration.** The figure below uses the same correlated-feature model as above — covariance $H = Q\Lambda Q^\top$ with $\Lambda = \operatorname{diag}(\lambda_i)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$) and $Q$ a Haar-random rotation, label noise $\sigma = 0.1$, a unit signal $\|w_\ast\| = 1$, and start $w_0 = 0$. In both panels the solid curve is the median of $t\mapsto L(w_{[td]}) - L(w_\ast)$ over independent trials, the shaded ribbon is the corresponding $10$–$90\%$ interquantile band, and the dashed black curve is the deterministic Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(54)$ with the limiting spectral data of $(56)$–$(57)$ (evaluated at $d = 1024$ as a proxy for the limit). *Left:* at fixed dimension $d = 512$, the Volterra curve tracks streaming SGD across stepsizes $\gamma \in \lbrace 0.5, 1, 1.5\rbrace$, capturing both the decay rate and the noise floor. *Right:* at fixed $\gamma = 1$, as $d \in \lbrace 50, 200, 800, 3200\rbrace$ grows the bands shrink around the single deterministic Volterra curve, exactly as Theorem 10.8 predicts.
+**Numerical illustration.** The figure below uses the same correlated-feature model as above — covariance $H = Q\Lambda Q^\top$ with $\Lambda = \operatorname{diag}(\lambda_i)$, $\lambda_i = i/d$ (linear-ramp spectrum on $(0,1]$) and $Q$ a Haar-random rotation, label noise $\sigma = 0.1$, a unit signal $\|w_\ast\| = 1$, and start $w_0 = 0$. In both panels the colored curve is the median of $t\mapsto L(w_{[td]}) - L(w_\ast)$ over independent trials, the shaded ribbon is the corresponding $10$–$90\%$ interquantile band, and the black curve is the deterministic Volterra solution $\Psi(t) - \tfrac12\sigma^2$ obtained by trapezoidal-rule integration of $(54)$ with the limiting spectral data of $(56)$–$(57)$ (evaluated at $d = 1024$ as a proxy for the limit). *Left:* at fixed dimension $d = 512$, the Volterra curve tracks streaming SGD across stepsizes $\gamma \in \lbrace 0.5, 1, 1.5\rbrace$, capturing both the decay rate and the noise floor. *Right:* at fixed $\gamma = 1$, as $d \in \lbrace 50, 200, 800, 3200\rbrace$ grows the bands shrink around the single deterministic Volterra curve, exactly as Theorem 10.8 predicts.
 
 ![Streaming SGD versus the deterministic Volterra risk curve with a randomly rotated covariance $H=Q\Lambda Q^\top$: the Volterra solution tracks the SGD risk across stepsizes (left) and the random curve concentrates around it as the dimension grows (right)](figures/sgd_volterra_limit.png)
 
-The scalar-ODE reduction of Theorem 10.2 is in the spirit of Ben Arous, Gheissari, and Jagannath [BAGJ22] and goes back, in the neural-network context, to Saad and Solla [SS95]. The homogenized SGD comparison and the Volterra risk curve are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a, Paq+22b], with extensions in Collins-Woodfin and Paquette [CP23]. We have followed the lecture-note synthesis of Paquette [Paq23].
+**Reading off consequences.** There are now a number of observations we cn extract from the Volterra equation $(54)$ that apply to the streaming SGD. Throughout, write $\bar\lambda := \int \lambda\,\mu_H(d\lambda) = \tfrac{1}{d}\operatorname{Tr} H$ for the average eigenvalue of $H$.
+
+**1. Critical stepsize.** Let us first compute the maximal stepsize $\gamma$ that keeps the Voltera model bounded. To this end, a direct computation shows that the total mass of the memory kernel is
+
+$$
+\int_0^\infty \mathcal{K}_\gamma(t)\,dt
+\;=\; \gamma^2 \int \int_0^\infty \lambda^2\, e^{-2\gamma\lambda t}\,dt\,\mu_H(d\lambda)
+\;=\; \gamma^2 \int \frac{\lambda^2}{2\gamma\lambda}\,\mu_H(d\lambda)
+\;=\; \frac{\gamma\bar\lambda}{2}. \tag{58}
+$$
+
+Define now the convolution operation $(f * g)(t) := \int_0^t f(t-s)\,g(s)\,ds$, so that $(54)$ reads as $\Psi = F(\gamma\,\cdot) + \mathcal{K}_\gamma * \Psi$. Substituting the equation into itself $n$ times unrolls it into
+
+$$
+\Psi \;=\; F(\gamma\,\cdot) \;+\; \mathcal{K}_\gamma * F(\gamma\,\cdot) \;+\; \mathcal{K}_\gamma^{*2} * F(\gamma\,\cdot) \;+\; \cdots \;+\; \mathcal{K}_\gamma^{*n} * F(\gamma\,\cdot) \;+\; \mathcal{K}_\gamma^{*(n+1)} * \Psi,
+$$
+
+where $\mathcal{K}_\gamma^{*n} := \mathcal{K}_\gamma * \cdots * \mathcal{K}_\gamma$ is the $n$-fold convolution. Each term in this sum is controlled by the kernel mass. Indeed, since we have $\mathcal{K}_\gamma \ge 0$ and $F \le F(0)$, we obtain
+
+$$
+\sup_{t \ge 0}\;\bigl(\mathcal{K}_\gamma^{*n} * F(\gamma\,\cdot)\bigr)(t) \;\le\; F(0)\int_0^\infty \mathcal{K}_\gamma^{*n}(t)\,dt \;=\; F(0)\Bigl(\frac{\gamma\bar\lambda}{2}\Bigr)^{\!n},
+$$
+
+where the last equality uses that the integral of a convolution is the product of the integrals. If the mass $\gamma\bar\lambda/2$ is $< 1$, these bounds form a convergent geometric series and the remainder term vanishes as $n \to \infty$, leaving the **Neumann series** $\Psi = \sum_{n\ge0} \mathcal{K}_\gamma^{*n} * F(\gamma\,\cdot)$ with $\sup_t \Psi(t) \le F(0)/(1 - \gamma\bar\lambda/2)$. If instead the mass is $\ge 1$ each term satisfies $(\mathcal{K}_\gamma^{*n} * F(\gamma\,\cdot))(t) \ge \tfrac12\sigma^2 \int_0^t \mathcal{K}_\gamma^{*n}(s)\,ds \to \tfrac12\sigma^2\,(\gamma\bar\lambda/2)^n$ as $t \to \infty$, so infinitely many terms each contribute at least $\tfrac12\sigma^2$, and $\Psi(t) \to \infty$. Streaming SGD therefore has a **critical stepsize**:
+
+$$
+\Psi \text{ remains bounded} \quad\Longleftrightarrow\quad \gamma \;<\; \gamma_c := \frac{2}{\bar\lambda} = \frac{2d}{\operatorname{Tr} H}.
+$$
+
+Thus, stability is governed by the *average* eigenvalue — the aggregate gradient noise generated across the whole spectrum — and not by $\lambda_{\max}$. Indeed, with stepsize $\gamma/d$, the classical curvature constraint of gradient descent reads $\gamma < 2d/\lambda_{\max}$. For the isotropic model $H = I$ we recover the threshold $\gamma_c = 2$ of the scalar ODE $(46)$.
+
+**2. The noise floor.** Fix $\gamma < \gamma_c$, so that $\Psi$ is bounded, and let us compute the value $\Psi(\infty) := \lim_{t\to\infty}\Psi(t)$ that the risk settles at (taking for granted that the limit exists, which can be justified). The idea is simply to pass to the limit $t \to \infty$ on both sides of $(54)$ and see what equation survives.
+
+Start with the forcing term. By $(57)$ we have $F(\gamma t) = \tfrac12\sigma^2 + \tfrac12\int \lambda\, e^{-2\gamma t\lambda}\,\nu(d\lambda)$, and every exponential with $\lambda > 0$ decays to zero (while $\lambda = 0$ contributes nothing because of the $\lambda$ weight in front). Hence $F(\gamma t) \to \tfrac12\sigma^2$: in the long run the gradient-flow part of the risk is gone and only the label noise remains.
+
+Next the convolution term. Change variables $u := t - s$ to put the kernel's argument in the integrand:
+
+$$
+\int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds \;=\; \int_0^t \mathcal{K}_\gamma(u)\,\Psi(t-u)\,du.
+$$
+
+As $t \to \infty$, the factor $\Psi(t-u)$ tends to $\Psi(\infty)$ for every fixed $u$; since $\Psi$ is bounded and $\mathcal{K}_\gamma$ is integrable, dominated convergence lets us pass the limit inside, and the right-hand side converges to $\Psi(\infty)\int_0^\infty \mathcal{K}_\gamma(u)\,du = \Psi(\infty)\cdot\tfrac{\gamma\bar\lambda}{2}$ by $(58)$. In words: at stationarity, the convolution simply weighs the (constant) risk by the total mass of the kernel.
+
+The Volterra equation thus collapses, in the limit, to a scalar fixed-point equation:
+
+$$
+\Psi(\infty) \;=\; \tfrac12\sigma^2 + \frac{\gamma\bar\lambda}{2}\,\Psi(\infty)
+\qquad\Longrightarrow\qquad
+\Psi(\infty) - \tfrac12\sigma^2 \;=\; \frac{\gamma\bar\lambda\,\sigma^2}{2\,(2 - \gamma\bar\lambda)}. \tag{59}
+$$
+
+The floor is proportional to $\gamma$ for small stepsizes and blows up as $\gamma \uparrow \gamma_c$. For $H = I$ it reduces to $\gamma\sigma^2/(2(2-\gamma))$, matching exactly the stationary value of the scalar ODE $(46)$.
+
+**3. Rate of convergence and stepsize criticality.** How fast $\Psi(t)$ approaches its floor is decided by a competition between the forcing and the kernel. The forcing $F(\gamma t)$ decays at the *gradient-flow* rate — $e^{-2\gamma\lambda_{\min} t}$ when $\lambda_{\min} := \min_i \lambda_i(H) > 0$ — while the homogeneous part of the renewal equation decays at the **Malthusian rate** $\lambda^*(\gamma)$, the root of
+
+$$
+\int_0^\infty e^{\lambda^* t}\,\mathcal{K}_\gamma(t)\,dt
+\;=\; \gamma^2 \int \int_0^\infty \lambda^2\, e^{-(2\gamma\lambda - \lambda^*)t}\,dt\,\mu_H(d\lambda)
+\;=\; \gamma^2 \int \frac{\lambda^2}{2\gamma\lambda - \lambda^*}\,\mu_H(d\lambda) \;=\; 1,
+\qquad \lambda^* \in (0,\, 2\gamma\lambda_{\min}), \tag{60}
+$$
+
+when a root exists; the overall rate is the smaller of the two. For small $\gamma$ the kernel is light, no root exists, and the risk decays at the gradient-flow rate $2\gamma\lambda_{\min}$, which *increases* with $\gamma$ — noise is a spectator. Beyond a spectrum-dependent threshold the Malthusian root appears and takes over, and as $\gamma \uparrow \gamma_c$ it *decreases to zero*: near criticality the gradient noise, endlessly recycled through the convolution, throttles convergence. The rate is therefore maximized at an interior stepsize $\gamma_{\mathrm{opt}} < \gamma_c$ — aggressive stepsizes are punished twice, by a slower transient and a higher floor $(59)$. For $H = I$, equation $(60)$ reads $\gamma^2/(2\gamma - \lambda^*) = 1$, giving $\lambda^*(\gamma) = 2\gamma - \gamma^2$ with optimum $\gamma_{\mathrm{opt}} = 1$ — exactly the decay rate of the scalar ODE $(46)$. For the gapless power-law spectra of Section 7 ($\lambda_{\min} = 0$), the forcing decays only polynomially while the kernel mass stays $\gamma\bar\lambda/2 < 1$: the renewal structure then leaves the polynomial exponent untouched, so one-pass SGD inherits the average-case gradient-descent rates of Section 7, with noise only inflating constants and adding the floor.
+
+**4. Critical batch size.** Suppose each update averages the gradient over a mini-batch of $B$ fresh samples. The drift of the diffusion is unchanged while the noise covariance — hence the kernel — is divided by $B$, so the kernel mass becomes $\gamma\bar\lambda/(2B)$ and the stability threshold scales linearly,
+
+$$
+\gamma_c(B) \;=\; \frac{2B}{\bar\lambda},
+$$
+
+a Volterra-style derivation of the *linear scaling rule* (stepsize proportional to batch size). Run at a fixed fraction of the threshold, $\gamma = \beta\,\gamma_c(B)$ with $\beta \in (0,1)$: the transient decays per epoch at the rate $2\gamma\lambda_{\min} = 4\beta B\lambda_{\min}/\bar\lambda$, so the number of *updates* to reach a fixed excess risk falls like $1/B$, while the number of *samples*,
+
+$$
+n \;\approx\; \frac{\operatorname{Tr} H}{4\beta\,\lambda_{\min}}\,\log(1/\varepsilon),
+$$
+
+is independent of $B$ — mini-batching is a perfect parallelizer. But this cannot continue forever: the discrete iteration must still respect the deterministic curvature constraint $\gamma < 2d/\lambda_{\max}$, which no amount of gradient averaging relaxes. The two ceilings cross at the **critical batch size**
+
+$$
+B_{\mathrm{crit}} \;=\; \frac{d\,\bar\lambda}{\lambda_{\max}} \;=\; \frac{\operatorname{Tr} H}{\lambda_{\max}(H)},
+$$
+
+the *effective rank* of the covariance. Below $B_{\mathrm{crit}}$ the noise ceiling binds and parallelism is free; above it the stepsize is pinned by curvature, the number of updates plateaus at the gradient-descent complexity $\sim \tfrac{\lambda_{\max}}{4\beta\lambda_{\min}}\log(1/\varepsilon)$, and the extra samples in each batch are wasted. In one sentence: *mini-batching buys linear speedup exactly until SGD has turned into gradient descent.* For $H = I$ this gives $B_{\mathrm{crit}} = d$; this is the same batch-saturation phenomenon we observed empirically for tail-averaged SGD in Section 8.
+
+The scalar-ODE reduction of Theorem 10.2 is in the spirit of Ben Arous, Gheissari, and Jagannath [BAGJ22] and goes back, in the neural-network context, to Saad and Solla [SS95]. The homogenized SGD comparison and the Volterra risk curve are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a, Paq+22b], with extensions in Collins-Woodfin and Paquette [CP23]. The stepsize-criticality analysis of the Volterra equation appears in Paquette, Lee, Pedregosa, and Paquette [PLPP21], and the batch-size saturation analysis in Lee, Cheng, Paquette, and Paquette [Lee+22]. We have followed the lecture-note synthesis of Paquette [Paq23].
 
 ---
 
@@ -3598,6 +3682,8 @@ The notes combine ideas that appear in different communities; the table below ma
 - [BAGJ22] Ben Arous, G., Gheissari, R., and Jagannath, A. (2022). *High-dimensional limit theorems for SGD: Effective dynamics and critical scaling*. Communications on Pure and Applied Mathematics, to appear. arXiv:2206.04030.
 - [Paq+22a] Paquette, C., Paquette, E., Adlam, B., and Pennington, J. (2022). *Homogenization of SGD in high-dimensions: exact dynamics and generalization properties*. arXiv:2205.07069.
 - [Paq+22b] Paquette, C., Paquette, E., Adlam, B., and Pennington, J. (2022). *Implicit regularization or implicit conditioning? Exact risk trajectories of SGD in high dimensions*. NeurIPS 2022. arXiv:2206.07252.
+- [PLPP21] Paquette, C., Lee, K., Pedregosa, F., and Paquette, E. (2021). *SGD in the Large: Average-case analysis, asymptotics, and stepsize criticality*. COLT 2021. arXiv:2102.04396.
+- [Lee+22] Lee, K., Cheng, A., Paquette, E., and Paquette, C. (2022). *Trajectory of mini-batch momentum: batch size saturation and convergence in high dimensions*. NeurIPS 2022. arXiv:2206.01029.
 - [CP23] Collins-Woodfin, E., and Paquette, E. (2023). *High-dimensional limit of one-pass SGD on least squares*. arXiv:2304.06847.
 - [Paq23] Paquette, E. (2023). *High-dimensional limits of stochastic gradient descent*. Lecture notes, Stochastic Methods and Computation Summer School, Lehigh University.
 - [Rug96] Rugh, W. J. (1996). *Linear System Theory* (2nd ed.). Prentice Hall. (State-transition matrix, variation-of-constants formula, and the differential Lyapunov equation.)

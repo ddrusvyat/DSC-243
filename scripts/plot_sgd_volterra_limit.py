@@ -149,7 +149,7 @@ def panel_vary_gamma(ax, sigma, n_epochs, d, gammas, n_trials, rng_master):
         ax.plot(epochs, med, "-", color=color, linewidth=1.6,
                 label=rf"$\gamma={gamma}$")
         t_grid, excess_Psi = deterministic_volterra(1024, sigma, gamma, n_epochs)
-        ax.plot(t_grid, excess_Psi, "--", color="black", linewidth=1.3, alpha=0.9)
+        ax.plot(t_grid, excess_Psi, "-", color="black", linewidth=1.3, alpha=0.9)
         gap = float(np.max(np.abs(np.interp(epochs, t_grid, excess_Psi) - med)))
         print(f"  gamma={gamma}: max |median SGD - Volterra| = {gap:.3e}")
     ax.set_yscale("log")
@@ -157,7 +157,7 @@ def panel_vary_gamma(ax, sigma, n_epochs, d, gammas, n_trials, rng_master):
     ax.set_xlabel(r"epoch $t = k/d$", fontsize=12)
     ax.set_ylabel(r"excess risk $L(w_{[td]}) - L(w_\ast)$", fontsize=12)
     ax.set_title(rf"Vary $\gamma$ at fixed $d={d}$ "
-                 rf"(solid: SGD, dashed: Volterra $\Psi$)", fontsize=11.5)
+                 rf"(color: SGD, black: Volterra $\Psi$)", fontsize=11.5)
     ax.grid(True, which="both", alpha=0.25)
     ax.legend(fontsize=9.5, loc="upper right", framealpha=0.95)
 
@@ -182,14 +182,14 @@ def panel_vary_d(ax, sigma, n_epochs, gamma, dims, n_trials, rng_master):
         print(f"  d={d}: R_final median = {med[-1]:.3e}, "
               f"max band (t>=2) = {band:.3e}")
     t_grid, excess_Psi = deterministic_volterra(1024, sigma, gamma, n_epochs)
-    ax.plot(t_grid, excess_Psi, "--", color="black", linewidth=1.8,
+    ax.plot(t_grid, excess_Psi, "-", color="black", linewidth=1.8,
             label=r"Volterra $\Psi(t) - \frac{1}{2}\sigma^2$ from (54)")
     ax.set_yscale("log")
     ax.set_xlim(0, n_epochs)
     ax.set_xlabel(r"epoch $t = k/d$", fontsize=12)
     ax.set_ylabel(r"excess risk $L(w_{[td]}) - L(w_\ast)$", fontsize=12)
     ax.set_title(rf"Fix $\gamma={gamma}$, vary $d$ "
-                 rf"(solid: SGD, dashed: Volterra limit)", fontsize=11.5)
+                 rf"(color: SGD, black: Volterra limit)", fontsize=11.5)
     ax.grid(True, which="both", alpha=0.25)
     ax.legend(fontsize=9.5, loc="upper right", framealpha=0.95)
 
