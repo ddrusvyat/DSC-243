@@ -505,7 +505,7 @@ We claim that these roots are real, simple, and lie in the interior of the conve
 
 $$r(\lambda):=\prod_{i=1}^m(\lambda-\xi_i)$$
 
-changes sign at exactly the same locations. After multiplying $r$ by $-1$ if necessary, we therefore have $\tilde p_N(\lambda)\,r(\lambda)\ge 0$ for every $\lambda\in \mathrm{supp}(\mu)$. Moreover, the product is not identically zero on $\mathrm{supp}(\mu)$: otherwise $\tilde p_N$ would vanish on all of $\mathrm{supp}(\mu)$ except possibly the $m$ points $\xi_i$, forcing the degree-$N$ polynomial $\tilde p_N$ to have too many zeros. Since we have $r\in \mathcal{P}_m\subseteq \mathcal{P}_{N-1}$, we get
+changes sign at exactly the same locations. After multiplying $r$ by $-1$ if necessary, we therefore have $\tilde p\_N(\lambda)\,r(\lambda)\ge 0$ for every $\lambda\in \mathrm{supp}(\mu)$. Moreover, the product is not identically zero on $\mathrm{supp}(\mu)$: otherwise $\tilde p\_N$ would vanish on all of $\mathrm{supp}(\mu)$ except possibly the $m$ points $\xi\_i$, forcing the degree-$N$ polynomial $\tilde p\_N$ to have too many zeros. Since we have $r\in \mathcal{P}\_m\subseteq \mathcal{P}\_{N-1}$, we get
 
 $$\int \tilde p_N(\lambda)\,r(\lambda)\,d\mu(\lambda)>0,$$
 

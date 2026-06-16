@@ -468,7 +468,7 @@ $$
 
 *Proof.* The linear rate follows directly from Theorem $3.1$: the $k$th iterate produced by the Chebyshev stepsizes lies in $x_0+\mathcal{K}_k(A,r_0)$, whereas the Krylov method minimizes $f$ over that entire affine space, and so cannot do worse.
 
-To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}_m$ with $p(0)=1$ for which $\sum_{i=1}^d \lambda_i\,c_i^2\,p(\lambda_i)^2 = 0$, since this forces $f(x_m) = f^\ast$ and hence $x_m = x^\ast$. Take
+To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}\_m$ with $p(0)=1$ for which $\sum\_{i=1}^d \lambda\_i\,c\_i^2\,p(\lambda\_i)^2 = 0$, since this forces $f(x\_m) = f^\ast$ and hence $x\_m = x^\ast$. Take
 
 $$
 p(\lambda):=\prod_{i=1}^m\left(1-\frac{\lambda}{\lambda_i}\right),

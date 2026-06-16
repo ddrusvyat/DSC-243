@@ -446,7 +446,7 @@ $$
 
 *Proof.* The linear rate follows directly from Theorem $3.1$: the $k$th iterate produced by the Chebyshev stepsizes lies in $x_0+\mathcal{K}_k(A,r_0)$, whereas the Krylov method minimizes $f$ over that entire affine space, and so cannot do worse.
 
-To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}_m$ with $p(0)=1$ for which $\sum_{i=1}^d \lambda_i\,c_i^2\,p(\lambda_i)^2 = 0$, since this forces $f(x_m) = f^\ast$ and hence $x_m = x^\ast$. Take
+To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}\_m$ with $p(0)=1$ for which $\sum\_{i=1}^d \lambda\_i\,c\_i^2\,p(\lambda\_i)^2 = 0$, since this forces $f(x\_m) = f^\ast$ and hence $x\_m = x^\ast$. Take
 
 $$
 p(\lambda):=\prod_{i=1}^m\left(1-\frac{\lambda}{\lambda_i}\right),
@@ -2542,7 +2542,7 @@ We claim that these roots are real, simple, and lie in the interior of the conve
 
 $$r(\lambda):=\prod_{i=1}^m(\lambda-\xi_i)$$
 
-changes sign at exactly the same locations. After multiplying $r$ by $-1$ if necessary, we therefore have $\tilde p_N(\lambda)\,r(\lambda)\ge 0$ for every $\lambda\in \mathrm{supp}(\mu)$. Moreover, the product is not identically zero on $\mathrm{supp}(\mu)$: otherwise $\tilde p_N$ would vanish on all of $\mathrm{supp}(\mu)$ except possibly the $m$ points $\xi_i$, forcing the degree-$N$ polynomial $\tilde p_N$ to have too many zeros. Since we have $r\in \mathcal{P}_m\subseteq \mathcal{P}_{N-1}$, we get
+changes sign at exactly the same locations. After multiplying $r$ by $-1$ if necessary, we therefore have $\tilde p\_N(\lambda)\,r(\lambda)\ge 0$ for every $\lambda\in \mathrm{supp}(\mu)$. Moreover, the product is not identically zero on $\mathrm{supp}(\mu)$: otherwise $\tilde p\_N$ would vanish on all of $\mathrm{supp}(\mu)$ except possibly the $m$ points $\xi\_i$, forcing the degree-$N$ polynomial $\tilde p\_N$ to have too many zeros. Since we have $r\in \mathcal{P}\_m\subseteq \mathcal{P}\_{N-1}$, we get
 
 $$\int \tilde p_N(\lambda)\,r(\lambda)\,d\mu(\lambda)>0,$$
 
@@ -3533,13 +3533,13 @@ $$
 \Psi \;=\; F(\gamma\,\cdot) \;+\; \mathcal{K}_\gamma * F(\gamma\,\cdot) \;+\; \mathcal{K}_\gamma^{*2} * F(\gamma\,\cdot) \;+\; \cdots \;+\; \mathcal{K}_\gamma^{*n} * F(\gamma\,\cdot) \;+\; \mathcal{K}_\gamma^{*(n+1)} * \Psi,
 $$
 
-where $\mathcal{K}_\gamma^{*n} := \mathcal{K}_\gamma * \cdots * \mathcal{K}_\gamma$ is the $n$-fold convolution. Each term in this sum is controlled by the kernel mass. Indeed, since we have $\mathcal{K}_\gamma \ge 0$ and $F \le F(0)$, we obtain
+where $\mathcal{K}\_\gamma^{\*n} := \mathcal{K}\_\gamma \* \cdots \* \mathcal{K}\_\gamma$ is the $n$-fold convolution. Each term in this sum is controlled by the kernel mass. Indeed, since we have $\mathcal{K}\_\gamma \ge 0$ and $F \le F(0)$, we obtain
 
 $$
 \sup_{t \ge 0}\;\bigl(\mathcal{K}_\gamma^{*n} * F(\gamma\,\cdot)\bigr)(t) \;\le\; F(0)\int_0^\infty \mathcal{K}_\gamma^{*n}(t)\,dt \;=\; F(0)\Bigl(\frac{\gamma\bar\lambda}{2}\Bigr)^{\!n},
 $$
 
-where the last equality uses that the integral of a convolution is the product of the integrals. If the mass $\gamma\bar\lambda/2$ is $< 1$, these bounds form a convergent geometric series and the remainder term vanishes as $n \to \infty$, leaving the **Neumann series** $\Psi = \sum_{n\ge0} \mathcal{K}_\gamma^{*n} * F(\gamma\,\cdot)$ with $\sup_t \Psi(t) \le F(0)/(1 - \gamma\bar\lambda/2)$. If instead the mass is $\ge 1$ each term satisfies $(\mathcal{K}_\gamma^{*n} * F(\gamma\,\cdot))(t) \ge \tfrac12\sigma^2 \int_0^t \mathcal{K}_\gamma^{*n}(s)\,ds \to \tfrac12\sigma^2\,(\gamma\bar\lambda/2)^n$ as $t \to \infty$, so infinitely many terms each contribute at least $\tfrac12\sigma^2$, and $\Psi(t) \to \infty$. Streaming SGD therefore has a **critical stepsize**:
+where the last equality uses that the integral of a convolution is the product of the integrals. If the mass $\gamma\bar\lambda/2$ is $< 1$, these bounds form a convergent geometric series and the remainder term vanishes as $n \to \infty$, leaving the **Neumann series** $\Psi = \sum\_{n\ge0} \mathcal{K}\_\gamma^{\*n} \* F(\gamma\,\cdot)$ with $\sup\_t \Psi(t) \le F(0)/(1 - \gamma\bar\lambda/2)$. If instead the mass is $\ge 1$ each term satisfies $(\mathcal{K}\_\gamma^{\*n} \* F(\gamma\,\cdot))(t) \ge \tfrac12\sigma^2 \int\_0^t \mathcal{K}\_\gamma^{\*n}(s)\,ds \to \tfrac12\sigma^2\,(\gamma\bar\lambda/2)^n$ as $t \to \infty$, so infinitely many terms each contribute at least $\tfrac12\sigma^2$, and $\Psi(t) \to \infty$. Streaming SGD therefore has a **critical stepsize**:
 
 $$
 \Psi \text{ remains bounded} \quad\Longleftrightarrow\quad \gamma \;<\; \gamma_c := \frac{2}{\bar\lambda} = \frac{2d}{\operatorname{Tr} H}.
@@ -3555,7 +3555,7 @@ $$
 \int_0^t \mathcal{K}_\gamma(t-s)\,\Psi(s)\,ds \;=\; \int_0^t \mathcal{K}_\gamma(u)\,\Psi(t-u)\,du.
 $$
 
-As $t \to \infty$, the factor $\Psi(t-u)$ tends to $\Psi(\infty)$ for every fixed $u$; since $\Psi$ is bounded and $\mathcal{K}_\gamma$ is integrable, dominated convergence lets us pass the limit inside, and the right-hand side converges to $\Psi(\infty)\int_0^\infty \mathcal{K}_\gamma(u)\,du = \Psi(\infty)\cdot\tfrac{\gamma\bar\lambda}{2}$ by $(58)$. 
+As $t \to \infty$, the factor $\Psi(t-u)$ tends to $\Psi(\infty)$ for every fixed $u$; since $\Psi$ is bounded and $\mathcal{K}\_\gamma$ is integrable, dominated convergence lets us pass the limit inside, and the right-hand side converges to $\Psi(\infty)\int\_0^\infty \mathcal{K}\_\gamma(u)\,du = \Psi(\infty)\cdot\tfrac{\gamma\bar\lambda}{2}$ by $(58)$. 
 
 Thus in the limit $t\to \infty$ the Volterra equation collapses to a scalar fixed-point equation:
 
