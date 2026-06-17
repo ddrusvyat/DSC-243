@@ -7,6 +7,8 @@ title: DSC 243 – Convex Quadratics
 
 *DSC 243 — Advanced Optimization*
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20726281.svg)](https://doi.org/10.5281/zenodo.20726281)
+
 **Instructor:** [Dmitriy Drusvyatskiy](mailto:ddrusvyatskiy@ucsd.edu)
 
 **Lectures:** MWF 10:00–10:50 AM in PCYNH 121
@@ -95,7 +97,7 @@ This course is largely self-contained with no required textbook. Specific result
 
 ## How to cite
 
-If you find these notes useful, please cite them. A BibTeX entry:
+If you find these notes useful, please cite them. The notes are archived on Zenodo with a permanent DOI: [10.5281/zenodo.20726281](https://doi.org/10.5281/zenodo.20726281) (this concept DOI always resolves to the latest version). A BibTeX entry:
 
 ```bibtex
 @misc{Drusvyatskiy2026ConvexQuadratics,
@@ -103,8 +105,8 @@ If you find these notes useful, please cite them. A BibTeX entry:
   title        = {Convex Quadratics: Algorithms, Spectra, and Scaling Limits},
   year         = {2026},
   howpublished = {Lecture notes, DSC 243, University of California, San Diego},
-  note         = {Accessed: \today},
-  url          = {https://ddrusvyat.github.io/DSC-243/}
+  doi          = {10.5281/zenodo.20726281},
+  url          = {https://doi.org/10.5281/zenodo.20726281}
 }
 ```
 
