@@ -957,7 +957,7 @@ The scalar-ODE reduction of Theorem 10.2 is in the spirit of Ben Arous, Gheissar
 
 ## Related Literature {#related}
 
-The results discussed in these notes are largely classical in numerical optimization, Krylov methods, inverse problems, and random matrix theory. The novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
+The high-dimensional scaling limits of streaming SGD developed in this part connect to recent work on diffusion (SDE) approximations of stochastic algorithms and to average-case analysis in high dimension. The references below collect the relevant sources.
 
 - **High-dimensional limits of streaming SGD.** The scalar-ODE reduction in §10.1--10.2 is an old idea in the physics literature on two-layer neural networks going back to Saad and Solla [SS95], and has been given a rigorous and general formulation by Ben Arous, Gheissari, and Jagannath [BAGJ22]. The homogenized-SGD SDE and the Volterra risk curve of §10.3--10.5 are due to Paquette, Paquette, Adlam, and Pennington [Paq+22a] and were further developed in [Paq+22b, CP23]; the lecture notes [Paq23] provide the expository synthesis we have followed.
 

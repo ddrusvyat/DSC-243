@@ -816,7 +816,7 @@ The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional qua
 
 ## Related Literature {#related}
 
-The results discussed in these notes are largely classical in numerical optimization, Krylov methods, inverse problems, and random matrix theory. The novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
+The material in this part---linear convergence of gradient descent, Chebyshev/semi-iterative acceleration, and the conjugate gradient method---is classical in numerical optimization and Krylov subspace theory. The references below collect the standard sources; our presentation emphasizes the unifying role of minimax polynomials on the spectrum of $H$.
 
 - **Gradient descent and first-order complexity.** Linear-rate GD analysis for strongly convex quadratics and condition-number dependence are standard; see [Pol64, Nes04, Nes18].
 - **Chebyshev acceleration and semi-iterative methods.** The minimax polynomial viewpoint and Chebyshev stepsizes are classical; see [Var62, You71, Saa03].

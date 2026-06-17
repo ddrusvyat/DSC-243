@@ -1421,7 +1421,7 @@ The Kaczmarz method itself, in its deterministic cyclic form, dates back to Kacz
 
 ## Related Literature {#related}
 
-The results discussed in these notes are largely classical in numerical optimization, Krylov methods, inverse problems, and random matrix theory. The novelty of these notes is mostly **synthesis and alignment of viewpoints**: optimization complexity bounds, Krylov polynomial optimality, source-condition regularity, and random-matrix spectral asymptotics are presented in one unified quadratic framework.
+This part draws on several distinct bodies of work: the regularization theory of inverse problems (source conditions and spectral-decay rates), random matrix theory (Marchenko--Pastur asymptotics), the average-case analysis of optimization complexity, and the study of stochastic gradient and randomized Kaczmarz methods for least squares. The references below are organized by these themes.
 
 - **Source conditions and spectral-decay rates.** The source-condition framework and decay-dependent rates are standard in inverse problems and regularization theory; see [EHN96, Han95].
 - **Marchenko--Pastur asymptotics.** The limiting spectral law is due to [MP67], with modern expositions in [BS10, Ver18].

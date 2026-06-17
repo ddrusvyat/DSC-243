@@ -51,6 +51,31 @@ BULLET_PART = {
     "High-dimensional limits of streaming SGD.": 4,
 }
 
+# part-specific opening paragraph for the Related Literature section, so the
+# four documents are not repetitive
+REL_INTRO = {
+    1: "The material in this part---linear convergence of gradient descent, "
+       "Chebyshev/semi-iterative acceleration, and the conjugate gradient "
+       "method---is classical in numerical optimization and Krylov subspace "
+       "theory. The references below collect the standard sources; our "
+       "presentation emphasizes the unifying role of minimax polynomials on "
+       "the spectrum of $H$.",
+    2: "This part draws on several distinct bodies of work: the regularization "
+       "theory of inverse problems (source conditions and spectral-decay "
+       "rates), random matrix theory (Marchenko--Pastur asymptotics), the "
+       "average-case analysis of optimization complexity, and the study of "
+       "stochastic gradient and randomized Kaczmarz methods for least squares. "
+       "The references below are organized by these themes.",
+    3: "The lower bounds developed in this part build on the classical "
+       "complexity theory of first-order methods and its more recent "
+       "extension to stochastic algorithms on least-squares problems. The "
+       "references below collect the relevant sources.",
+    4: "The high-dimensional scaling limits of streaming SGD developed in this "
+       "part connect to recent work on diffusion (SDE) approximations of "
+       "stochastic algorithms and to average-case analysis in high dimension. "
+       "The references below collect the relevant sources.",
+}
+
 # references listed in the notes but never cited in the visible text;
 # they are further reading for the Kaczmarz/sketching and orthogonal
 # polynomial material of part 2
@@ -295,7 +320,7 @@ def main():
         body = add_equation_anchors("\n".join(body_lines))
 
         # ---- related literature + references + summary for this part
-        rel = [intro, ""]
+        rel = [REL_INTRO[part], ""]
         rel += [b for p, b in bullets if p == part]
         if part == 2:
             rel += ["", comment]
