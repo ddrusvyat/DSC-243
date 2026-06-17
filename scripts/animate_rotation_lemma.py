@@ -136,7 +136,7 @@ def main() -> None:
     ax_grid.set_xlabel("round")
     ax_grid.set_ylabel(r"rotated coordinate $i$")
     ax_grid.set_title(
-        r"$(Q^\top x_t)_i$  —  past columns are frozen once written",
+        r"$(Q^\top w_t)_i$  —  past columns are frozen once written",
         fontsize=12,
     )
     for j in np.arange(0.5, n_rounds - 0.5, 1):
@@ -145,7 +145,7 @@ def main() -> None:
         ax_grid.axhline(i, color="white", linewidth=0.4)
 
     cbar = fig.colorbar(img, ax=ax_grid, fraction=0.045, pad=0.02)
-    cbar.set_label(r"$(Q^\top x_t)_i$")
+    cbar.set_label(r"$(Q^\top w_t)_i$")
 
     # Region highlighting E_{2t+1} on the current column.
     region = patches.Rectangle(
@@ -213,9 +213,9 @@ def main() -> None:
                 bar.set_edgecolor(edge_free)
 
         suptitle.set_text(
-            rf"Round $t = {t}$: algorithm queries $x_{{{t}}}$, "
+            rf"Round $t = {t}$: algorithm queries $w_{{{t}}}$, "
             rf"we commit $q_{{{new_start + 1}}}, q_{{{new_start + 2}}}$ (orange) → "
-            rf"$Q^\top x_{{{t}}} \in E_{{{2 * t + 1}}}$"
+            rf"$Q^\top w_{{{t}}} \in E_{{{2 * t + 1}}}$"
         )
         return [img, region, suptitle] + list(bars_q)
 

@@ -90,12 +90,12 @@ def main() -> None:
     legend_handles = [
         Line2D([0], [0], color="black", linewidth=2.0, label="Marchenko-Pastur density"),
         Patch(facecolor=bulk_colors[0], alpha=0.55, edgecolor="white",
-              label=r"empirical spectrum of $A$"),
+              label=r"empirical spectrum of $H$"),
     ]
     axes[0].legend(handles=legend_handles, loc="upper right", fontsize=9, framealpha=0.9)
 
     fig.suptitle(
-        r"Empirical spectrum of $A=\frac{1}{n}X^{\top} X$"
+        r"Empirical spectrum of $H=\frac{1}{n}X^{\top} X$"
         r" vs. Marchenko-Pastur law   ($d/n\to\gamma$,  $n\to\infty$)",
         fontsize=13.5, y=1.01,
     )

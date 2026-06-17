@@ -34,16 +34,16 @@ In these notes we study optimization algorithms for the  **convex quadratic opti
 
 We consider the quadratic minimization problem
 
-$$\min_{x \in \mathbb{R}^d} \; f(x) = \tfrac{1}{2} x^\top A x - b^\top x,$$
+$$\min_{w \in \mathbb{R}^d} \; f(w) = \tfrac{1}{2} w^\top H w - b^\top w,$$
 
-where $A \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matrix, meaning $A = A^\top$ and $v^\top A v \geq 0$ for all $v \in \mathbb{R}^d$. The gradient of $f$ is
+where $H \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matrix, meaning $H = H^\top$ and $v^\top H v \geq 0$ for all $v \in \mathbb{R}^d$. The gradient of $f$ is
 
-$$\nabla f(x) = Ax - b.$$
+$$\nabla f(w) = Hw - b.$$
 
-In particular, minimizing $f$ is equivalent to solving the linear system $Ax=b$. Note that this linear system is special in  that $A$ is a positive semidefinite matrix---a property with important consequences for numerical methods. Throughout, we let $x^\ast$ be any minimizer of $f$ and set $f^\ast:=f(x^\ast)$.
+In particular, minimizing $f$ is equivalent to solving the linear system $Hw=b$. Note that this linear system is special in  that $H$ is a positive semidefinite matrix---a property with important consequences for numerical methods. Throughout, we let $w_\ast$ be any minimizer of $f$ and set $f^\ast:=f(w_\ast)$.
 
 
-We denote the eigenvalues of $A$ by
+We denote the eigenvalues of $H$ by
 
 $$
 0 \leq  \alpha = \lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_d = \beta
@@ -54,79 +54,79 @@ When $\alpha > 0$, we denote the **condition number** by $\kappa = \beta / \alph
 A key example of convex quadratic optimization is **linear least squares**:
 
 $$
-\min_{x \in \mathbb{R}^d} \;\tfrac{1}{2}\|Dx - y\|^2,
+\min_{w \in \mathbb{R}^d} \;\tfrac{1}{2}\|Xw - y\|^2,
 $$
 
-under the correspondence $A = D^\top D$ and $b = D^\top y$. In applications, $D \in \mathbb{R}^{m \times d}$ is usually a data matrix and $y \in \mathbb{R}^m$ is a vector of observations. 
+under the correspondence $H = X^\top X$ and $b = X^\top y$. In applications, $X \in \mathbb{R}^{n \times d}$ is usually a data matrix and $y \in \mathbb{R}^n$ is a vector of observations. 
 
 
-**Why convex quadratic minimization?** The linear system $Ax = b$ arises everywhere: in linear regression for inference, as a subroutine in Newton's method and interior-point algorithms, and as a building block for preconditioning. Understanding how to solve the linear system iteratively is fundamental.
+**Why convex quadratic minimization?** The linear system $Hw = b$ arises everywhere: in linear regression for inference, as a subroutine in Newton's method and interior-point algorithms, and as a building block for preconditioning. Understanding how to solve the linear system iteratively is fundamental.
 
 ---
 
 ## 2. Gradient Descent: linear convergence with constant stepsize {#sec-2}
 
-We will be interested in algorithms that access the matrix $A$ only by evaluating matrix-vector products $v\mapsto Av$ for any query vector $v$. This **matrix-free** abstraction is powerful for several reasons:
+We will be interested in algorithms that access the matrix $H$ only by evaluating matrix-vector products $v\mapsto Hv$ for any query vector $v$. This **matrix-free** abstraction is powerful for several reasons:
 
-- **Storage.** In many applications $A$ is never formed explicitly. For instance, in least squares with $A = D^\top D$, the product $Av = D^\top(Dv)$ can be computed using two matrix-vector products with $D$ and $D^\top$, which costs $O(md)$ operations and requires storing only $D \in \mathbb{R}^{m \times d}$ rather than the $d \times d$ matrix $A$. When $m \ll d$, or when $D$ is sparse/structured, this can be a major saving.
+- **Storage.** In many applications $H$ is never formed explicitly. For instance, in least squares with $H = X^\top X$, the product $Hv = X^\top(Xv)$ can be computed using two matrix-vector products with $X$ and $X^\top$, which costs $O(nd)$ operations and requires storing only $X \in \mathbb{R}^{n \times d}$ rather than the $d \times d$ matrix $H$. When $n \ll d$, or when $X$ is sparse/structured, this can be a major saving.
 
 - **Structure.** Many matrices arising in practice (e.g., discrete Laplacians, convolution operators, fast transforms) admit fast matrix-vector products via the FFT or other algorithms, costing $O(d \log d)$ or even $O(d)$ per product—far less than the $O(d^2)$ cost of a general dense multiply, and enormously less than the $O(d^3)$ cost of a direct factorization.
 
-- **Generality.** By treating $A$ as a "black box" that we can only query through products, we obtain algorithms that work unchanged whether $A$ is dense, sparse, or defined only implicitly through an operator. This abstraction cleanly separates the optimization algorithm from the problem-specific details of how $A$ acts on vectors.
+- **Generality.** By treating $H$ as a "black box" that we can only query through products, we obtain algorithms that work unchanged whether $H$ is dense, sparse, or defined only implicitly through an operator. This abstraction cleanly separates the optimization algorithm from the problem-specific details of how $H$ acts on vectors.
 
-All three methods studied this week---gradient descent, Chebyshev-accelerated gradient descent, and CG---are matrix-free: their only access to $A$ is through one matrix-vector product per iteration.
+All three methods studied this week---gradient descent, Chebyshev-accelerated gradient descent, and CG---are matrix-free: their only access to $H$ is through one matrix-vector product per iteration.
 
 ### Algorithm
 
-Starting from $x_0 \in \mathbb{R}^d$, gradient descent with stepsize $\eta > 0$ iterates
+Starting from $w_0 \in \mathbb{R}^d$, gradient descent with stepsize $\eta > 0$ iterates
 
 <a id="eq-1"></a>
 
 $$
 \begin{aligned}
-x_{k+1} = x_k - \eta \nabla f(x_k) &= x_k - \eta(Ax_k - b) \\
-         &= x_k - \eta A(x_k - x^\ast),
+w_{k+1} = w_k - \eta \nabla f(w_k) &= w_k - \eta(Hw_k - b) \\
+         &= w_k - \eta H(w_k - w_\ast),
 \end{aligned}
 \tag{1}
 $$
 
-where $x^\ast$ is any minimizer of $f$, i.e. one satisfying $Ax^\ast=b$.
+where $w_\ast$ is any minimizer of $f$, i.e. one satisfying $Hw_\ast=b$.
 
 ### Error recurrence
 
-To analyze gradient descent, we introduce the **error vector** $e_k = x_k - x^\ast$. Subtracting $x^\ast$ from both sides of $(1)$ yields
+To analyze gradient descent, we introduce the **error vector** $e_k = w_k - w_\ast$. Subtracting $w_\ast$ from both sides of $(1)$ yields
 
-$$e_{k+1} = (I - \eta A)\, e_k.$$
+$$e_{k+1} = (I - \eta H)\, e_k.$$
 
-Unrolling the recurrence gives $e_k = (I - \eta A)^k e_0$. Next, observe that the function value gap can be expressed in terms of $e_k$ as
+Unrolling the recurrence gives $e_k = (I - \eta H)^k e_0$. Next, observe that the function value gap can be expressed in terms of $e_k$ as
 
 $$
 \begin{aligned}
-f(x_k) - f^\ast
-&= \tfrac{1}{2} x_k^\top A x_k - b^\top x_k - \tfrac{1}{2} (x^\ast)^\top A x^\ast + b^\top x^\ast \\
-&= \tfrac{1}{2} x_k^\top A x_k - (Ax^\ast)^\top x_k - \tfrac{1}{2} (x^\ast)^\top A x^\ast + (Ax^\ast)^\top x^\ast \\
-&= \tfrac{1}{2} (x_k - x^\ast)^\top A\, (x_k - x^\ast) \\
-&= \tfrac{1}{2}\, e_k^\top A\, e_k \\
-&=: \tfrac{1}{2}\|e_k\|_A^2,
+f(w_k) - f^\ast
+&= \tfrac{1}{2} w_k^\top H w_k - b^\top w_k - \tfrac{1}{2} (w_\ast)^\top H w_\ast + b^\top w_\ast \\
+&= \tfrac{1}{2} w_k^\top H w_k - (Hw_\ast)^\top w_k - \tfrac{1}{2} (w_\ast)^\top H w_\ast + (Hw_\ast)^\top w_\ast \\
+&= \tfrac{1}{2} (w_k - w_\ast)^\top H\, (w_k - w_\ast) \\
+&= \tfrac{1}{2}\, e_k^\top H\, e_k \\
+&=: \tfrac{1}{2}\|e_k\|_H^2,
 \end{aligned}
 $$
 
-where $\lVert v\rVert _A = \sqrt{v^\top A v}$ is the **$A$-norm**---a measure of length that is adapted to the spectrum of $A$. This is the natural norm for measuring progress on quadratic problems.
+where $\lVert v\rVert _H = \sqrt{v^\top H v}$ is the **$H$-norm**---a measure of length that is adapted to the spectrum of $H$. This is the natural norm for measuring progress on quadratic problems.
 
 ### Convergence for a general stepsize
 
-Let $v_1, \ldots, v_d$ be an orthonormal eigenbasis of $A$ with $Av_i = \lambda_i v_i$. Expanding the initial error as $e_0 = \sum_{i=1}^d c_i v_i$, the error at step $k$ is
+Let $v_1, \ldots, v_d$ be an orthonormal eigenbasis of $H$ with $Hv_i = \lambda_i v_i$. Expanding the initial error as $e_0 = \sum_{i=1}^d c_i v_i$, the error at step $k$ is
 
 $$
 \begin{aligned}
-e_k &= (I - \eta A)^k\, e_0 = (I - \eta A)^k \sum_{i=1}^d c_i\, v_i = \sum_{i=1}^d c_i\, (I - \eta A)^k\, v_i = \sum_{i=1}^d c_i\, (1 - \eta\lambda_i)^k\, v_i.
+e_k &= (I - \eta H)^k\, e_0 = (I - \eta H)^k \sum_{i=1}^d c_i\, v_i = \sum_{i=1}^d c_i\, (I - \eta H)^k\, v_i = \sum_{i=1}^d c_i\, (1 - \eta\lambda_i)^k\, v_i.
 \end{aligned}
 $$
 
-The $A$-norm of the error therefore satisfies
+The $H$-norm of the error therefore satisfies
 
 $$
-\|e_k\|_A^2 = \sum_{i=1}^d \lambda_i (1 - \eta\lambda_i)^{2k}\, c_i^2 \leq \max_{1 \leq i \leq d} (1 - \eta\lambda_i)^{2k} \cdot \sum_{i=1}^d \lambda_i\, c_i^2 = \rho(\eta)^{2k}\, \|e_0\|_A^2,
+\|e_k\|_H^2 = \sum_{i=1}^d \lambda_i (1 - \eta\lambda_i)^{2k}\, c_i^2 \leq \max_{1 \leq i \leq d} (1 - \eta\lambda_i)^{2k} \cdot \sum_{i=1}^d \lambda_i\, c_i^2 = \rho(\eta)^{2k}\, \|e_0\|_H^2,
 $$
 
 where we set
@@ -143,7 +143,7 @@ We have thus proved the following.
 
 **Theorem 2.1 (Gradient descent).** *For any $\eta \in (0, \tfrac{2}{\beta})$ the inclusion $\rho(\eta)\in (0,1)$ holds and the gradient descent iterates enjoy the linear rate of convergence:*
 
-$$f(x_k) - f^\ast \leq \rho(\eta)^{2k}\,\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
+$$f(w_k) - f^\ast \leq \rho(\eta)^{2k}\,\bigl(f(w_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
@@ -162,7 +162,7 @@ $$\eta^\ast = \frac{2}{\beta + \alpha}.$$
 
 **Corollary 2.1 (Optimal fixed stepsize).** *Suppose $\alpha>0$ and set $\eta = \eta^\ast = \frac{2}{\beta+\alpha}$. Then gradient descent satisfies*
 
-$$f(x_k) - f^\ast \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
+$$f(w_k) - f^\ast \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^{2k}\bigl(f(w_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
@@ -176,7 +176,7 @@ The result follows from Theorem 2.1. <span style="float: right;">$\square$</span
 
 ### The practical stepsize $\eta = 1/\beta$
 
-The optimal stepsize $\eta^\ast = 2/(\beta+\alpha)$ requires knowledge of both the largest and smallest eigenvalues of $A$. In practice, the smallest eigenvalue $\alpha$ is often unknown or expensive to estimate. A natural and widely used alternative is the stepsize $\eta = 1/\beta$, which requires only an upper bound on the spectrum.
+The optimal stepsize $\eta^\ast = 2/(\beta+\alpha)$ requires knowledge of both the largest and smallest eigenvalues of $H$. In practice, the smallest eigenvalue $\alpha$ is often unknown or expensive to estimate. A natural and widely used alternative is the stepsize $\eta = 1/\beta$, which requires only an upper bound on the spectrum.
 
 <a id="cor-2-2"></a>
 
@@ -184,7 +184,7 @@ The optimal stepsize $\eta^\ast = 2/(\beta+\alpha)$ requires knowledge of both t
 
 **Corollary 2.2 (Stepsize $1/\beta$).** *Suppose $\alpha>0$ and set $\eta = 1/\beta$. Then gradient descent satisfies*
 
-$$f(x_k) - f^\ast \leq \left(1 - \frac{1}{\kappa}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
+$$f(w_k) - f^\ast \leq \left(1 - \frac{1}{\kappa}\right)^{2k}\bigl(f(w_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
@@ -198,17 +198,17 @@ which completes the proof. <span style="float: right;">$\square$</span>
 
 ### Iteration complexity
 
-So far we have described how the suboptimality $f(x_k)-f^\ast$ decays with the iteration count. In order to compare performance of different algorithms, such as GD with different stepsizes, it is instructive to shift focus to iteration complexity. Namely, the **iteration complexity** of the algorithm is *how many iterations suffice for it to reach a target accuracy $\varepsilon$?*
+So far we have described how the suboptimality $f(w_k)-f^\ast$ decays with the iteration count. In order to compare performance of different algorithms, such as GD with different stepsizes, it is instructive to shift focus to iteration complexity. Namely, the **iteration complexity** of the algorithm is *how many iterations suffice for it to reach a target accuracy $\varepsilon$?*
 
 
 
 
  A simple way to estimate iteration complexity of linearly convergent algorithms is as follows.  Given an inequality $s\leq  (1-q)^{k}c$ with $q\in (0,1)$, we may upper bound the right side by an exponential
-$$s\leq c(1-q)^{k}\leq c\exp(-qk)$$and then set the right side to $\varepsilon$. We may then be sure that the inequality $s\leq \varepsilon$ holds after $k\geq \lceil q^{-1}\log\left(\frac{c}{\varepsilon}\right) \rceil$ iterations. Using this strategy with Theorem 2.1 and Corollary 2.2 shows that GD with either choice of stepsize $\frac{2}{\beta+\alpha}$ or $\frac{1}{\beta}$ enjoys iteration complexity $\kappa\cdot\log(\frac{f(x_0)-f^\ast}{\varepsilon})$ up to a multiplication by a numerical constant.
+$$s\leq c(1-q)^{k}\leq c\exp(-qk)$$and then set the right side to $\varepsilon$. We may then be sure that the inequality $s\leq \varepsilon$ holds after $k\geq \lceil q^{-1}\log\left(\frac{c}{\varepsilon}\right) \rceil$ iterations. Using this strategy with Theorem 2.1 and Corollary 2.2 shows that GD with either choice of stepsize $\frac{2}{\beta+\alpha}$ or $\frac{1}{\beta}$ enjoys iteration complexity $\kappa\cdot\log(\frac{f(w_0)-f^\ast}{\varepsilon})$ up to a multiplication by a numerical constant.
 
 
 
-The change of perspective---from the rate of convergence to iteration complexity---is also valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$ and the **logarithmic dependence on accuracy and initialization scale** $\log(\frac{f(x_0)-f^\ast}{\varepsilon})$.
+The change of perspective---from the rate of convergence to iteration complexity---is also valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$ and the **logarithmic dependence on accuracy and initialization scale** $\log(\frac{f(w_0)-f^\ast}{\varepsilon})$.
 
 ### Visualizing the effect of condition number
 
@@ -216,7 +216,7 @@ The following animation shows gradient descent on two quadratics with the same s
 
 ![Gradient descent: well-conditioned vs ill-conditioned](figures/gd_condition.gif)
 
-As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\bigl(f(x_k)-f^\ast\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
+As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\bigl(f(w_k)-f^\ast\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
 
 ![GD with stepsize 1/beta for varying condition numbers](figures/gd_condition_number_performance.png)
 
@@ -228,26 +228,26 @@ At this point we have extracted essentially the best guarantee available from on
 ## 3. Acceleration by Chebyshev Stepsizes {#sec-3}
 
 
-The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value after $k$ iteration using a fixed step-size; in essence, the argument reduced to choosing a fixed step-size that guarantees the largest function value decrease in a single step and then iterating the bound. We now show that by monitoring performance across the entire time horizon, it is possible to choose a **time-varying stepsize** that yields a much faster rate of convergence. To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = x_j - x^\ast$ evolves as $e_{j+1} = (I - \eta_j A)\,e_j$. Therefore, after $k$ steps we have:
+The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value after $k$ iteration using a fixed step-size; in essence, the argument reduced to choosing a fixed step-size that guarantees the largest function value decrease in a single step and then iterating the bound. We now show that by monitoring performance across the entire time horizon, it is possible to choose a **time-varying stepsize** that yields a much faster rate of convergence. To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = w_j - w_\ast$ evolves as $e_{j+1} = (I - \eta_j H)\,e_j$. Therefore, after $k$ steps we have:
 
-$$e_k = (I - \eta_{k-1}A)(I - \eta_{k-2}A)\cdots(I - \eta_0 A)\,e_0 = p_k(A)\,e_0,$$
+$$e_k = (I - \eta_{k-1}H)(I - \eta_{k-2}H)\cdots(I - \eta_0 H)\,e_0 = p_k(H)\,e_0,$$
 
 where $p_k$ is the degree-$k$ polynomial
 
 $$p_k(\lambda) = \prod_{j=0}^{k-1}(1 - \eta_j \lambda).$$
 
-Note that we have $p_k(0) = 1$ regardless of the choice of stepsizes. Expanding $e_k$ in the eigenbasis of $A$ as before yields:
+Note that we have $p_k(0) = 1$ regardless of the choice of stepsizes. Expanding $e_k$ in the eigenbasis of $H$ as before yields:
 
 $$
 \begin{aligned}
-f(x_k) - f^\ast = \tfrac{1}{2}\|e_k\|_A^2
-&= \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, p_k(\lambda_i)^2\, c_i^2 \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2 \cdot \tfrac{1}{2}\|e_0\|_A^2.
+f(w_k) - f^\ast = \tfrac{1}{2}\|e_k\|_H^2
+&= \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, p_k(\lambda_i)^2\, c_i^2 \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2 \cdot \tfrac{1}{2}\|e_0\|_H^2.
 \end{aligned}
 $$
 
 Rearranging we deduce
 
-$$\frac{f(x_k) - f^\ast}{f(x_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
+$$\frac{f(w_k) - f^\ast}{f(w_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
 
 
 
@@ -262,9 +262,9 @@ where $\mathcal{P}^r_k$ denotes the set of polynomials of degree at most $k$ wit
 
 ### Chebyshev polynomials
 
-The **Chebyshev polynomial of the first kind** of degree $k$, denoted $T_k$, is defined recursively: set $T_0(x) = 1$ and $T_1(x) = x$ and define
+The **Chebyshev polynomial of the first kind** of degree $k$, denoted $T_k$, is defined recursively: set $T_0(w) = 1$ and $T_1(w) = w$ and define
 
-$$T_{k+1}(x) = 2x\,T_k(x) - T_{k-1}(x) \qquad \forall k\geq 1.$$
+$$T_{k+1}(w) = 2w\,T_k(w) - T_{k-1}(w) \qquad \forall k\geq 1.$$
 
 An equivalent characterization of Chebyshev polynomials is the expression
 
@@ -274,9 +274,9 @@ $$
 
 Chebyshev polynomials play a special role in numerical analysis because they solve the extremal problem:
 
-> Any degree-$k$ polynomial $p(x)$ with the same leading coefficient as $T_k$ satisfies
+> Any degree-$k$ polynomial $p(w)$ with the same leading coefficient as $T_k$ satisfies
 >
-> $$\max_{x\in [-1,1]} \lvert p(x)\rvert\geq \max_{x\in [-1,1]} \lvert T_k(x)\rvert=1.$$
+> $$\max_{w\in [-1,1]} \lvert p(w)\rvert\geq \max_{w\in [-1,1]} \lvert T_k(w)\rvert=1.$$
 
 In words, among all degree-$k$ polynomials with the same leading coefficient as $T_k$, the Chebyshev polynomial $T_k$ has the smallest maximum absolute value on $[-1,1]$. See the figure below that illustrates a few Chebyshev polynomial $T_k$. 
 
@@ -329,7 +329,7 @@ $$\min_{\substack{p \in \mathcal{P}^r_k \\ p(0) = 1}} \max_{\lambda \in [\alpha,
 
 </div>
 
-*Proof.* We already proved the first inequality. For the second inequality, we use the identity $T_k(x) = \cosh(k\,\operatorname{arccosh}(x))$ valid for every real number $x>1$. Applying this identity with the quantity $\sigma$ gives the relation
+*Proof.* We already proved the first inequality. For the second inequality, we use the identity $T_k(w) = \cosh(k\,\operatorname{arccosh}(w))$ valid for every real number $w>1$. Applying this identity with the quantity $\sigma$ gives the relation
 
 $$
 \begin{aligned}
@@ -363,17 +363,17 @@ $$\eta_j = \tfrac{1}{\lambda_j}~~ \textrm{where}~~\lambda_j = \tfrac{\beta + \al
 
 <a id="eq-3"></a>
 
-$$f(x_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr). \tag{3}$$
+$$f(w_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(w_0) - f^\ast\bigr). \tag{3}$$
 
 </div>
 
 
 *Proof.* Combining the estimate $(2)$ and Lemma 3.1 directly yields
 $$
-\frac{f(x_k) - f^\ast}{f(x_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
+\frac{f(w_k) - f^\ast}{f(w_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
 $$ This completes the proof. <span style="float: right;">$\square$</span>
 
-Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\log((f(x_0)-f^\ast)/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\log((f(x_0)-f^\ast)/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
+Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\log((f(w_0)-f^\ast)/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\log((f(w_0)-f^\ast)/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
 
 
 
@@ -399,20 +399,20 @@ As a final illustration, the plot below overlays GD with stepsize $1/\beta$ (sol
 
 ### From polynomials to Krylov subspaces
 
-The Chebyshev method discussed in Section 3 achieves the iteration complexity $O(\sqrt{\kappa}\,\ln((f(x_0)-f^\ast)/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
+The Chebyshev method discussed in Section 3 achieves the iteration complexity $O(\sqrt{\kappa}\,\ln((f(w_0)-f^\ast)/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
 
 > Can we design an adaptive algorithm that matches this rate adaptively, without knowing the spectrum nor setting the time horizon?
 
-The key observation is that gradient descent with *any* sequence of stepsizes produces iterates that lie in a specific linear subspace. Due to the recursion $x_{j+1} = x_j - \eta_j(Ax_j - b)$, one readily verifies the inclusion
+The key observation is that gradient descent with *any* sequence of stepsizes produces iterates that lie in a specific linear subspace. Due to the recursion $w_{j+1} = w_j - \eta_j(Hw_j - b)$, one readily verifies the inclusion
 
 $$
-x_k \in x_0 + \mathcal{K}_k(A, r_0),
+w_k \in w_0 + \mathcal{K}_k(H, r_0),
 $$
 
-where $r_0 := b - Ax_0$ is the initial residual and
+where $r_0 := b - Hw_0$ is the initial residual and
 
 $$
-\mathcal{K}_k(A, r_0) := \mathrm{span}\{r_0,\, Ar_0,\, A^2 r_0,\, \ldots,\, A^{k-1}r_0\}
+\mathcal{K}_k(H, r_0) := \mathrm{span}\{r_0,\, Hr_0,\, H^2 r_0,\, \ldots,\, H^{k-1}r_0\}
 $$
 
 is the **Krylov subspace** of order $k$. Both fixed-stepsize gradient descent and the Chebyshev method search within this subspace but do not fully exploit it. The natural idea is to search *optimally* within the Krylov subspace at each step.
@@ -423,22 +423,22 @@ The **Krylov subspace method** is the idealized algorithm that, at each step $k$
 
 <a id="eq-4"></a>
 
-$$x_k = \argmin_{x \,\in\, x_0 + \mathcal{K}_k(A,\,r_0)} f(x). \tag{4}$$
+$$w_k = \argmin_{w \,\in\, w_0 + \mathcal{K}_k(H,\,r_0)} f(w). \tag{4}$$
 
-It is illuminating to compare the *exact* performance of the Krylov method to that of gradient descent with time-varying stepsizes. Write as usual $e_0 = x_0 - x^\ast = \sum_{i=1}^d c_i v_i$ in the eigenbasis of $A$. Recall that optimizing over the stepsizes $\eta_0,\ldots,\eta_{k-1}$, yields the function-value guarantee for the last iterate of gradient descent:
+It is illuminating to compare the *exact* performance of the Krylov method to that of gradient descent with time-varying stepsizes. Write as usual $e_0 = w_0 - w_\ast = \sum_{i=1}^d c_i v_i$ in the eigenbasis of $H$. Recall that optimizing over the stepsizes $\eta_0,\ldots,\eta_{k-1}$, yields the function-value guarantee for the last iterate of gradient descent:
 
 <a id="eq-4a"></a>
 
 $$
-f(x_k) - f^\ast \;=\;\min_{\substack{p \in \mathcal{P}^{r}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}. \tag{4a}
+f(w_k) - f^\ast \;=\;\min_{\substack{p \in \mathcal{P}^{r}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}. \tag{4a}
 $$
 
-For the Krylov method, any point $x \in x_0 + \mathcal{K}_k(A,r_0)$ can be written as $x = x_0 + q(A)\,r_0$ for some polynomial $q$ of degree at most $k-1$. Using the expression $r_0 = -A\,e_0$ this becomes
+For the Krylov method, any point $w \in w_0 + \mathcal{K}_k(H,r_0)$ can be written as $w = w_0 + q(H)\,r_0$ for some polynomial $q$ of degree at most $k-1$. Using the expression $r_0 = -H\,e_0$ this becomes
 
 <a id="eq-5"></a>
 
 $$
-x - x^\ast \;=\; e_0 - q(A)\,A\,e_0 \;=\; p(A)\,e_0, \tag{5}
+w - w_\ast \;=\; e_0 - q(H)\,H\,e_0 \;=\; p(H)\,e_0, \tag{5}
 $$
 
 where we define the polynomial $p(\lambda) = 1 - \lambda\,q(\lambda)$. As $q$ varies over polynomials of degree at most $k-1$, the polynomial $p$ varies over *all* of $\mathcal{P}_k$ with $p(0)=1$, with no real-root restriction. The defining property $(4)$ therefore yields the *equality*
@@ -446,7 +446,7 @@ where we define the polynomial $p(\lambda) = 1 - \lambda\,q(\lambda)$. As $q$ va
 <a id="eq-4b"></a>
 
 $$
-f(x_k) - f^\ast \;=\; \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}\qquad \forall k. \tag{4b}
+f(w_k) - f^\ast \;=\; \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}\qquad \forall k. \tag{4b}
 $$
 
 The two expressions $(4a)$ and $(4b)$ differ in exactly one formal respect: the Krylov method optimizes over *all* polynomials with $p(0)=1$, whereas gradient descent is confined to those with real roots. 
@@ -458,48 +458,48 @@ The two expressions $(4a)$ and $(4b)$ differ in exactly one formal respect: the 
 **Theorem 4.1 (Krylov method convergence).** *Assuming $\alpha > 0$, the Krylov subspace method $(4)$ satisfies*
 
 $$
-f(x_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)
+f(w_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(w_0) - f^\ast\bigr)
 \qquad \forall k\geq 0.
 $$
 
-*Moreover, the method converges in at most $m$ iterations, where $m$ is the number of distinct eigenvalues of $A$.*
+*Moreover, the method converges in at most $m$ iterations, where $m$ is the number of distinct eigenvalues of $H$.*
 
 </div>
 
-*Proof.* The linear rate follows directly from Theorem $3.1$: the $k$th iterate produced by the Chebyshev stepsizes lies in $x_0+\mathcal{K}_k(A,r_0)$, whereas the Krylov method minimizes $f$ over that entire affine space, and so cannot do worse.
+*Proof.* The linear rate follows directly from Theorem $3.1$: the $k$th iterate produced by the Chebyshev stepsizes lies in $w_0+\mathcal{K}_k(H,r_0)$, whereas the Krylov method minimizes $f$ over that entire affine space, and so cannot do worse.
 
-To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}\_m$ with $p(0)=1$ for which $\sum\_{i=1}^d \lambda\_i\,c\_i^2\,p(\lambda\_i)^2 = 0$, since this forces $f(x\_m) = f^\ast$ and hence $x\_m = x^\ast$. Take
+To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}\_m$ with $p(0)=1$ for which $\sum\_{i=1}^d \lambda\_i\,c\_i^2\,p(\lambda\_i)^2 = 0$, since this forces $f(w\_m) = f^\ast$ and hence $w\_m = w_\ast$. Take
 
 $$
 p(\lambda):=\prod_{i=1}^m\left(1-\frac{\lambda}{\lambda_i}\right),
 $$
 
-where $\lambda_1,\ldots,\lambda_m$ are the distinct eigenvalues of $A$. Then $p$ has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $A$, so the sum is zero as required. <span style="float: right;">$\square$</span>
+where $\lambda_1,\ldots,\lambda_m$ are the distinct eigenvalues of $H$. Then $p$ has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $H$, so the sum is zero as required. <span style="float: right;">$\square$</span>
 
-The convergence bound in Theorem 4.1 is identical to the Chebyshev bound in Theorem 3.1, and the iteration complexity has the same order $O(\sqrt{\kappa}\,\ln((f(x_0)-f^\ast)/\varepsilon))$. Importantly, the Krylov method achieves this complexity *without knowing $\alpha$ or $\beta$ and without requiring to specify the time horizon $k$*; moreover, finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
+The convergence bound in Theorem 4.1 is identical to the Chebyshev bound in Theorem 3.1, and the iteration complexity has the same order $O(\sqrt{\kappa}\,\ln((f(w_0)-f^\ast)/\varepsilon))$. Importantly, the Krylov method achieves this complexity *without knowing $\alpha$ or $\beta$ and without requiring to specify the time horizon $k$*; moreover, finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
 
 
 ### The Conjugate Gradient algorithm implements the Krylov method 
 
 The Krylov subspace method $(4)$ is conceptual: a direct implementation would solve a $k$-dimensional linear optimization problem at each step, with cost growing as $k$ increases. The **Conjugate Gradient (CG)** algorithm is an implementation of the Krylov method that uses only **one matrix-vector product per iteration**.
 
-The key idea is to iteratively build a basis of the Krylov subspaces that is orthogonal with respect to the inner product $\langle x,y\rangle_A=x^\top Ay$, so that each successive minimization reduces to a single line search. Conceptually, this basis is formed by a Gram--Schmidt process. The special structure of Krylov subspaces ensures that each Gram--Schmidt update requires only the immediately preceding direction---a **short recurrence**---rather than all previous directions. 
+The key idea is to iteratively build a basis of the Krylov subspaces that is orthogonal with respect to the inner product $\langle w,y\rangle_H=w^\top Hy$, so that each successive minimization reduces to a single line search. Conceptually, this basis is formed by a Gram--Schmidt process. The special structure of Krylov subspaces ensures that each Gram--Schmidt update requires only the immediately preceding direction---a **short recurrence**---rather than all previous directions. 
 
 
 
 <p>
-Concretely, suppose that we have constructed an $A$-orthogonal basis $\lbrace p_i\rbrace _{i=0}^{k-1}$ for $\mathcal{K}_{k}$ and that we have available a minimizer  $x_k$ of $f$ on $x_0 + \mathcal{K}_k$. Let us see how we can efficiently extend the $A$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $x_{k+1}$ of $f$ on $x_0 + \mathcal{K}_{k+1}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
+Concretely, suppose that we have constructed an $H$-orthogonal basis $\lbrace p_i\rbrace _{i=0}^{k-1}$ for $\mathcal{K}_{k}$ and that we have available a minimizer  $w_k$ of $f$ on $w_0 + \mathcal{K}_k$. Let us see how we can efficiently extend the $H$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $w_{k+1}$ of $f$ on $w_0 + \mathcal{K}_{k+1}$. To this end, define the residuals $$r_i=-\nabla f(w_i)=b-Hw_i.$$
 </p>
 <p>
-Observe that we may write $r_k=b-Ax_k=r_0-A(x_k-x_0)$ and therefore $r_k$ lies in $\mathcal{K}_{k+1}$. Now, set 
-$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $A$-orthogonal to $\lbrace p_i\rbrace _{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Ap_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Ap_{k-1}}{p_{k-1}^\top Ap_{k-1}}$. Now for any $i<k-1$ we compute
-$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$ Observe that $p_{k-1}^{\top}Ap_i=0$ by assumed A-orthogonality of $\lbrace p_i\rbrace _{i=0}^{k-1}$ and $r_k^\top A p_{i}=0$ because $A p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $x_k$ imply  $r_k\perp K_{k}$. Thus $\lbrace p_i\rbrace _{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
+Observe that we may write $r_k=b-Hw_k=r_0-H(w_k-w_0)$ and therefore $r_k$ lies in $\mathcal{K}_{k+1}$. Now, set 
+$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $H$-orthogonal to $\lbrace p_i\rbrace _{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Hp_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Hp_{k-1}}{p_{k-1}^\top Hp_{k-1}}$. Now for any $i<k-1$ we compute
+$$p_{k}^{\top}H p_{i}=r_k^\top H p_{i}+\beta_{k-1}p_{k-1}^{\top}Hp_i.$$ Observe that $p_{k-1}^{\top}Hp_i=0$ by assumed A-orthogonality of $\lbrace p_i\rbrace _{i=0}^{k-1}$ and $r_k^\top H p_{i}=0$ because $H p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $w_k$ imply  $r_k\perp K_{k}$. Thus $\lbrace p_i\rbrace _{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
 It remains to declare 
 <a id="eq-6"></a>
 
-$$x_{k+1}=\argmin_{\eta} f(x_k+\eta p_{k}). \tag{6}$$Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
-$$r_{k+1}^\top p_{i}=(r_k-\eta_k Ap_k)^{\top}p_i=r_k^\top p_i-\eta_k p_k^\top Ap_i=0,$$
-where $\eta_k$ is the minimizer of $(6)$. Thus $x_{k+1}$ is indeed the minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$.
+$$w_{k+1}=\argmin_{\eta} f(w_k+\eta p_{k}). \tag{6}$$Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
+$$r_{k+1}^\top p_{i}=(r_k-\eta_k Hp_k)^{\top}p_i=r_k^\top p_i-\eta_k p_k^\top Hp_i=0,$$
+where $\eta_k$ is the minimizer of $(6)$. Thus $w_{k+1}$ is indeed the minimizer of $f$ on $w_0+\mathcal{K}_{k+1}$.
 The algorithm we just constructed is called the conjugate gradient method and is summarized in the following.
 </p>
 
@@ -509,28 +509,28 @@ The algorithm we just constructed is called the conjugate gradient method and is
 
 **Algorithm 1** (Conjugate Gradient Method)
 
-**Input:** $x_0 \in \mathbb{R}^d$
+**Input:** $w_0 \in \mathbb{R}^d$
 
-1. Set $r_0 = b - Ax_0$, $\;p_0 = r_0$
+1. Set $r_0 = b - Hw_0$, $\;p_0 = r_0$
 2. **For** $k = 0, 1, 2, \ldots$ do:
-3. $\qquad \eta_k = \dfrac{r_k^\top r_k}{p_k^\top A p_k}$
-4. $\qquad x_{k+1} = x_k + \eta_k\, p_k$
-5. $\qquad r_{k+1} = r_k - \eta_k\, A p_k$
-6. $\qquad \beta_k = -\dfrac{r_{k+1}^\top A p_k}{p_k^\top A p_k}$
+3. $\qquad \eta_k = \dfrac{r_k^\top r_k}{p_k^\top H p_k}$
+4. $\qquad w_{k+1} = w_k + \eta_k\, p_k$
+5. $\qquad r_{k+1} = r_k - \eta_k\, H p_k$
+6. $\qquad \beta_k = -\dfrac{r_{k+1}^\top H p_k}{p_k^\top H p_k}$
 7. $\qquad p_{k+1} = r_{k+1} + \beta_k\, p_k$
 
 </div>
 
 
-Each iteration of the conjugate gradient method requires one matrix-vector product $Ap_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Ax_k$ are the **residuals** satisfying $r_k = -\nabla f(x_k)$, while the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $x_k + \eta\, p_k$, while $\beta_k$ ensures $A$-orthogonality of consecutive search directions.
+Each iteration of the conjugate gradient method requires one matrix-vector product $Hp_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Hw_k$ are the **residuals** satisfying $r_k = -\nabla f(w_k)$, while the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $w_k + \eta\, p_k$, while $\beta_k$ ensures $H$-orthogonality of consecutive search directions.
 
-*Remark.* In the literature, the update for $\beta_k$ is usually written in the equivalent form $\beta_k = \lVert r_{k+1}\rVert ^2/\lVert r_k\rVert ^2$. The equivalence is straightforward to establish from the residual recursion $Ap_k = (r_k - r_{k+1})/\eta_k$; we omit the argument for brevity. 
+*Remark.* In the literature, the update for $\beta_k$ is usually written in the equivalent form $\beta_k = \lVert r_{k+1}\rVert ^2/\lVert r_k\rVert ^2$. The equivalence is straightforward to establish from the residual recursion $Hp_k = (r_k - r_{k+1})/\eta_k$; we omit the argument for brevity. 
 
 
 
 ### Visualizing CG
 
-The figure below compares GD and CG on the same ill-conditioned 2D quadratic ($\kappa = 12$). Gradient descent (blue) zig-zags along the narrow valley, requiring many iterations to approach the minimum. CG (red) reaches the minimum in exactly 2 steps---the dimension of the problem---by choosing $A$-orthogonal search directions that span the full space.
+The figure below compares GD and CG on the same ill-conditioned 2D quadratic ($\kappa = 12$). Gradient descent (blue) zig-zags along the narrow valley, requiring many iterations to approach the minimum. CG (red) reaches the minimum in exactly 2 steps---the dimension of the problem---by choosing $H$-orthogonal search directions that span the full space.
 
 ![GD vs CG on a 2D quadratic](figures/gd_vs_cg_2d.png)
 
@@ -544,7 +544,7 @@ The next figure repeats the varying-$\kappa$ experiment from Section 3, now with
 
 ### Motivation
 
-The convergence guarantees of the previous sections all rely on the assumption $\alpha > 0$---that is, $A$ is positive definite. When $\alpha$ is very close to zero, however, the condition number $\kappa = \beta/\alpha$ can become arbitrarily large and the linear convergence bounds of Theorems 1, 2, and 3 essentially become vacuous. This situation arises often in practice. As a concrete example let us look at the prototypical problem of solving a linear system generated by a **kernel matrix**.
+The convergence guarantees of the previous sections all rely on the assumption $\alpha > 0$---that is, $H$ is positive definite. When $\alpha$ is very close to zero, however, the condition number $\kappa = \beta/\alpha$ can become arbitrarily large and the linear convergence bounds of Theorems 1, 2, and 3 essentially become vacuous. This situation arises often in practice. As a concrete example let us look at the prototypical problem of solving a linear system generated by a **kernel matrix**.
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -610,29 +610,29 @@ The figure below illustrates this phenomenon on synthetic data. We draw $n=5000$
 
 
 
-We will now develop convergence guarantees for all of the methods we have seen---gradient descent, Chebyshev-accelerated gradient descent, and the Krylov method---that are insensitive to the minimal eigenvalue of $A$. The price to pay is that the logarithmic dependence on $1/\varepsilon$ in the positive definite case degrades to a polynomial dependence on $1/\varepsilon$.
+We will now develop convergence guarantees for all of the methods we have seen---gradient descent, Chebyshev-accelerated gradient descent, and the Krylov method---that are insensitive to the minimal eigenvalue of $H$. The price to pay is that the logarithmic dependence on $1/\varepsilon$ in the positive definite case degrades to a polynomial dependence on $1/\varepsilon$.
 
 ### Setup
 
-We consider the same quadratic objective $f(x) = \tfrac{1}{2}x^\top Ax - b^\top x$, but now we allow $\alpha = 0$. We assume throughout that $b \in \mathrm{range}(A)$, ensuring that the solution set
+We consider the same quadratic objective $f(w) = \tfrac{1}{2}w^\top Hw - b^\top w$, but now we allow $\alpha = 0$. We assume throughout that $b \in \mathrm{range}(H)$, ensuring that the solution set
 
-$$S = \{x \in \mathbb{R}^d : Ax = b\}$$
+$$S = \{w \in \mathbb{R}^d : Hw = b\}$$
 
-is nonempty and we let $x^{\ast}\in S$ be arbitrary. 
+is nonempty and we let $w_\ast\in S$ be arbitrary. 
 
-The eigenvalues of $A$ are ordered as
+The eigenvalues of $H$ are ordered as
 
 $$0 = \lambda_1 = \cdots = \lambda_r < \lambda_{r+1} \leq \cdots \leq \lambda_d = \beta,$$
 
-where $r \geq 1$ is the dimension of $\ker(A)$.
+where $r \geq 1$ is the dimension of $\ker(H)$.
 
 
 
 ### Gradient descent
 
 We begin with the convergence rate of gradient descent. The key idea is that we have previously shown the exact relation 
-$$f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\eta\lambda_i)^{2k}\,c_i^2$$
-where $\eta$ is the stepsize and  $c_i$ are the coefficients of the initial error in the eigenbasis of $A$. Previously, we pulled out $\sup_{\lambda\in [\alpha,\beta]}(1-\eta\lambda)^{2k}$ from the sum. We now instead pull out $\sup_{\lambda\in [\alpha,\beta]}\lambda(1-\eta\lambda)^{2k}$.
+$$f(w_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\eta\lambda_i)^{2k}\,c_i^2$$
+where $\eta$ is the stepsize and  $c_i$ are the coefficients of the initial error in the eigenbasis of $H$. Previously, we pulled out $\sup_{\lambda\in [\alpha,\beta]}(1-\eta\lambda)^{2k}$ from the sum. We now instead pull out $\sup_{\lambda\in [\alpha,\beta]}\lambda(1-\eta\lambda)^{2k}$.
 <a id="thm-6-1"></a>
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
@@ -641,14 +641,14 @@ where $\eta$ is the stepsize and  $c_i$ are the coefficients of the initial erro
 
 <a id="eq-7"></a>
 
-$$f(x_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\ast\|^2 \tag{7}.$$
+$$f(w_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|w_0 - w_\ast\|^2 \tag{7}.$$
 
 </div>
 
-*Proof.* Writing out the initial error $e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i$ in the eigen-basis of $A$ yields
+*Proof.* Writing out the initial error $e_0=w_0-w_\ast=\sum_{i=1}^d c_i v_i$ in the eigen-basis of $H$ yields
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in [0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
+f(w_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in [0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
 $$
 
 Elementary calculus shows $\sup_{t\in [0,1]}t(1-t)^{q}=\frac{1}{1+q}(\frac{q}{1+q})^q\leq \frac{1}{1+q}$. Therefore setting $q=2k$ yields 
@@ -658,18 +658,18 @@ $$\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k} \leq \frac{\beta}{2k
 which completes the proof. <span style="float: right;">$\square$</span>
 
 
-From Theorem 6.1, converting to complexity, the bound $f(x_k) - f^\ast \leq \varepsilon$ is guaranteed to hold whenever
+From Theorem 6.1, converting to complexity, the bound $f(w_k) - f^\ast \leq \varepsilon$ is guaranteed to hold whenever
 
-$$k \geq \frac{\beta\,\|x_0 - x^\ast\|^2}{4\varepsilon}.$$
+$$k \geq \frac{\beta\,\|w_0 - w_\ast\|^2}{4\varepsilon}.$$
 
 Thus the iteration complexity is
 
-$$O\!\left(\frac{\beta\,\|x_0 - x^\ast\|^2}{\varepsilon}\right).$$
+$$O\!\left(\frac{\beta\,\|w_0 - w_\ast\|^2}{\varepsilon}\right).$$
 
 Compared with the $O(\kappa\,\ln(1/\varepsilon))$ complexity of gradient descent in the positive definite case, the dependence on accuracy has changed from **logarithmic** to **polynomial**: achieving an additional digit of accuracy now requires a tenfold increase in iterations, rather than a fixed additive cost. This is the hallmark of sublinear convergence.
 
 
-Note that an important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\lVert x_0 - x^\ast\rVert ^2$ rather than the initial function gap $f(x_0) - f^\ast$, and this is unavoidable.
+Note that an important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\lVert w_0 - w_\ast\rVert ^2$ rather than the initial function gap $f(w_0) - f^\ast$, and this is unavoidable.
 
 ### Acceleration by Chebyshev stepsizes
 
@@ -678,9 +678,9 @@ As in the positive definite case, the $O(1/k)$ rate of fixed-stepsize gradient d
 
 ### Chebyshev polynomials of the second kind
 
- **Chebyshev polynomials of the second kind** are defined by the same recurrence as $T_k$ but with a different initial condition: set $U_0(x) = 1$ and $U_1(x) = 2x$ and define
+ **Chebyshev polynomials of the second kind** are defined by the same recurrence as $T_k$ but with a different initial condition: set $U_0(w) = 1$ and $U_1(w) = 2w$ and define
 
-$$U_{j+1}(x) = 2x\,U_j(x) - U_{j-1}(x) \qquad \forall j\geq 1.$$
+$$U_{j+1}(w) = 2w\,U_j(w) - U_{j-1}(w) \qquad \forall j\geq 1.$$
 
 An equivalent trigonometric characterization is
 
@@ -692,16 +692,16 @@ from which one directly sees $U_j(1) = j+1$. See the figure below.
 
 The Chebyshev polynomials of the second kind solve a weighted analogue of the extremal problem for $T_k$:
 
-> Any degree-$k$ polynomial $p(x)$ with the same leading coefficient as $U_k$ satisfies
+> Any degree-$k$ polynomial $p(w)$ with the same leading coefficient as $U_k$ satisfies
 >
-> $$\max_{x\in [-1,1]} \sqrt{1-x^2}\,\lvert p(x)\rvert\geq \max_{x\in [-1,1]} \sqrt{1-x^2}\,\lvert U_k(x)\rvert=1.$$
+> $$\max_{w\in [-1,1]} \sqrt{1-w^2}\,\lvert p(w)\rvert\geq \max_{w\in [-1,1]} \sqrt{1-w^2}\,\lvert U_k(w)\rvert=1.$$
 
-The equality on the right follows from the identity $\sqrt{1-x^2}\,U_k(x) = \sin((k+1)\theta)$ when $x=\cos\theta$. As we will see, the weight $\sqrt{1-x^2}$ is precisely what arises from the extra factor of $\lambda$ in the PSD minimax problem after the change of variables.
+The equality on the right follows from the identity $\sqrt{1-w^2}\,U_k(w) = \sin((k+1)\theta)$ when $w=\cos\theta$. As we will see, the weight $\sqrt{1-w^2}$ is precisely what arises from the extra factor of $\lambda$ in the PSD minimax problem after the change of variables.
 
 The key properties, paralleling those of $T_k$, are:
 1. **Boundedness:** $\lvert U_k(\cos\theta)\rvert \leq k+1$ for all $\theta$, and moreover $\lvert \sin\theta\, U_k(\cos\theta)\rvert = \lvert\sin((k+1)\theta)\rvert \leq 1$.
 2. **Roots:** $U_{k}$ has $k$ roots in $(-1,1)$ at $\cos(j\pi/(k+1))$ for $j = 1, \ldots, k$.
-3. **Growth at edges:** $U_k(1) = k+1$, so $U_k$ grows polynomially at $x=1$, in contrast to the exponential growth of $T_k$.
+3. **Growth at edges:** $U_k(1) = k+1$, so $U_k$ grows polynomially at $w=1$, in contrast to the exponential growth of $T_k$.
 
 We now linearly reparametrize and rescale the $U_{k-1}$ and define $$\phi_k(\lambda) = \left(1 - \frac{\lambda}{\beta}\right)\frac{U_{k-1}(1 - 2\lambda/\beta)}{k}.$$
 Note that we have $\phi_k(0) = 1$ and the roots of $\phi_k$ on $[0,\beta]$ are $\lambda_j = \beta\sin^2(j\pi/(2k))$ for $j = 1, \ldots, k$.
@@ -745,13 +745,13 @@ $$\eta_j = \frac{1}{\beta\sin^2(j\pi/(2k))} \qquad \textrm{for}~ j = 1, \ldots, 
 
 <a id="eq-9"></a>
 
-$$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2. \tag{9}$$
+$$f(w_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|w_0 - w_\ast\|^2. \tag{9}$$
 
 </div>
 
-*Proof.* Write the initial error in the eigenbasis of $A$ as
+*Proof.* Write the initial error in the eigenbasis of $H$ as
 $
-e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i.
+e_0=w_0-w_\ast=\sum_{i=1}^d c_i v_i.
 $ For gradient descent with stepsizes $\eta_1,\dots,\eta_k$, define the degree-$k$ polynomial $
 p_k(\lambda):=\prod_{j=1}^k(1-\eta_j\lambda).
 $ By the choice $
@@ -760,17 +760,17 @@ $ we have $
 p_k(\lambda)=\phi_k(\lambda).
 $ Therefore, the general error formula from Section 2 gives
 $$
-f(x_k) - f^\ast = \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, \phi_k(\lambda_i)^2\, c_i^2
+f(w_k) - f^\ast = \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, \phi_k(\lambda_i)^2\, c_i^2
 \leq \tfrac{1}{2}\max_{\lambda \in [0,\beta]} \lambda\,\phi_k(\lambda)^2 \sum_{i=1}^d c_i^2.
 $$
-Applying Lemma 6.2 and using $\sum_{i=1}^d c_i^2=\lVert e_0\rVert ^2=\lVert x_0-x^\ast\rVert ^2$, we obtain
+Applying Lemma 6.2 and using $\sum_{i=1}^d c_i^2=\lVert e_0\rVert ^2=\lVert w_0-w_\ast\rVert ^2$, we obtain
 $$
-f(x_k) - f^\ast \leq \tfrac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|x_0-x^\ast\|^2
-= \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2.
+f(w_k) - f^\ast \leq \tfrac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|w_0-w_\ast\|^2
+= \frac{\beta}{8k^2}\,\|w_0 - w_\ast\|^2.
 $$
 This completes the proof. <span style="float: right;">$\square$</span>
 
-Thus, the iteration complexity of the Chebyshev accelerated algorithm is $O(\sqrt{\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon})$---a **square-root improvement** over the $O(\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. This is a **quadratic improvement** in the complexity.
+Thus, the iteration complexity of the Chebyshev accelerated algorithm is $O(\sqrt{\beta\,\lVert w_0 - w_\ast\rVert ^2/\varepsilon})$---a **square-root improvement** over the $O(\beta\,\lVert w_0 - w_\ast\rVert ^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. This is a **quadratic improvement** in the complexity.
 
 The corresponding stepsize schedule in the positive semidefinite case is shown below for several values of $k$.
 
@@ -782,10 +782,10 @@ As in the positive definite case, the Chebyshev stepsizes require knowledge of $
 
 The **Krylov subspace method** in the PSD setting is defined exactly as before: at step $k$, it minimizes $f$ over the affine space
 $$
-x_0+\mathcal{K}_k(A,r_0).
-$$ The only new issue is that $A$ may be singular. However, since $b\in\mathrm{range}(A)$ and $Ax_0\in\mathrm{range}(A)$, the residual $
-r_0=b-Ax_0
-$ lies in $\mathrm{range}(A)$. Therefore the entire Krylov subspace $\mathcal{K}_k(A,r_0)$ is contained in $\mathrm{range}(A)$, and $A$ is positive definite on that subspace. Consequently, the same short-recurrence argument from Section 4 shows that, until termination, the conjugate gradient method is well-defined and implements the PSD Krylov method: at each step, the CG iterate $x_k$ minimizes $f$ over $x_0+\mathcal{K}_k(A,r_0)$.
+w_0+\mathcal{K}_k(H,r_0).
+$$ The only new issue is that $H$ may be singular. However, since $b\in\mathrm{range}(H)$ and $Hw_0\in\mathrm{range}(H)$, the residual $
+r_0=b-Hw_0
+$ lies in $\mathrm{range}(H)$. Therefore the entire Krylov subspace $\mathcal{K}_k(H,r_0)$ is contained in $\mathrm{range}(H)$, and $H$ is positive definite on that subspace. Consequently, the same short-recurrence argument from Section 4 shows that, until termination, the conjugate gradient method is well-defined and implements the PSD Krylov method: at each step, the CG iterate $w_k$ minimizes $f$ over $w_0+\mathcal{K}_k(H,r_0)$.
 With this observation in hand, the convergence analysis is immediate from Theorem 6.2, exactly as in the positive definite case.
 
 <a id="thm-6-3"></a>
@@ -796,19 +796,19 @@ With this observation in hand, the convergence analysis is immediate from Theore
 
 <a id="eq-11"></a>
 
-$$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2, \tag{11}$$
+$$f(w_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|w_0 - w_\ast\|^2, \tag{11}$$
 
-*and CG terminates in at most $m$ iterations, where $m$ is the number of distinct nonzero eigenvalues of $A$.*
+*and CG terminates in at most $m$ iterations, where $m$ is the number of distinct nonzero eigenvalues of $H$.*
 
 </div>
 
-*Proof.* The rate follows directly from Theorem 6.2: the $k$th iterate produced by the PSD Chebyshev stepsizes lies in $x_0+\mathcal{K}_k(A,r_0)$, whereas CG minimizes $f$ over that entire affine space and so cannot do worse. <span style="float: right;">$\square$</span>
+*Proof.* The rate follows directly from Theorem 6.2: the $k$th iterate produced by the PSD Chebyshev stepsizes lies in $w_0+\mathcal{K}_k(H,r_0)$, whereas CG minimizes $f$ over that entire affine space and so cannot do worse. <span style="float: right;">$\square$</span>
 
 The bound $(11)$ matches the PSD Chebyshev bound $(9)$; the gain of CG is that it attains this behavior adaptively, without requiring $\beta$ or a preset horizon.
 
 ### Numerical illustration
 
-The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional quadratic whose spectrum follows the power law $\lambda_i = i^{-3}$ (condition number $\approx 8\times 10^6$). For each horizon $k$, the PSD Chebyshev point plotted is the iterate after running all $k$ stepsizes from $x_0$. The sublinear separation between GD ($O(1/k)$) and Chebyshev ($O(1/k^2)$) is clearly visible, while CG reaches high accuracy in far fewer iterations.
+The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional quadratic whose spectrum follows the power law $\lambda_i = i^{-3}$ (condition number $\approx 8\times 10^6$). For each horizon $k$, the PSD Chebyshev point plotted is the iterate after running all $k$ stepsizes from $w_0$. The sublinear separation between GD ($O(1/k)$) and Chebyshev ($O(1/k^2)$) is clearly visible, while CG reaches high accuracy in far fewer iterations.
 
 ![GD vs PSD Chebyshev vs CG for power-law spectrum](figures/gd_cheb_cg_psd.png)
 
@@ -842,8 +842,8 @@ The results discussed in these notes are largely classical in numerical optimiza
 
 | Method | Positive definite ($\alpha > 0$) | Positive semidefinite ($\alpha = 0$) |
 |--------|----------------------------------|--------------------------------------|
-| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon)$ |
-| Chebyshev GD / Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ (CG: at most $m\le d$ steps) | $O(\sqrt{\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon})$ (CG: at most $m\le d$ steps) |
+| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\lVert w_0 - w_\ast\rVert ^2/\varepsilon)$ |
+| Chebyshev GD / Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ (CG: at most $m\le d$ steps) | $O(\sqrt{\beta\,\lVert w_0 - w_\ast\rVert ^2/\varepsilon})$ (CG: at most $m\le d$ steps) |
 
 ---
 

@@ -177,7 +177,7 @@ def main():
         ax.loglog(k_ref, ref_cg, ":", color=color, linewidth=1.1, alpha=0.7)
 
     ax.set_xlabel("Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$f(x_k) - f^\ast$", fontsize=12)
+    ax.set_ylabel(r"$f(w_k) - f^\ast$", fontsize=12)
     ax.set_title(
         r"GD vs CG under power-law spectral density "
         rf"$\phi(\lambda)=M\lambda^{{a-1}}$ on $(0,{beta:g}]$"

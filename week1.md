@@ -35,16 +35,16 @@ In these notes we study optimization algorithms for the  **convex quadratic opti
 
 We consider the quadratic minimization problem
 
-$$\min_{x \in \mathbb{R}^d} \; f(x) = \tfrac{1}{2} x^\top A x - b^\top x,$$
+$$\min_{w \in \mathbb{R}^d} \; f(w) = \tfrac{1}{2} w^\top H w - b^\top w,$$
 
-where $A \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matrix, meaning $A = A^\top$ and $v^\top A v \geq 0$ for all $v \in \mathbb{R}^d$. The gradient of $f$ is
+where $H \in \mathbb{R}^{d \times d}$ is a symmetric positive semidefinite matrix, meaning $H = H^\top$ and $v^\top H v \geq 0$ for all $v \in \mathbb{R}^d$. The gradient of $f$ is
 
-$$\nabla f(x) = Ax - b.$$
+$$\nabla f(w) = Hw - b.$$
 
-In particular, minimizing $f$ is equivalent to solving the linear system $Ax=b$. Note that this linear system is special in  that $A$ is a positive semidefinite matrix---a property with important consequences for numerical methods. Throughout, we let $x^\ast$ be any minimizer of $f$ and set $f^\ast:=f(x^\ast)$.
+In particular, minimizing $f$ is equivalent to solving the linear system $Hw=b$. Note that this linear system is special in  that $H$ is a positive semidefinite matrix---a property with important consequences for numerical methods. Throughout, we let $w_\ast$ be any minimizer of $f$ and set $f^\ast:=f(w_\ast)$.
 
 
-We denote the eigenvalues of $A$ by
+We denote the eigenvalues of $H$ by
 
 $$
 0 \leq  \alpha = \lambda_1 \leq \lambda_2 \leq \cdots \leq \lambda_d = \beta
@@ -55,77 +55,77 @@ When $\alpha > 0$, we denote the **condition number** by $\kappa = \beta / \alph
 A key example of convex quadratic optimization is **linear least squares**:
 
 $$
-\min_{x \in \mathbb{R}^d} \;\tfrac{1}{2}\|Dx - y\|^2,
+\min_{w \in \mathbb{R}^d} \;\tfrac{1}{2}\|Xw - y\|^2,
 $$
 
-under the correspondence $A = D^\top D$ and $b = D^\top y$. In applications, $D \in \mathbb{R}^{m \times d}$ is usually a data matrix and $y \in \mathbb{R}^m$ is a vector of observations. 
+under the correspondence $H = X^\top X$ and $b = X^\top y$. In applications, $X \in \mathbb{R}^{n \times d}$ is usually a data matrix and $y \in \mathbb{R}^n$ is a vector of observations. 
 
 
-**Why convex quadratic minimization?** The linear system $Ax = b$ arises everywhere: in linear regression for inference, as a subroutine in Newton's method and interior-point algorithms, and as a building block for preconditioning. Understanding how to solve the linear system iteratively is fundamental.
+**Why convex quadratic minimization?** The linear system $Hw = b$ arises everywhere: in linear regression for inference, as a subroutine in Newton's method and interior-point algorithms, and as a building block for preconditioning. Understanding how to solve the linear system iteratively is fundamental.
 
 ---
 
 ## 2. Gradient Descent: linear convergence with constant stepsize {#sec-2}
 
-We will be interested in algorithms that access the matrix $A$ only by evaluating matrix-vector products $v\mapsto Av$ for any query vector $v$. This **matrix-free** abstraction is powerful for several reasons:
+We will be interested in algorithms that access the matrix $H$ only by evaluating matrix-vector products $v\mapsto Hv$ for any query vector $v$. This **matrix-free** abstraction is powerful for several reasons:
 
-- **Storage.** In many applications $A$ is never formed explicitly. For instance, in least squares with $A = D^\top D$, the product $Av = D^\top(Dv)$ can be computed using two matrix-vector products with $D$ and $D^\top$, which costs $O(md)$ operations and requires storing only $D \in \mathbb{R}^{m \times d}$ rather than the $d \times d$ matrix $A$. When $m \ll d$, or when $D$ is sparse/structured, this can be a major saving.
+- **Storage.** In many applications $H$ is never formed explicitly. For instance, in least squares with $H = X^\top X$, the product $Hv = X^\top(Xv)$ can be computed using two matrix-vector products with $X$ and $X^\top$, which costs $O(nd)$ operations and requires storing only $X \in \mathbb{R}^{n \times d}$ rather than the $d \times d$ matrix $H$. When $n \ll d$, or when $X$ is sparse/structured, this can be a major saving.
 
 - **Structure.** Many matrices arising in practice (e.g., discrete Laplacians, convolution operators, fast transforms) admit fast matrix-vector products via the FFT or other algorithms, costing $O(d \log d)$ or even $O(d)$ per product—far less than the $O(d^2)$ cost of a general dense multiply, and enormously less than the $O(d^3)$ cost of a direct factorization.
 
-- **Generality.** By treating $A$ as a "black box" that we can only query through products, we obtain algorithms that work unchanged whether $A$ is dense, sparse, or defined only implicitly through an operator. This abstraction cleanly separates the optimization algorithm from the problem-specific details of how $A$ acts on vectors.
+- **Generality.** By treating $H$ as a "black box" that we can only query through products, we obtain algorithms that work unchanged whether $H$ is dense, sparse, or defined only implicitly through an operator. This abstraction cleanly separates the optimization algorithm from the problem-specific details of how $H$ acts on vectors.
 
-All three methods studied this week---gradient descent, Chebyshev-accelerated gradient descent, and CG---are matrix-free: their only access to $A$ is through one matrix-vector product per iteration.
+All three methods studied this week---gradient descent, Chebyshev-accelerated gradient descent, and CG---are matrix-free: their only access to $H$ is through one matrix-vector product per iteration.
 
 ### Algorithm
 
-Starting from $x_0 \in \mathbb{R}^d$, gradient descent with stepsize $\eta > 0$ iterates
+Starting from $w_0 \in \mathbb{R}^d$, gradient descent with stepsize $\eta > 0$ iterates
 
 $$
 \begin{aligned}
-x_{k+1} = x_k - \eta \nabla f(x_k) &= x_k - \eta(Ax_k - b) \\
-         &= x_k - \eta A(x_k - x^\ast),
+w_{k+1} = w_k - \eta \nabla f(w_k) &= w_k - \eta(Hw_k - b) \\
+         &= w_k - \eta H(w_k - w_\ast),
 \end{aligned}
 \tag{1}
 $$
 
-where $x^\ast$ is any minimizer of $f$, i.e. one satisfying $Ax^\ast=b$.
+where $w_\ast$ is any minimizer of $f$, i.e. one satisfying $Hw_\ast=b$.
 
 ### Error recurrence
 
-To analyze gradient descent, we introduce the **error vector** $e_k = x_k - x^\ast$. Subtracting $x^\ast$ from both sides of $(1)$ yields
+To analyze gradient descent, we introduce the **error vector** $e_k = w_k - w_\ast$. Subtracting $w_\ast$ from both sides of $(1)$ yields
 
-$$e_{k+1} = (I - \eta A)\, e_k.$$
+$$e_{k+1} = (I - \eta H)\, e_k.$$
 
-Unrolling the recurrence gives $e_k = (I - \eta A)^k e_0$. Next, observe that the function value gap can be expressed in terms of $e_k$ as
+Unrolling the recurrence gives $e_k = (I - \eta H)^k e_0$. Next, observe that the function value gap can be expressed in terms of $e_k$ as
 
 $$
 \begin{aligned}
-f(x_k) - f^\ast
-&= \tfrac{1}{2} x_k^\top A x_k - b^\top x_k - \tfrac{1}{2} (x^\ast)^\top A x^\ast + b^\top x^\ast \\
-&= \tfrac{1}{2} x_k^\top A x_k - (Ax^\ast)^\top x_k - \tfrac{1}{2} (x^\ast)^\top A x^\ast + (Ax^\ast)^\top x^\ast \\
-&= \tfrac{1}{2} (x_k - x^\ast)^\top A\, (x_k - x^\ast) \\
-&= \tfrac{1}{2}\, e_k^\top A\, e_k \\
-&=: \tfrac{1}{2}\|e_k\|_A^2,
+f(w_k) - f^\ast
+&= \tfrac{1}{2} w_k^\top H w_k - b^\top w_k - \tfrac{1}{2} (w_\ast)^\top H w_\ast + b^\top w_\ast \\
+&= \tfrac{1}{2} w_k^\top H w_k - (Hw_\ast)^\top w_k - \tfrac{1}{2} (w_\ast)^\top H w_\ast + (Hw_\ast)^\top w_\ast \\
+&= \tfrac{1}{2} (w_k - w_\ast)^\top H\, (w_k - w_\ast) \\
+&= \tfrac{1}{2}\, e_k^\top H\, e_k \\
+&=: \tfrac{1}{2}\|e_k\|_H^2,
 \end{aligned}
 $$
 
-where $\lVert v\rVert _A = \sqrt{v^\top A v}$ is the **$A$-norm**---a measure of length that is adapted to the spectrum of $A$. This is the natural norm for measuring progress on quadratic problems.
+where $\lVert v\rVert _H = \sqrt{v^\top H v}$ is the **$H$-norm**---a measure of length that is adapted to the spectrum of $H$. This is the natural norm for measuring progress on quadratic problems.
 
 ### Convergence for a general stepsize
 
-Let $v_1, \ldots, v_d$ be an orthonormal eigenbasis of $A$ with $Av_i = \lambda_i v_i$. Expanding the initial error as $e_0 = \sum_{i=1}^d c_i v_i$, the error at step $k$ is
+Let $v_1, \ldots, v_d$ be an orthonormal eigenbasis of $H$ with $Hv_i = \lambda_i v_i$. Expanding the initial error as $e_0 = \sum_{i=1}^d c_i v_i$, the error at step $k$ is
 
 $$
 \begin{aligned}
-e_k &= (I - \eta A)^k\, e_0 = (I - \eta A)^k \sum_{i=1}^d c_i\, v_i = \sum_{i=1}^d c_i\, (I - \eta A)^k\, v_i = \sum_{i=1}^d c_i\, (1 - \eta\lambda_i)^k\, v_i.
+e_k &= (I - \eta H)^k\, e_0 = (I - \eta H)^k \sum_{i=1}^d c_i\, v_i = \sum_{i=1}^d c_i\, (I - \eta H)^k\, v_i = \sum_{i=1}^d c_i\, (1 - \eta\lambda_i)^k\, v_i.
 \end{aligned}
 $$
 
-The $A$-norm of the error therefore satisfies
+The $H$-norm of the error therefore satisfies
 
 $$
-\|e_k\|_A^2 = \sum_{i=1}^d \lambda_i (1 - \eta\lambda_i)^{2k}\, c_i^2 \leq \max_{1 \leq i \leq d} (1 - \eta\lambda_i)^{2k} \cdot \sum_{i=1}^d \lambda_i\, c_i^2 = \rho(\eta)^{2k}\, \|e_0\|_A^2,
+\|e_k\|_H^2 = \sum_{i=1}^d \lambda_i (1 - \eta\lambda_i)^{2k}\, c_i^2 \leq \max_{1 \leq i \leq d} (1 - \eta\lambda_i)^{2k} \cdot \sum_{i=1}^d \lambda_i\, c_i^2 = \rho(\eta)^{2k}\, \|e_0\|_H^2,
 $$
 
 where we set
@@ -140,7 +140,7 @@ We have thus proved the following.
 
 **Theorem 2.1 (Gradient descent).** *For any $\eta \in (0, \tfrac{2}{\beta})$ the inclusion $\rho(\eta)\in (0,1)$ holds and the gradient descent iterates enjoy the linear rate of convergence:*
 
-$$f(x_k) - f^\ast \leq \rho(\eta)^{2k}\,\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
+$$f(w_k) - f^\ast \leq \rho(\eta)^{2k}\,\bigl(f(w_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
@@ -157,7 +157,7 @@ $$\eta^\ast = \frac{2}{\beta + \alpha}.$$
 
 **Corollary 2.1 (Optimal fixed stepsize).** *Suppose $\alpha>0$ and set $\eta = \eta^\ast = \frac{2}{\beta+\alpha}$. Then gradient descent satisfies*
 
-$$f(x_k) - f^\ast \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
+$$f(w_k) - f^\ast \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^{2k}\bigl(f(w_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
@@ -171,13 +171,13 @@ The result follows from Theorem 2.1. <span style="float: right;">$\square$</span
 
 ### The practical stepsize $\eta = 1/\beta$
 
-The optimal stepsize $\eta^\ast = 2/(\beta+\alpha)$ requires knowledge of both the largest and smallest eigenvalues of $A$. In practice, the smallest eigenvalue $\alpha$ is often unknown or expensive to estimate. A natural and widely used alternative is the stepsize $\eta = 1/\beta$, which requires only an upper bound on the spectrum.
+The optimal stepsize $\eta^\ast = 2/(\beta+\alpha)$ requires knowledge of both the largest and smallest eigenvalues of $H$. In practice, the smallest eigenvalue $\alpha$ is often unknown or expensive to estimate. A natural and widely used alternative is the stepsize $\eta = 1/\beta$, which requires only an upper bound on the spectrum.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Corollary 2.2 (Stepsize $1/\beta$).** *Suppose $\alpha>0$ and set $\eta = 1/\beta$. Then gradient descent satisfies*
 
-$$f(x_k) - f^\ast \leq \left(1 - \frac{1}{\kappa}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
+$$f(w_k) - f^\ast \leq \left(1 - \frac{1}{\kappa}\right)^{2k}\bigl(f(w_0) - f^\ast\bigr)\qquad \forall k\geq 0.$$
 
 </div>
 
@@ -191,17 +191,17 @@ which completes the proof. <span style="float: right;">$\square$</span>
 
 ### Iteration complexity
 
-So far we have described how the suboptimality $f(x_k)-f^\ast$ decays with the iteration count. In order to compare performance of different algorithms, such as GD with different stepsizes, it is instructive to shift focus to iteration complexity. Namely, the **iteration complexity** of the algorithm is *how many iterations suffice for it to reach a target accuracy $\varepsilon$?*
+So far we have described how the suboptimality $f(w_k)-f^\ast$ decays with the iteration count. In order to compare performance of different algorithms, such as GD with different stepsizes, it is instructive to shift focus to iteration complexity. Namely, the **iteration complexity** of the algorithm is *how many iterations suffice for it to reach a target accuracy $\varepsilon$?*
 
 
 
 
  A simple way to estimate iteration complexity of linearly convergent algorithms is as follows.  Given an inequality $s\leq  (1-q)^{k}c$ with $q\in (0,1)$, we may upper bound the right side by an exponential
-$$s\leq c(1-q)^{k}\leq c\exp(-qk)$$and then set the right side to $\varepsilon$. We may then be sure that the inequality $s\leq \varepsilon$ holds after $k\geq \lceil q^{-1}\log\left(\frac{c}{\varepsilon}\right) \rceil$ iterations. Using this strategy with Theorem 2.1 and Corollary 2.2 shows that GD with either choice of stepsize $\frac{2}{\beta+\alpha}$ or $\frac{1}{\beta}$ enjoys iteration complexity $\kappa\cdot\log(\frac{f(x_0)-f^\ast}{\varepsilon})$ up to a multiplication by a numerical constant.
+$$s\leq c(1-q)^{k}\leq c\exp(-qk)$$and then set the right side to $\varepsilon$. We may then be sure that the inequality $s\leq \varepsilon$ holds after $k\geq \lceil q^{-1}\log\left(\frac{c}{\varepsilon}\right) \rceil$ iterations. Using this strategy with Theorem 2.1 and Corollary 2.2 shows that GD with either choice of stepsize $\frac{2}{\beta+\alpha}$ or $\frac{1}{\beta}$ enjoys iteration complexity $\kappa\cdot\log(\frac{f(w_0)-f^\ast}{\varepsilon})$ up to a multiplication by a numerical constant.
 
 
 
-The change of perspective---from the rate of convergence to iteration complexity---is also valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$ and the **logarithmic dependence on accuracy and initialization scale** $\log(\frac{f(x_0)-f^\ast}{\varepsilon})$.
+The change of perspective---from the rate of convergence to iteration complexity---is also valuable because it separates two distinct contributions to the difficulty of the problem: the **condition number** $\kappa$ and the **logarithmic dependence on accuracy and initialization scale** $\log(\frac{f(w_0)-f^\ast}{\varepsilon})$.
 
 ### Visualizing the effect of condition number
 
@@ -209,7 +209,7 @@ The following animation shows gradient descent on two quadratics with the same s
 
 ![Gradient descent: well-conditioned vs ill-conditioned](figures/gd_condition.gif)
 
-As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\bigl(f(x_k)-f^\ast\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
+As a concrete numerical illustration, the  plot below shows gradient descent with stepsize $\eta=1/\beta$ on convex quadratics with varying condition numbers, with all runs initialized at the origin. The vertical axis is $\log\bigl(f(w_k)-f^\ast\bigr)$ (shown on a semilog scale): larger $\kappa$ produces slower decay.
 
 ![GD with stepsize 1/beta for varying condition numbers](figures/gd_condition_number_performance.png)
 
@@ -224,26 +224,26 @@ At this point we have extracted essentially the best guarantee available from on
 ## 3. Acceleration by Chebyshev Stepsizes {#sec-3}
 
 
-The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value after $k$ iteration using a fixed step-size; in essence, the argument reduced to choosing a fixed step-size that guarantees the largest function value decrease in a single step and then iterating the bound. We now show that by monitoring performance across the entire time horizon, it is possible to choose a **time-varying stepsize** that yields a much faster rate of convergence. To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = x_j - x^\ast$ evolves as $e_{j+1} = (I - \eta_j A)\,e_j$. Therefore, after $k$ steps we have:
+The analysis of gradient descent so far was quite crude in that it was based on lower-bounding the improvement in function value after $k$ iteration using a fixed step-size; in essence, the argument reduced to choosing a fixed step-size that guarantees the largest function value decrease in a single step and then iterating the bound. We now show that by monitoring performance across the entire time horizon, it is possible to choose a **time-varying stepsize** that yields a much faster rate of convergence. To see this, consider gradient descent with *time-varying* stepsizes $\eta_0, \eta_1, \ldots, \eta_{k-1}$. We saw that the error $e_j = w_j - w_\ast$ evolves as $e_{j+1} = (I - \eta_j H)\,e_j$. Therefore, after $k$ steps we have:
 
-$$e_k = (I - \eta_{k-1}A)(I - \eta_{k-2}A)\cdots(I - \eta_0 A)\,e_0 = p_k(A)\,e_0,$$
+$$e_k = (I - \eta_{k-1}H)(I - \eta_{k-2}H)\cdots(I - \eta_0 H)\,e_0 = p_k(H)\,e_0,$$
 
 where $p_k$ is the degree-$k$ polynomial
 
 $$p_k(\lambda) = \prod_{j=0}^{k-1}(1 - \eta_j \lambda).$$
 
-Note that we have $p_k(0) = 1$ regardless of the choice of stepsizes. Expanding $e_k$ in the eigenbasis of $A$ as before yields:
+Note that we have $p_k(0) = 1$ regardless of the choice of stepsizes. Expanding $e_k$ in the eigenbasis of $H$ as before yields:
 
 $$
 \begin{aligned}
-f(x_k) - f^\ast = \tfrac{1}{2}\|e_k\|_A^2
-&= \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, p_k(\lambda_i)^2\, c_i^2 \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2 \cdot \tfrac{1}{2}\|e_0\|_A^2.
+f(w_k) - f^\ast = \tfrac{1}{2}\|e_k\|_H^2
+&= \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, p_k(\lambda_i)^2\, c_i^2 \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2 \cdot \tfrac{1}{2}\|e_0\|_H^2.
 \end{aligned}
 $$
 
 Rearranging we deduce
 
-$$\frac{f(x_k) - f^\ast}{f(x_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
+$$\frac{f(w_k) - f^\ast}{f(w_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k(\lambda)^2.$$
 
 
 
@@ -256,9 +256,9 @@ where $\mathcal{P}^r_k$ denotes the set of polynomials of degree at most $k$ wit
 
 ### Chebyshev polynomials
 
-The **Chebyshev polynomial of the first kind** of degree $k$, denoted $T_k$, is defined recursively: set $T_0(x) = 1$ and $T_1(x) = x$ and define
+The **Chebyshev polynomial of the first kind** of degree $k$, denoted $T_k$, is defined recursively: set $T_0(w) = 1$ and $T_1(w) = w$ and define
 
-$$T_{k+1}(x) = 2x\,T_k(x) - T_{k-1}(x) \qquad \forall k\geq 1.$$
+$$T_{k+1}(w) = 2w\,T_k(w) - T_{k-1}(w) \qquad \forall k\geq 1.$$
 
 An equivalent characterization of Chebyshev polynomials is the expression
 
@@ -268,9 +268,9 @@ $$
 
 Chebyshev polynomials play a special role in numerical analysis because they solve the extremal problem:
 
-> Any degree-$k$ polynomial $p(x)$ with the same leading coefficient as $T_k$ satisfies
+> Any degree-$k$ polynomial $p(w)$ with the same leading coefficient as $T_k$ satisfies
 >
-> $$\max_{x\in [-1,1]} \lvert p(x)\rvert\geq \max_{x\in [-1,1]} \lvert T_k(x)\rvert=1.$$
+> $$\max_{w\in [-1,1]} \lvert p(w)\rvert\geq \max_{w\in [-1,1]} \lvert T_k(w)\rvert=1.$$
 
 In words, among all degree-$k$ polynomials with the same leading coefficient as $T_k$, the Chebyshev polynomial $T_k$ has the smallest maximum absolute value on $[-1,1]$. See the figure below that illustrates a few Chebyshev polynomial $T_k$. 
 
@@ -321,7 +321,7 @@ $$\min_{\substack{p \in \mathcal{P}^r_k \\ p(0) = 1}} \max_{\lambda \in [\alpha,
 
 </div>
 
-*Proof.* We already proved the first inequality. For the second inequality, we use the identity $T_k(x) = \cosh(k\,\operatorname{arccosh}(x))$ valid for every real number $x>1$. Applying this identity with the quantity $\sigma$ gives the relation
+*Proof.* We already proved the first inequality. For the second inequality, we use the identity $T_k(w) = \cosh(k\,\operatorname{arccosh}(w))$ valid for every real number $w>1$. Applying this identity with the quantity $\sigma$ gives the relation
 
 $$
 \begin{aligned}
@@ -351,17 +351,17 @@ $$\eta_j = \tfrac{1}{\lambda_j}~~ \textrm{where}~~\lambda_j = \tfrac{\beta + \al
 
 *Then as long as $\alpha>0$ the gradient descent iterates satisfy*
 
-$$f(x_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr). \tag{3}$$
+$$f(w_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(w_0) - f^\ast\bigr). \tag{3}$$
 
 </div>
 
 
 *Proof.* Combining the estimate $(2)$ and Lemma 3.1 directly yields
 $$
-\frac{f(x_k) - f^\ast}{f(x_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
+\frac{f(w_k) - f^\ast}{f(w_0) - f^\ast} \leq \max_{\lambda \in [\alpha, \beta]} p_k^*(\lambda)^2 = \frac{1}{T_k(\sigma)^2}\leq 4\left(\frac{\sqrt{\kappa}-1}{\sqrt{\kappa}+1}\right)^{2k}.
 $$ This completes the proof. <span style="float: right;">$\square$</span>
 
-Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\log((f(x_0)-f^\ast)/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\log((f(x_0)-f^\ast)/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
+Thus, the iteration complexity of Chebyshev-accelerated gradient descent is $O(\sqrt{\kappa}\,\log((f(w_0)-f^\ast)/\varepsilon))$---a **square-root improvement** over the $O(\kappa\,\log((f(w_0)-f^\ast)/\varepsilon))$ complexity of fixed-stepsize gradient descent. For $\kappa = 100$, this is the difference between roughly $10$ and $100$ iterations.
 
 
 
@@ -387,20 +387,20 @@ As a final illustration, the plot below overlays GD with stepsize $1/\beta$ (sol
 
 ### From polynomials to Krylov subspaces
 
-The Chebyshev method discussed in Section 3 achieves the iteration complexity $O(\sqrt{\kappa}\,\ln((f(x_0)-f^\ast)/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
+The Chebyshev method discussed in Section 3 achieves the iteration complexity $O(\sqrt{\kappa}\,\ln((f(w_0)-f^\ast)/\varepsilon))$ by cleverly choosing time-varying stepsizes---but it requires advance knowledge of the extreme eigenvalues $\alpha$ and $\beta$. Moreover, the total number of iterations must be set in advance in order to define the stepsizes. A natural question arises:
 
 > Can we design an adaptive algorithm that matches this rate adaptively, without knowing the spectrum nor setting the time horizon?
 
-The key observation is that gradient descent with *any* sequence of stepsizes produces iterates that lie in a specific linear subspace. Due to the recursion $x_{j+1} = x_j - \eta_j(Ax_j - b)$, one readily verifies the inclusion
+The key observation is that gradient descent with *any* sequence of stepsizes produces iterates that lie in a specific linear subspace. Due to the recursion $w_{j+1} = w_j - \eta_j(Hw_j - b)$, one readily verifies the inclusion
 
 $$
-x_k \in x_0 + \mathcal{K}_k(A, r_0),
+w_k \in w_0 + \mathcal{K}_k(H, r_0),
 $$
 
-where $r_0 := b - Ax_0$ is the initial residual and
+where $r_0 := b - Hw_0$ is the initial residual and
 
 $$
-\mathcal{K}_k(A, r_0) := \mathrm{span}\{r_0,\, Ar_0,\, A^2 r_0,\, \ldots,\, A^{k-1}r_0\}
+\mathcal{K}_k(H, r_0) := \mathrm{span}\{r_0,\, Hr_0,\, H^2 r_0,\, \ldots,\, H^{k-1}r_0\}
 $$
 
 is the **Krylov subspace** of order $k$. Both fixed-stepsize gradient descent and the Chebyshev method search within this subspace but do not fully exploit it. The natural idea is to search *optimally* within the Krylov subspace at each step.
@@ -409,24 +409,24 @@ is the **Krylov subspace** of order $k$. Both fixed-stepsize gradient descent an
 
 The **Krylov subspace method** is the idealized algorithm that, at each step $k$, sets
 
-$$x_k = \argmin_{x \,\in\, x_0 + \mathcal{K}_k(A,\,r_0)} f(x). \tag{4}$$
+$$w_k = \argmin_{w \,\in\, w_0 + \mathcal{K}_k(H,\,r_0)} f(w). \tag{4}$$
 
-It is illuminating to compare the *exact* performance of the Krylov method to that of gradient descent with time-varying stepsizes. Write as usual $e_0 = x_0 - x^\ast = \sum_{i=1}^d c_i v_i$ in the eigenbasis of $A$. Recall that optimizing over the stepsizes $\eta_0,\ldots,\eta_{k-1}$, yields the function-value guarantee for the last iterate of gradient descent:
-
-$$
-f(x_k) - f^\ast \;=\;\min_{\substack{p \in \mathcal{P}^{r}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}. \tag{4a}
-$$
-
-For the Krylov method, any point $x \in x_0 + \mathcal{K}_k(A,r_0)$ can be written as $x = x_0 + q(A)\,r_0$ for some polynomial $q$ of degree at most $k-1$. Using the expression $r_0 = -A\,e_0$ this becomes
+It is illuminating to compare the *exact* performance of the Krylov method to that of gradient descent with time-varying stepsizes. Write as usual $e_0 = w_0 - w_\ast = \sum_{i=1}^d c_i v_i$ in the eigenbasis of $H$. Recall that optimizing over the stepsizes $\eta_0,\ldots,\eta_{k-1}$, yields the function-value guarantee for the last iterate of gradient descent:
 
 $$
-x - x^\ast \;=\; e_0 - q(A)\,A\,e_0 \;=\; p(A)\,e_0, \tag{5}
+f(w_k) - f^\ast \;=\;\min_{\substack{p \in \mathcal{P}^{r}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}. \tag{4a}
+$$
+
+For the Krylov method, any point $w \in w_0 + \mathcal{K}_k(H,r_0)$ can be written as $w = w_0 + q(H)\,r_0$ for some polynomial $q$ of degree at most $k-1$. Using the expression $r_0 = -H\,e_0$ this becomes
+
+$$
+w - w_\ast \;=\; e_0 - q(H)\,H\,e_0 \;=\; p(H)\,e_0, \tag{5}
 $$
 
 where we define the polynomial $p(\lambda) = 1 - \lambda\,q(\lambda)$. As $q$ varies over polynomials of degree at most $k-1$, the polynomial $p$ varies over *all* of $\mathcal{P}_k$ with $p(0)=1$, with no real-root restriction. The defining property $(4)$ therefore yields the *equality*
 
 $$
-f(x_k) - f^\ast \;=\; \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}\qquad \forall k. \tag{4b}
+f(w_k) - f^\ast \;=\; \min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}} \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, c_i^2\, p(\lambda_i)^{2}\qquad \forall k. \tag{4b}
 $$
 
 The two expressions $(4a)$ and $(4b)$ differ in exactly one formal respect: the Krylov method optimizes over *all* polynomials with $p(0)=1$, whereas gradient descent is confined to those with real roots. 
@@ -436,46 +436,46 @@ The two expressions $(4a)$ and $(4b)$ differ in exactly one formal respect: the 
 **Theorem 4.1 (Krylov method convergence).** *Assuming $\alpha > 0$, the Krylov subspace method $(4)$ satisfies*
 
 $$
-f(x_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(x_0) - f^\ast\bigr)
+f(w_k) - f^\ast \leq 4\left(\frac{\sqrt{\kappa} - 1}{\sqrt{\kappa} + 1}\right)^{2k}\bigl(f(w_0) - f^\ast\bigr)
 \qquad \forall k\geq 0.
 $$
 
-*Moreover, the method converges in at most $m$ iterations, where $m$ is the number of distinct eigenvalues of $A$.*
+*Moreover, the method converges in at most $m$ iterations, where $m$ is the number of distinct eigenvalues of $H$.*
 
 </div>
 
-*Proof.* The linear rate follows directly from Theorem $3.1$: the $k$th iterate produced by the Chebyshev stepsizes lies in $x_0+\mathcal{K}_k(A,r_0)$, whereas the Krylov method minimizes $f$ over that entire affine space, and so cannot do worse.
+*Proof.* The linear rate follows directly from Theorem $3.1$: the $k$th iterate produced by the Chebyshev stepsizes lies in $w_0+\mathcal{K}_k(H,r_0)$, whereas the Krylov method minimizes $f$ over that entire affine space, and so cannot do worse.
 
-To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}\_m$ with $p(0)=1$ for which $\sum\_{i=1}^d \lambda\_i\,c\_i^2\,p(\lambda\_i)^2 = 0$, since this forces $f(x\_m) = f^\ast$ and hence $x\_m = x^\ast$. Take
+To prove finite termination, observe that by $(4b)$ it suffices to exhibit a polynomial $p \in \mathcal{P}\_m$ with $p(0)=1$ for which $\sum\_{i=1}^d \lambda\_i\,c\_i^2\,p(\lambda\_i)^2 = 0$, since this forces $f(w\_m) = f^\ast$ and hence $w\_m = w_\ast$. Take
 
 $$
 p(\lambda):=\prod_{i=1}^m\left(1-\frac{\lambda}{\lambda_i}\right),
 $$
 
-where $\lambda_1,\ldots,\lambda_m$ are the distinct eigenvalues of $A$. Then $p$ has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $A$, so the sum is zero as required. <span style="float: right;">$\square$</span>
+where $\lambda_1,\ldots,\lambda_m$ are the distinct eigenvalues of $H$. Then $p$ has degree $m$, satisfies $p(0)=1$, and vanishes at every eigenvalue of $H$, so the sum is zero as required. <span style="float: right;">$\square$</span>
 
-The convergence bound in Theorem 4.1 is identical to the Chebyshev bound in Theorem 3.1, and the iteration complexity has the same order $O(\sqrt{\kappa}\,\ln((f(x_0)-f^\ast)/\varepsilon))$. Importantly, the Krylov method achieves this complexity *without knowing $\alpha$ or $\beta$ and without requiring to specify the time horizon $k$*; moreover, finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
+The convergence bound in Theorem 4.1 is identical to the Chebyshev bound in Theorem 3.1, and the iteration complexity has the same order $O(\sqrt{\kappa}\,\ln((f(w_0)-f^\ast)/\varepsilon))$. Importantly, the Krylov method achieves this complexity *without knowing $\alpha$ or $\beta$ and without requiring to specify the time horizon $k$*; moreover, finite termination provides an absolute guarantee of at most $m$ steps, where $m$ is the number of distinct eigenvalues. In practice, clustered eigenvalues lead to far fewer iterations than the worst-case bound suggests.
 
 
 ### The Conjugate Gradient algorithm implements the Krylov method 
 
 The Krylov subspace method $(4)$ is conceptual: a direct implementation would solve a $k$-dimensional linear optimization problem at each step, with cost growing as $k$ increases. The **Conjugate Gradient (CG)** algorithm is an implementation of the Krylov method that uses only **one matrix-vector product per iteration**.
 
-The key idea is to iteratively build a basis of the Krylov subspaces that is orthogonal with respect to the inner product $\langle x,y\rangle_A=x^\top Ay$, so that each successive minimization reduces to a single line search. Conceptually, this basis is formed by a Gram--Schmidt process. The special structure of Krylov subspaces ensures that each Gram--Schmidt update requires only the immediately preceding direction---a **short recurrence**---rather than all previous directions. 
+The key idea is to iteratively build a basis of the Krylov subspaces that is orthogonal with respect to the inner product $\langle w,y\rangle_H=w^\top Hy$, so that each successive minimization reduces to a single line search. Conceptually, this basis is formed by a Gram--Schmidt process. The special structure of Krylov subspaces ensures that each Gram--Schmidt update requires only the immediately preceding direction---a **short recurrence**---rather than all previous directions. 
 
 
 
 <p>
-Concretely, suppose that we have constructed an $A$-orthogonal basis $\lbrace p_i\rbrace _{i=0}^{k-1}$ for $\mathcal{K}_{k}$ and that we have available a minimizer  $x_k$ of $f$ on $x_0 + \mathcal{K}_k$. Let us see how we can efficiently extend the $A$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $x_{k+1}$ of $f$ on $x_0 + \mathcal{K}_{k+1}$. To this end, define the residuals $$r_i=-\nabla f(x_i)=b-Ax_i.$$
+Concretely, suppose that we have constructed an $H$-orthogonal basis $\lbrace p_i\rbrace _{i=0}^{k-1}$ for $\mathcal{K}_{k}$ and that we have available a minimizer  $w_k$ of $f$ on $w_0 + \mathcal{K}_k$. Let us see how we can efficiently extend the $H$-orthogonal basis to $\mathcal{K}_{k}$ and construct the minimizer $w_{k+1}$ of $f$ on $w_0 + \mathcal{K}_{k+1}$. To this end, define the residuals $$r_i=-\nabla f(w_i)=b-Hw_i.$$
 </p>
 <p>
-Observe that we may write $r_k=b-Ax_k=r_0-A(x_k-x_0)$ and therefore $r_k$ lies in $\mathcal{K}_{k+1}$. Now, set 
-$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $A$-orthogonal to $\lbrace p_i\rbrace _{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Ap_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Ap_{k-1}}{p_{k-1}^\top Ap_{k-1}}$. Now for any $i<k-1$ we compute
-$$p_{k}^{\top}A p_{i}=r_k^\top A p_{i}+\beta_{k-1}p_{k-1}^{\top}Ap_i.$$ Observe that $p_{k-1}^{\top}Ap_i=0$ by assumed A-orthogonality of $\lbrace p_i\rbrace _{i=0}^{k-1}$ and $r_k^\top A p_{i}=0$ because $A p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $x_k$ imply  $r_k\perp K_{k}$. Thus $\lbrace p_i\rbrace _{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
+Observe that we may write $r_k=b-Hw_k=r_0-H(w_k-w_0)$ and therefore $r_k$ lies in $\mathcal{K}_{k+1}$. Now, set 
+$$p_{k}=r_k+\beta_{k-1} p_{k-1},$$ for a constant $\beta_{k-1}$ to be chosen. We would like to ensure that $p_{k}$ is $H$-orthogonal to $\lbrace p_i\rbrace _{i=0}^{k-1}$ . To this end, setting $p_{k}^\top Hp_{k-1}=0$ yields the unique choice of $\beta_{k-1}=-\frac{r_k^\top Hp_{k-1}}{p_{k-1}^\top Hp_{k-1}}$. Now for any $i<k-1$ we compute
+$$p_{k}^{\top}H p_{i}=r_k^\top H p_{i}+\beta_{k-1}p_{k-1}^{\top}Hp_i.$$ Observe that $p_{k-1}^{\top}Hp_i=0$ by assumed A-orthogonality of $\lbrace p_i\rbrace _{i=0}^{k-1}$ and $r_k^\top H p_{i}=0$ because $H p_{i}$ lies in $\mathcal{K}_{i+1}$ and the optimality conditions for $w_k$ imply  $r_k\perp K_{k}$. Thus $\lbrace p_i\rbrace _{i=0}^{k}$ is indeed an A-orthogonal basis for $\mathcal{K}_{k}$.
 It remains to declare 
-$$x_{k+1}=\argmin_{\eta} f(x_k+\eta p_{k}). \tag{6}$$Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
-$$r_{k+1}^\top p_{i}=(r_k-\eta_k Ap_k)^{\top}p_i=r_k^\top p_i-\eta_k p_k^\top Ap_i=0,$$
-where $\eta_k$ is the minimizer of $(6)$. Thus $x_{k+1}$ is indeed the minimizer of $f$ on $x_0+\mathcal{K}_{k+1}$.
+$$w_{k+1}=\argmin_{\eta} f(w_k+\eta p_{k}). \tag{6}$$Indeed, taking the derivative in $\eta$ implies $r_{k+1}\perp p_{k}$ and for any $i<k$ we have orthogonality
+$$r_{k+1}^\top p_{i}=(r_k-\eta_k Hp_k)^{\top}p_i=r_k^\top p_i-\eta_k p_k^\top Hp_i=0,$$
+where $\eta_k$ is the minimizer of $(6)$. Thus $w_{k+1}$ is indeed the minimizer of $f$ on $w_0+\mathcal{K}_{k+1}$.
 The algorithm we just constructed is called the conjugate gradient method and is summarized in the following.
 </p>
 
@@ -483,28 +483,28 @@ The algorithm we just constructed is called the conjugate gradient method and is
 
 **Algorithm 1** (Conjugate Gradient Method)
 
-**Input:** $x_0 \in \mathbb{R}^d$
+**Input:** $w_0 \in \mathbb{R}^d$
 
-1. Set $r_0 = b - Ax_0$, $\;p_0 = r_0$
+1. Set $r_0 = b - Hw_0$, $\;p_0 = r_0$
 2. **For** $k = 0, 1, 2, \ldots$ do:
-3. $\qquad \eta_k = \dfrac{r_k^\top r_k}{p_k^\top A p_k}$
-4. $\qquad x_{k+1} = x_k + \eta_k\, p_k$
-5. $\qquad r_{k+1} = r_k - \eta_k\, A p_k$
-6. $\qquad \beta_k = -\dfrac{r_{k+1}^\top A p_k}{p_k^\top A p_k}$
+3. $\qquad \eta_k = \dfrac{r_k^\top r_k}{p_k^\top H p_k}$
+4. $\qquad w_{k+1} = w_k + \eta_k\, p_k$
+5. $\qquad r_{k+1} = r_k - \eta_k\, H p_k$
+6. $\qquad \beta_k = -\dfrac{r_{k+1}^\top H p_k}{p_k^\top H p_k}$
 7. $\qquad p_{k+1} = r_{k+1} + \beta_k\, p_k$
 
 </div>
 
 
-Each iteration of the conjugate gradient method requires one matrix-vector product $Ap_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Ax_k$ are the **residuals** satisfying $r_k = -\nabla f(x_k)$, while the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $x_k + \eta\, p_k$, while $\beta_k$ ensures $A$-orthogonality of consecutive search directions.
+Each iteration of the conjugate gradient method requires one matrix-vector product $Hp_k$, the same per-step cost as gradient descent. The vectors $r_k = b - Hw_k$ are the **residuals** satisfying $r_k = -\nabla f(w_k)$, while the vectors $p_k$ are the **search directions**. The stepsize $\eta_k$ minimizes $f$ along the ray $w_k + \eta\, p_k$, while $\beta_k$ ensures $H$-orthogonality of consecutive search directions.
 
-*Remark.* In the literature, the update for $\beta_k$ is usually written in the equivalent form $\beta_k = \lVert r_{k+1}\rVert ^2/\lVert r_k\rVert ^2$. The equivalence is straightforward to establish from the residual recursion $Ap_k = (r_k - r_{k+1})/\eta_k$; we omit the argument for brevity. 
+*Remark.* In the literature, the update for $\beta_k$ is usually written in the equivalent form $\beta_k = \lVert r_{k+1}\rVert ^2/\lVert r_k\rVert ^2$. The equivalence is straightforward to establish from the residual recursion $Hp_k = (r_k - r_{k+1})/\eta_k$; we omit the argument for brevity. 
 
 
 
 ### Visualizing CG
 
-The figure below compares GD and CG on the same ill-conditioned 2D quadratic ($\kappa = 12$). Gradient descent (blue) zig-zags along the narrow valley, requiring many iterations to approach the minimum. CG (red) reaches the minimum in exactly 2 steps---the dimension of the problem---by choosing $A$-orthogonal search directions that span the full space.
+The figure below compares GD and CG on the same ill-conditioned 2D quadratic ($\kappa = 12$). Gradient descent (blue) zig-zags along the narrow valley, requiring many iterations to approach the minimum. CG (red) reaches the minimum in exactly 2 steps---the dimension of the problem---by choosing $H$-orthogonal search directions that span the full space.
 
 ![GD vs CG on a 2D quadratic](figures/gd_vs_cg_2d.png)
 
@@ -519,7 +519,7 @@ The next figure repeats the varying-$\kappa$ experiment from Section 3, now with
 
 ### Motivation
 
-The convergence guarantees of the previous sections all rely on the assumption $\alpha > 0$---that is, $A$ is positive definite. When $\alpha$ is very close to zero, however, the condition number $\kappa = \beta/\alpha$ can become arbitrarily large and the linear convergence bounds of Theorems 1, 2, and 3 essentially become vacuous. This situation arises often in practice. As a concrete example let us look at the prototypical problem of solving a linear system generated by a **kernel matrix**.
+The convergence guarantees of the previous sections all rely on the assumption $\alpha > 0$---that is, $H$ is positive definite. When $\alpha$ is very close to zero, however, the condition number $\kappa = \beta/\alpha$ can become arbitrarily large and the linear convergence bounds of Theorems 1, 2, and 3 essentially become vacuous. This situation arises often in practice. As a concrete example let us look at the prototypical problem of solving a linear system generated by a **kernel matrix**.
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
@@ -585,41 +585,41 @@ The figure below illustrates this phenomenon on synthetic data. We draw $n=5000$
 
 
 
-We will now develop convergence guarantees for all of the methods we have seen---gradient descent, Chebyshev-accelerated gradient descent, and the Krylov method---that are insensitive to the minimal eigenvalue of $A$. The price to pay is that the logarithmic dependence on $1/\varepsilon$ in the positive definite case degrades to a polynomial dependence on $1/\varepsilon$.
+We will now develop convergence guarantees for all of the methods we have seen---gradient descent, Chebyshev-accelerated gradient descent, and the Krylov method---that are insensitive to the minimal eigenvalue of $H$. The price to pay is that the logarithmic dependence on $1/\varepsilon$ in the positive definite case degrades to a polynomial dependence on $1/\varepsilon$.
 
 ### Setup
 
-We consider the same quadratic objective $f(x) = \tfrac{1}{2}x^\top Ax - b^\top x$, but now we allow $\alpha = 0$. We assume throughout that $b \in \mathrm{range}(A)$, ensuring that the solution set
+We consider the same quadratic objective $f(w) = \tfrac{1}{2}w^\top Hw - b^\top w$, but now we allow $\alpha = 0$. We assume throughout that $b \in \mathrm{range}(H)$, ensuring that the solution set
 
-$$S = \{x \in \mathbb{R}^d : Ax = b\}$$
+$$S = \{w \in \mathbb{R}^d : Hw = b\}$$
 
-is nonempty and we let $x^{\ast}\in S$ be arbitrary. 
+is nonempty and we let $w_\ast\in S$ be arbitrary. 
 
-The eigenvalues of $A$ are ordered as
+The eigenvalues of $H$ are ordered as
 
 $$0 = \lambda_1 = \cdots = \lambda_r < \lambda_{r+1} \leq \cdots \leq \lambda_d = \beta,$$
 
-where $r \geq 1$ is the dimension of $\ker(A)$.
+where $r \geq 1$ is the dimension of $\ker(H)$.
 
 
 
 ### Gradient descent
 
 We begin with the convergence rate of gradient descent. The key idea is that we have previously shown the exact relation 
-$$f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\eta\lambda_i)^{2k}\,c_i^2$$
-where $\eta$ is the stepsize and  $c_i$ are the coefficients of the initial error in the eigenbasis of $A$. Previously, we pulled out $\sup_{\lambda\in [\alpha,\beta]}(1-\eta\lambda)^{2k}$ from the sum. We now instead pull out $\sup_{\lambda\in [\alpha,\beta]}\lambda(1-\eta\lambda)^{2k}$.
+$$f(w_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\eta\lambda_i)^{2k}\,c_i^2$$
+where $\eta$ is the stepsize and  $c_i$ are the coefficients of the initial error in the eigenbasis of $H$. Previously, we pulled out $\sup_{\lambda\in [\alpha,\beta]}(1-\eta\lambda)^{2k}$ from the sum. We now instead pull out $\sup_{\lambda\in [\alpha,\beta]}\lambda(1-\eta\lambda)^{2k}$.
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 6.1 (Sublinear convergence of gradient descent).** *With stepsize $\eta = 1/\beta$, the gradient descent iterates satisfy*
 
-$$f(x_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|x_0 - x^\ast\|^2 \tag{7}.$$
+$$f(w_k) - f^\ast \leq \frac{\beta}{2(2k+1)}\,\|w_0 - w_\ast\|^2 \tag{7}.$$
 
 </div>
 
-*Proof.* Writing out the initial error $e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i$ in the eigen-basis of $A$ yields
+*Proof.* Writing out the initial error $e_0=w_0-w_\ast=\sum_{i=1}^d c_i v_i$ in the eigen-basis of $H$ yields
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in [0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
+f(w_k) - f^\ast = \frac{1}{2}\sum_{i=1}^{d}\lambda_i(1-\lambda_i/\beta)^{2k}\,c_i^2 \leq \frac{1}{2}\max_{\lambda \in [0,\beta]}\lambda(1-\lambda/\beta)^{2k}\cdot\|e_0\|^2.
 $$
 
 Elementary calculus shows $\sup_{t\in [0,1]}t(1-t)^{q}=\frac{1}{1+q}(\frac{q}{1+q})^q\leq \frac{1}{1+q}$. Therefore setting $q=2k$ yields 
@@ -629,18 +629,18 @@ $$\max_{\lambda \in (0,\beta]}\lambda(1-\lambda/\beta)^{2k} \leq \frac{\beta}{2k
 which completes the proof. <span style="float: right;">$\square$</span>
 
 
-From Theorem 6.1, converting to complexity, the bound $f(x_k) - f^\ast \leq \varepsilon$ is guaranteed to hold whenever
+From Theorem 6.1, converting to complexity, the bound $f(w_k) - f^\ast \leq \varepsilon$ is guaranteed to hold whenever
 
-$$k \geq \frac{\beta\,\|x_0 - x^\ast\|^2}{4\varepsilon}.$$
+$$k \geq \frac{\beta\,\|w_0 - w_\ast\|^2}{4\varepsilon}.$$
 
 Thus the iteration complexity is
 
-$$O\!\left(\frac{\beta\,\|x_0 - x^\ast\|^2}{\varepsilon}\right).$$
+$$O\!\left(\frac{\beta\,\|w_0 - w_\ast\|^2}{\varepsilon}\right).$$
 
 Compared with the $O(\kappa\,\ln(1/\varepsilon))$ complexity of gradient descent in the positive definite case, the dependence on accuracy has changed from **logarithmic** to **polynomial**: achieving an additional digit of accuracy now requires a tenfold increase in iterations, rather than a fixed additive cost. This is the hallmark of sublinear convergence.
 
 
-Note that an important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\lVert x_0 - x^\ast\rVert ^2$ rather than the initial function gap $f(x_0) - f^\ast$, and this is unavoidable.
+Note that an important feature of Theorem 6.1 is that the convergence bound involves the squared Euclidean distance $\lVert w_0 - w_\ast\rVert ^2$ rather than the initial function gap $f(w_0) - f^\ast$, and this is unavoidable.
 
 ### Acceleration by Chebyshev stepsizes
 
@@ -649,9 +649,9 @@ As in the positive definite case, the $O(1/k)$ rate of fixed-stepsize gradient d
 
 ### Chebyshev polynomials of the second kind
 
- **Chebyshev polynomials of the second kind** are defined by the same recurrence as $T_k$ but with a different initial condition: set $U_0(x) = 1$ and $U_1(x) = 2x$ and define
+ **Chebyshev polynomials of the second kind** are defined by the same recurrence as $T_k$ but with a different initial condition: set $U_0(w) = 1$ and $U_1(w) = 2w$ and define
 
-$$U_{j+1}(x) = 2x\,U_j(x) - U_{j-1}(x) \qquad \forall j\geq 1.$$
+$$U_{j+1}(w) = 2w\,U_j(w) - U_{j-1}(w) \qquad \forall j\geq 1.$$
 
 An equivalent trigonometric characterization is
 
@@ -663,16 +663,16 @@ from which one directly sees $U_j(1) = j+1$. See the figure below.
 
 The Chebyshev polynomials of the second kind solve a weighted analogue of the extremal problem for $T_k$:
 
-> Any degree-$k$ polynomial $p(x)$ with the same leading coefficient as $U_k$ satisfies
+> Any degree-$k$ polynomial $p(w)$ with the same leading coefficient as $U_k$ satisfies
 >
-> $$\max_{x\in [-1,1]} \sqrt{1-x^2}\,\lvert p(x)\rvert\geq \max_{x\in [-1,1]} \sqrt{1-x^2}\,\lvert U_k(x)\rvert=1.$$
+> $$\max_{w\in [-1,1]} \sqrt{1-w^2}\,\lvert p(w)\rvert\geq \max_{w\in [-1,1]} \sqrt{1-w^2}\,\lvert U_k(w)\rvert=1.$$
 
-The equality on the right follows from the identity $\sqrt{1-x^2}\,U_k(x) = \sin((k+1)\theta)$ when $x=\cos\theta$. As we will see, the weight $\sqrt{1-x^2}$ is precisely what arises from the extra factor of $\lambda$ in the PSD minimax problem after the change of variables.
+The equality on the right follows from the identity $\sqrt{1-w^2}\,U_k(w) = \sin((k+1)\theta)$ when $w=\cos\theta$. As we will see, the weight $\sqrt{1-w^2}$ is precisely what arises from the extra factor of $\lambda$ in the PSD minimax problem after the change of variables.
 
 The key properties, paralleling those of $T_k$, are:
 1. **Boundedness:** $\lvert U_k(\cos\theta)\rvert \leq k+1$ for all $\theta$, and moreover $\lvert \sin\theta\, U_k(\cos\theta)\rvert = \lvert\sin((k+1)\theta)\rvert \leq 1$.
 2. **Roots:** $U_{k}$ has $k$ roots in $(-1,1)$ at $\cos(j\pi/(k+1))$ for $j = 1, \ldots, k$.
-3. **Growth at edges:** $U_k(1) = k+1$, so $U_k$ grows polynomially at $x=1$, in contrast to the exponential growth of $T_k$.
+3. **Growth at edges:** $U_k(1) = k+1$, so $U_k$ grows polynomially at $w=1$, in contrast to the exponential growth of $T_k$.
 
 We now linearly reparametrize and rescale the $U_{k-1}$ and define $$\phi_k(\lambda) = \left(1 - \frac{\lambda}{\beta}\right)\frac{U_{k-1}(1 - 2\lambda/\beta)}{k}.$$
 Note that we have $\phi_k(0) = 1$ and the roots of $\phi_k$ on $[0,\beta]$ are $\lambda_j = \beta\sin^2(j\pi/(2k))$ for $j = 1, \ldots, k$.
@@ -708,13 +708,13 @@ $$\eta_j = \frac{1}{\beta\sin^2(j\pi/(2k))} \qquad \textrm{for}~ j = 1, \ldots, 
 
 *Then the gradient descent iterates satisfy*
 
-$$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2. \tag{9}$$
+$$f(w_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|w_0 - w_\ast\|^2. \tag{9}$$
 
 </div>
 
-*Proof.* Write the initial error in the eigenbasis of $A$ as
+*Proof.* Write the initial error in the eigenbasis of $H$ as
 $
-e_0=x_0-x^\ast=\sum_{i=1}^d c_i v_i.
+e_0=w_0-w_\ast=\sum_{i=1}^d c_i v_i.
 $ For gradient descent with stepsizes $\eta_1,\dots,\eta_k$, define the degree-$k$ polynomial $
 p_k(\lambda):=\prod_{j=1}^k(1-\eta_j\lambda).
 $ By the choice $
@@ -723,17 +723,17 @@ $ we have $
 p_k(\lambda)=\phi_k(\lambda).
 $ Therefore, the general error formula from Section 2 gives
 $$
-f(x_k) - f^\ast = \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, \phi_k(\lambda_i)^2\, c_i^2
+f(w_k) - f^\ast = \tfrac{1}{2}\sum_{i=1}^d \lambda_i\, \phi_k(\lambda_i)^2\, c_i^2
 \leq \tfrac{1}{2}\max_{\lambda \in [0,\beta]} \lambda\,\phi_k(\lambda)^2 \sum_{i=1}^d c_i^2.
 $$
-Applying Lemma 6.2 and using $\sum_{i=1}^d c_i^2=\lVert e_0\rVert ^2=\lVert x_0-x^\ast\rVert ^2$, we obtain
+Applying Lemma 6.2 and using $\sum_{i=1}^d c_i^2=\lVert e_0\rVert ^2=\lVert w_0-w_\ast\rVert ^2$, we obtain
 $$
-f(x_k) - f^\ast \leq \tfrac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|x_0-x^\ast\|^2
-= \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2.
+f(w_k) - f^\ast \leq \tfrac{1}{2}\cdot\frac{\beta}{4k^2}\cdot\|w_0-w_\ast\|^2
+= \frac{\beta}{8k^2}\,\|w_0 - w_\ast\|^2.
 $$
 This completes the proof. <span style="float: right;">$\square$</span>
 
-Thus, the iteration complexity of the Chebyshev accelerated algorithm is $O(\sqrt{\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon})$---a **square-root improvement** over the $O(\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. This is a **quadratic improvement** in the complexity.
+Thus, the iteration complexity of the Chebyshev accelerated algorithm is $O(\sqrt{\beta\,\lVert w_0 - w_\ast\rVert ^2/\varepsilon})$---a **square-root improvement** over the $O(\beta\,\lVert w_0 - w_\ast\rVert ^2/\varepsilon)$ complexity of fixed-stepsize gradient descent. This is a **quadratic improvement** in the complexity.
 
 The corresponding stepsize schedule in the positive semidefinite case is shown below for several values of $k$.
 
@@ -745,29 +745,29 @@ As in the positive definite case, the Chebyshev stepsizes require knowledge of $
 
 The **Krylov subspace method** in the PSD setting is defined exactly as before: at step $k$, it minimizes $f$ over the affine space
 $$
-x_0+\mathcal{K}_k(A,r_0).
-$$ The only new issue is that $A$ may be singular. However, since $b\in\mathrm{range}(A)$ and $Ax_0\in\mathrm{range}(A)$, the residual $
-r_0=b-Ax_0
-$ lies in $\mathrm{range}(A)$. Therefore the entire Krylov subspace $\mathcal{K}_k(A,r_0)$ is contained in $\mathrm{range}(A)$, and $A$ is positive definite on that subspace. Consequently, the same short-recurrence argument from Section 4 shows that, until termination, the conjugate gradient method is well-defined and implements the PSD Krylov method: at each step, the CG iterate $x_k$ minimizes $f$ over $x_0+\mathcal{K}_k(A,r_0)$.
+w_0+\mathcal{K}_k(H,r_0).
+$$ The only new issue is that $H$ may be singular. However, since $b\in\mathrm{range}(H)$ and $Hw_0\in\mathrm{range}(H)$, the residual $
+r_0=b-Hw_0
+$ lies in $\mathrm{range}(H)$. Therefore the entire Krylov subspace $\mathcal{K}_k(H,r_0)$ is contained in $\mathrm{range}(H)$, and $H$ is positive definite on that subspace. Consequently, the same short-recurrence argument from Section 4 shows that, until termination, the conjugate gradient method is well-defined and implements the PSD Krylov method: at each step, the CG iterate $w_k$ minimizes $f$ over $w_0+\mathcal{K}_k(H,r_0)$.
 With this observation in hand, the convergence analysis is immediate from Theorem 6.2, exactly as in the positive definite case.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 **Theorem 6.3 (CG convergence, PSD case).** *The CG iterates satisfy*
 
-$$f(x_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|x_0 - x^\ast\|^2, \tag{11}$$
+$$f(w_k) - f^\ast \leq \frac{\beta}{8k^2}\,\|w_0 - w_\ast\|^2, \tag{11}$$
 
-*and CG terminates in at most $m$ iterations, where $m$ is the number of distinct nonzero eigenvalues of $A$.*
+*and CG terminates in at most $m$ iterations, where $m$ is the number of distinct nonzero eigenvalues of $H$.*
 
 </div>
 
-*Proof.* The rate follows directly from Theorem 6.2: the $k$th iterate produced by the PSD Chebyshev stepsizes lies in $x_0+\mathcal{K}_k(A,r_0)$, whereas CG minimizes $f$ over that entire affine space and so cannot do worse. <span style="float: right;">$\square$</span>
+*Proof.* The rate follows directly from Theorem 6.2: the $k$th iterate produced by the PSD Chebyshev stepsizes lies in $w_0+\mathcal{K}_k(H,r_0)$, whereas CG minimizes $f$ over that entire affine space and so cannot do worse. <span style="float: right;">$\square$</span>
 
 The bound $(11)$ matches the PSD Chebyshev bound $(9)$; the gain of CG is that it attains this behavior adaptively, without requiring $\beta$ or a preset horizon.
 
 ### Numerical illustration
 
-The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional quadratic whose spectrum follows the power law $\lambda_i = i^{-3}$ (condition number $\approx 8\times 10^6$). For each horizon $k$, the PSD Chebyshev point plotted is the iterate after running all $k$ stepsizes from $x_0$. The sublinear separation between GD ($O(1/k)$) and Chebyshev ($O(1/k^2)$) is clearly visible, while CG reaches high accuracy in far fewer iterations.
+The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional quadratic whose spectrum follows the power law $\lambda_i = i^{-3}$ (condition number $\approx 8\times 10^6$). For each horizon $k$, the PSD Chebyshev point plotted is the iterate after running all $k$ stepsizes from $w_0$. The sublinear separation between GD ($O(1/k)$) and Chebyshev ($O(1/k^2)$) is clearly visible, while CG reaches high accuracy in far fewer iterations.
 
 ![GD vs PSD Chebyshev vs CG for power-law spectrum](figures/gd_cheb_cg_psd.png)
 
@@ -777,15 +777,15 @@ The figure below compares GD, PSD Chebyshev, and CG on a $d=200$ dimensional qua
 
 ### Beyond worst-case analysis
 
-Up to this point, we emphasized worst-case bounds obtained from extreme eigenvalues alone. In this section, we obtain refined and improved guarantees that take into account the entire spectrum of the matrix $A$, rather than its extreme eigenvalues. These refined bounds are important in practice because in high-dimensional problems, the *distribution* of eigenvalues is often far from the worst case, and exploiting this structure leads to substantially sharper estimates.
+Up to this point, we emphasized worst-case bounds obtained from extreme eigenvalues alone. In this section, we obtain refined and improved guarantees that take into account the entire spectrum of the matrix $H$, rather than its extreme eigenvalues. These refined bounds are important in practice because in high-dimensional problems, the *distribution* of eigenvalues is often far from the worst case, and exploiting this structure leads to substantially sharper estimates.
 
 As motivation, recall from Section 4 that the conjugate gradient method satisfies the exact error formula
 
 $$
-f(x_k) - f^\ast \;=\; \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}}\, \frac{1}{2}\sum_{i=1}^d \lambda_i\,p(\lambda_i)^{2}\,c_i^2, \tag{12}
+f(w_k) - f^\ast \;=\; \min_{\substack{p \in \mathcal{P}_k \\ p(0)=1}}\, \frac{1}{2}\sum_{i=1}^d \lambda_i\,p(\lambda_i)^{2}\,c_i^2, \tag{12}
 $$
 
-where $c_i$ are the coefficients of $e_0 = x_0 - x^\ast$ in the eigenbasis of $A$. The worst-case analysis upper bounds this minimum by exhibiting a particular polynomial $p$ — a (shifted) Chebyshev polynomial — and then bounding the resulting sum by pulling out the maximum: $\max_{\lambda\in[\alpha,\beta]} p(\lambda)^2$ in the positive definite case, or $\max_{\lambda\in[0,\beta]} \lambda\, p(\lambda)^2$ in the positive semidefinite case. This bound ignores two sources of structure:
+where $c_i$ are the coefficients of $e_0 = w_0 - w_\ast$ in the eigenbasis of $H$. The worst-case analysis upper bounds this minimum by exhibiting a particular polynomial $p$ — a (shifted) Chebyshev polynomial — and then bounding the resulting sum by pulling out the maximum: $\max_{\lambda\in[\alpha,\beta]} p(\lambda)^2$ in the positive definite case, or $\max_{\lambda\in[0,\beta]} \lambda\, p(\lambda)^2$ in the positive semidefinite case. This bound ignores two sources of structure:
 
 1. **Initial error.** If the components $c_i$ of the initial error are small for small eigenvalues, the sum is dominated by well-conditioned directions. This is captured by *source conditions*.
 
@@ -797,9 +797,9 @@ We develop both ideas in turn, then combine them.
 
 A **source condition** of order $s \in \mathbb{R}$ is the assumption
 
-$$e_0 = A^s\,w \qquad \text{for some } w \in \mathbb{R}^d \text{ with } \lVert w\rVert^2 \leq M.$$
+$$e_0 = H^s\,u \qquad \text{for some } u \in \mathbb{R}^d \text{ with } \lVert u\rVert^2 \leq M.$$
 
-In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_i = v_i^\top w$. In the regime $s>0$, the factor $\lambda_i^s$ suppresses the components of $e_0$ along eigenvectors with small eigenvalues, so the initial error is concentrated in the large-eigenvalue directions of $A$. The regime $s\in (-\tfrac{1}{2},0)$ is also meaningful but for a different reason. Since $\lVert e_0\rVert^2 = \sum_i \lambda_i^{2s} w_i^2$ and $2s < 0$, the factor $\lambda_i^{2s}$ amplifies small-eigenvalue components. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $w$, the initial error $\lVert e_0\rVert^2 \asymp d^{-2s\alpha}\lVert w\rVert^2$ grows with $d$ while $\lVert w\rVert^2$ stays of constant order. Therefore convergence guarantees that depend on $\lVert w\rVert$ rather than on $\lVert e_0\rVert$, which we will derive in this section, may still be meaningful.
+In the eigenbasis, this means $c_i = \lambda_i^s\,\tilde{c}_i$ where $\tilde{c}_i = v_i^\top u$. In the regime $s>0$, the factor $\lambda_i^s$ suppresses the components of $e_0$ along eigenvectors with small eigenvalues, so the initial error is concentrated in the large-eigenvalue directions of $H$. The regime $s\in (-\tfrac{1}{2},0)$ is also meaningful but for a different reason. Since $\lVert e_0\rVert^2 = \sum_i \lambda_i^{2s} u_i^2$ and $2s < 0$, the factor $\lambda_i^{2s}$ amplifies small-eigenvalue components. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $u$, the initial error $\lVert e_0\rVert^2 \asymp d^{-2s\alpha}\lVert u\rVert^2$ grows with $d$ while $\lVert u\rVert^2$ stays of constant order. Therefore convergence guarantees that depend on $\lVert u\rVert$ rather than on $\lVert e_0\rVert$, which we will derive in this section, may still be meaningful.
 
 
 
@@ -841,7 +841,7 @@ $$\sum_{i\geq 1} \mu_i^{-2s}\,\lvert\hat{h}_i\rvert^2 \leq M^2.$$
 
 This forces the coefficients of $h$ to decay at least as fast as $\mu_i^s$. For most interesting kernels, the higher-indexed eigenfunctions have increasing oscillations/frequency.
 
-There is also a close connection of the source condition to a quantitative measure of smoothness. This connection is cleanest in one dimension. For the Laplace kernel on $[0,1]$, the eigenvalues decay as $\mu_i \asymp i^{-2}$ and the eigenfunctions closely approximate sines and cosines (up to boundary effects), so the coefficients $\hat{h}_i = \langle h, \phi_i \rangle$ are closely related to the Fourier coefficients of $h$. The standard Fourier characterization of Sobolev spaces says that $f \in H^m$ (i.e., $f$ has $m$ square-integrable derivatives) if and only if $\sum_i i^{2m}\lvert\hat{f}_i\rvert^2 < \infty$. Since $\mu_i \asymp i^{-2}$, the source condition $\sum_i \mu_i^{-2s}\lvert\hat{h}_i\rvert^2 \leq M^2$ becomes $\sum_i i^{4s}\lvert\hat{h}_i\rvert^2 \leq M^2$, which turns out to precisely characterize the Sobolev space $H^{2s}([0,1])$. Thus $s = 1/2$ corresponds to one derivative, $s = 1$ to two derivatives, and so on. 
+There is also a close connection of the source condition to a quantitative measure of smoothness. This connection is cleanest in one dimension. For the Laplace kernel on $[0,1]$, the eigenvalues decay as $\mu_i \asymp i^{-2}$ and the eigenfunctions closely approximate sines and cosines (up to boundary effects), so the coefficients $\hat{h}_i = \langle h, \phi_i \rangle$ are closely related to the Fourier coefficients of $h$. The standard Fourier characterization of Sobolev spaces says that $f \in W^{m,2}$ (i.e., $f$ has $m$ square-integrable derivatives) if and only if $\sum_i i^{2m}\lvert\hat{f}_i\rvert^2 < \infty$. Since $\mu_i \asymp i^{-2}$, the source condition $\sum_i \mu_i^{-2s}\lvert\hat{h}_i\rvert^2 \leq M^2$ becomes $\sum_i i^{4s}\lvert\hat{h}_i\rvert^2 \leq M^2$, which turns out to precisely characterize the Sobolev space $W^{2s,2}([0,1])$. Thus $s = 1/2$ corresponds to one derivative, $s = 1$ to two derivatives, and so on. 
 
 **From operator to matrix.** We now connect the function-level source condition to the finite-sample linear system. Let $\hat\mu_i$ and $v_i$ denote the eigenvalues and eigenvectors of the normalized kernel matrix $\tfrac{1}{n}K$. Given a function $f$, define its sampled vector by evaluation,
 
@@ -852,19 +852,19 @@ We have already seen in Section 6 that we expect $\hat\mu_i \approx \mu_i$. Simi
 $$\frac{v^\top_i f^{(n)}}{\sqrt{n}}=\frac{1}{n}\sum_{i=1}^n (v_i)_j f(x_j)\approx \int \phi_i(x) f(x)~d\nu(x)=\hat f_i.$$
 
 
-Now consider running gradient descent on the normalized system $\tfrac{1}{n}K\alpha = \tfrac{1}{n}y$, which has the same solution $\alpha^\ast = K^{-1}y$ but now $A = \tfrac{1}{n}K$ has bounded eigenvalues $\hat\mu_i \approx \mu_i$. Starting from $\alpha_0 = 0$, the initial error $e_0 = \alpha^\ast$ has coefficients
+Now consider running gradient descent on the normalized system $\tfrac{1}{n}K\alpha = \tfrac{1}{n}y$, which has the same solution $\alpha^\ast = K^{-1}y$ but now $H = \tfrac{1}{n}K$ has bounded eigenvalues $\hat\mu_i \approx \mu_i$. Starting from $\alpha_0 = 0$, the initial error $e_0 = \alpha^\ast$ has coefficients
 
 $$c_i \;:=\; v_i^\top e_0 \;=\; \frac{v_i^\top(\tfrac{1}{n}y)}{\hat\mu_i}\;=\; \frac{v_i^\top h^{(n)}}{\sqrt{n}\hat\mu_i} \;\approx\; \frac{\hat{h}_i}{\sqrt{n}\,\mu_i}.$$
 
 If the function-level source condition $h = T^s g$ holds (so $\hat{h}_i = \mu_i^s\,\hat{g}_i$), this becomes
 
-$$c_i \;\approx\; \frac{\mu_i^{s-1}}{\sqrt{n}}\,\hat{g}_i \;=\; \hat\mu_i^{s-1}\,w_i, \qquad \text{where}\quad w_i = \frac{\hat{g}_i}{\sqrt{n}}.$$
+$$c_i \;\approx\; \frac{\mu_i^{s-1}}{\sqrt{n}}\,\hat{g}_i \;=\; \hat\mu_i^{s-1}\,u_i, \qquad \text{where}\quad u_i = \frac{\hat{g}_i}{\sqrt{n}}.$$
 
 Note that
 
-$$\|w\|_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \|g\|^2_{L^2(\nu)}.$$
+$$\|u\|_2^2=\frac{1}{n}\sum_{i=1}^n \hat{g}_i^2\approx \|g\|^2_{L^2(\nu)}.$$
 
-Thus we have the matrix-level source condition $e_0 = A^{s'}w$ with exponent $s' = s - 1$. The exponent shift is the essential point: **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$.** In particular, one needs $s > 1$ (e.g. $h \in H^{2+\epsilon}$ for the Laplace kernel).
+Thus we have the matrix-level source condition $e_0 = H^{s'}u$ with exponent $s' = s - 1$. The exponent shift is the essential point: **a function-level source condition of order $s$ translates to a matrix-level source condition of order $s' = s-1$.** In particular, one needs $s > 1$ (e.g. $h \in W^{2+\epsilon,2}$ for the Laplace kernel).
 
 **Numerical illustration.** The figures below demonstrate this on a Laplace kernel ($\sigma = 0.15$) with $n = 200$ points drawn uniformly from $[0,1]$. The first figure plots the initial-error coefficients $\lvert c_i\rvert$ versus $\hat\mu_i$ on a log-log scale; the slope of the log-log fit directly reveals the matrix-level source parameter $s'$ that enters Theorem 7.1. For a smooth target $h(x) = \sin(2\pi x) + \tfrac12\cos(4\pi x)$ (left panel), the fitted slope is $s' \approx 0.4$, so Theorem 7.1 predicts rate $O(k^{-1.8})$. For a rough target of random signs (right panel), the fitted slope is $s' \approx -0.9$: the initial error is concentrated in the small-eigenvalue directions, so no source condition holds.
 
@@ -880,44 +880,44 @@ The next figure explains *why* the source exponent changes across kernels. For t
 
 We now show how the source condition controls the rate of convergence of gradient descent. The GD rate is $O(k^{-(1+2s)})$, with two distinct payoffs depending on the sign of $s$:
 
-1. **(faster rate when $s > 0$).** The rate $O(\lVert w\rVert^2\cdot k^{-(1+2s)})$ is strictly faster than $O(\lVert e_0\rVert^2\cdot k^{-1})$. The source condition concentrates the initial error on large-eigenvalue directions, which GD resolves quickly.
+1. **(faster rate when $s > 0$).** The rate $O(\lVert u\rVert^2\cdot k^{-(1+2s)})$ is strictly faster than $O(\lVert e_0\rVert^2\cdot k^{-1})$. The source condition concentrates the initial error on large-eigenvalue directions, which GD resolves quickly.
 
-2. **(dimension-free rate when $s \in (-\tfrac{1}{2}, 0)$).** The rate $O(\lVert w\rVert^2/ k^{1+2s})$ is slower than $O(\lVert e_0\rVert^2/k)$ in terms of $k$, but the bound depends on $\lVert w\rVert^2$ rather than $\lVert e_0\rVert^2$. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $w$, the initial error scales as
+2. **(dimension-free rate when $s \in (-\tfrac{1}{2}, 0)$).** The rate $O(\lVert u\rVert^2/ k^{1+2s})$ is slower than $O(\lVert e_0\rVert^2/k)$ in terms of $k$, but the bound depends on $\lVert u\rVert^2$ rather than $\lVert e_0\rVert^2$. For polynomial eigenvalue decay $\lambda_i \asymp i^{-\alpha}$ with isotropic $u$, the initial error scales as
 
 $$
-\lVert e_0\rVert^2 \;=\; \sum_{i=1}^n \lambda_i^{2s}\,w_i^2 \;\approx\; \frac{\lVert w\rVert^2}{n}\sum_{i=1}^n i^{-2s\alpha} \;\asymp\; \frac{\lVert w\rVert^2}{n}\cdot n^{\,1-2s\alpha} \;=\; n^{-2s\alpha}\,\lVert w\rVert^2,
+\lVert e_0\rVert^2 \;=\; \sum_{i=1}^n \lambda_i^{2s}\,u_i^2 \;\approx\; \frac{\lVert u\rVert^2}{n}\sum_{i=1}^n i^{-2s\alpha} \;\asymp\; \frac{\lVert u\rVert^2}{n}\cdot n^{\,1-2s\alpha} \;=\; n^{-2s\alpha}\,\lVert u\rVert^2,
 $$
 
-Therefore, the vanilla bound diverges as $n \to \infty$, whereas the source-condition bound $O(\lVert w\rVert^2/ k^{1+2s})$ is independent of $n$.
+Therefore, the vanilla bound diverges as $n \to \infty$, whereas the source-condition bound $O(\lVert u\rVert^2/ k^{1+2s})$ is independent of $n$.
 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 
-**Theorem 7.1 (GD with source condition).** *If the initial error satisfies $e_0 = A^s w$ for some $s > -\tfrac{1}{2}$, then GD with $\eta = 1/\beta$ satisfies*
+**Theorem 7.1 (GD with source condition).** *If the initial error satisfies $e_0 = H^s u$ for some $s > -\tfrac{1}{2}$, then GD with $\eta = 1/\beta$ satisfies*
 
-$$f(x_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|w\|^2. \tag{13}$$
+$$f(w_k) - f^\ast \leq \frac{\beta^{1+2s}}{2}\left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\|u\|^2. \tag{13}$$
 
-*In particular, $f(x_k) - f^\ast = O\left(\beta^{1+2s}\,k^{-(1+2s)}\,\lVert w\rVert ^2\right)$ as $k \to \infty$.*
+*In particular, $f(w_k) - f^\ast = O\left(\beta^{1+2s}\,k^{-(1+2s)}\,\lVert u\rVert ^2\right)$ as $k \to \infty$.*
 
 </div>
 
-*Proof.* For GD with stepsize $\eta = 1/\beta$, the error satisfies $e_k = (I - A/\beta)^k e_0$, so
+*Proof.* For GD with stepsize $\eta = 1/\beta$, the error satisfies $e_k = (I - H/\beta)^k e_0$, so
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1-\lambda_i/\beta)^{2k}\,c_i^2.
+f(w_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,(1-\lambda_i/\beta)^{2k}\,c_i^2.
 $$
 
-Writing $c_i = \lambda_i^s \tilde{c}_i$ with $\tilde{c}_i = v_i^\top w$, this becomes
+Writing $c_i = \lambda_i^s \tilde{c}_i$ with $\tilde{c}_i = v_i^\top u$, this becomes
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2,
+f(w_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i^{1+2s}\,(1-\lambda_i/\beta)^{2k}\,\tilde{c}_i^2,
 $$
 
 and therefore
 
 $$
-f(x_k) - f^\ast \leq \frac{\|w\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{14}
+f(w_k) - f^\ast \leq \frac{\|u\|^2}{2}\,\max_{\lambda \in [0,\beta]}\, \lambda^{1+2s}(1-\lambda/\beta)^{2k}. \tag{14}
 $$
 
 It suffices to maximize $g(t) = t^{1+2s}(1-t)^{2k}$ over $t \in [0,1]$, with the identification $\lambda = \beta t$. An elementary computation shows
@@ -926,7 +926,7 @@ $$
 \max_{t\in [0,1]}g(t) = \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}\left(\frac{2k}{2k+1+2s}\right)^{2k} \leq \left(\frac{1+2s}{2k+1+2s}\right)^{1+2s}.
 $$
 
-Multiplying by $\beta^{1+2s}/2$ and $\lVert w\rVert ^2$ gives the bound $(13)$. <span style="float: right;">$\square$</span>
+Multiplying by $\beta^{1+2s}/2$ and $\lVert u\rVert ^2$ gives the bound $(13)$. <span style="float: right;">$\square$</span>
 
 The source condition can also be exploited by time-varying stepsizes. The relevant polynomial problem is now
 
@@ -941,8 +941,8 @@ After the affine change of variables $\lambda = \frac{\beta}{2}(1-t)$, this beco
 **Theorem 7.2 (Time-varying stepsizes with source condition).** *For every $s > -\tfrac{1}{2}$ and every horizon $k \geq 1$, there exists a sequence of stepsizes $\eta_1,\dots,\eta_k$ such that the corresponding GD iterate satisfies*
 
 $$
-f(x_k)-f^\ast
-\leq C_s\,\beta^{1+2s}\,k^{-2(1+2s)}\,\|w\|^2. \tag{15}
+f(w_k)-f^\ast
+\leq C_s\,\beta^{1+2s}\,k^{-2(1+2s)}\,\|u\|^2. \tag{15}
 $$
 
 where $C_s>0$ depends only on $s$. 
@@ -953,14 +953,14 @@ In particular, the rate goes from $O(k^{-2})$ for Chebyshev accelerated GD witho
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Corollary 7.1 (CG with source condition).** *If the initial error satisfies $e_0 = A^s w$ for some $s > -\tfrac{1}{2}$, then the CG iterates satisfy*
+**Corollary 7.1 (CG with source condition).** *If the initial error satisfies $e_0 = H^s u$ for some $s > -\tfrac{1}{2}$, then the CG iterates satisfy*
 
 $$
-f(x_k^{\mathrm{CG}})-f^\ast
-\leq C_s\,\beta^{1+2s}\,k^{-2(1+2s)}\,\|w\|^2,
+f(w_k^{\mathrm{CG}})-f^\ast
+\leq C_s\,\beta^{1+2s}\,k^{-2(1+2s)}\,\|u\|^2,
 $$
 
-*and CG terminates in at most $m$ iterations, where $m$ is the number of distinct nonzero eigenvalues of $A$.*
+*and CG terminates in at most $m$ iterations, where $m$ is the number of distinct nonzero eigenvalues of $H$.*
 
 </div>
 
@@ -970,25 +970,25 @@ The following figure shows the actual convergence of gradient descent (with step
 
 ### The spectral integral
 
-Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that for any first-order method whose error has the form $e_k = p_k(A)\,e_0$ for some polynomial $p_k \in \mathcal{P}_k$ with $p_k(0)=1$ — which includes gradient descent with stepsizes $\eta_j$ (where $p_k(\lambda) = \prod_j(1-\eta_j\lambda)$), the Chebyshev iteration, and the conjugate gradient method (which adaptively minimizes over $p_k$) — we have
+Source conditions improve rates by considering structure in the *initial error*. A complementary improvement comes from considering structure in the *eigenvalue distribution*. Recall from $(12)$ that for any first-order method whose error has the form $e_k = p_k(H)\,e_0$ for some polynomial $p_k \in \mathcal{P}_k$ with $p_k(0)=1$ — which includes gradient descent with stepsizes $\eta_j$ (where $p_k(\lambda) = \prod_j(1-\eta_j\lambda)$), the Chebyshev iteration, and the conjugate gradient method (which adaptively minimizes over $p_k$) — we have
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2,
+f(w_k) - f^\ast = \frac{1}{2}\sum_{i=1}^d \lambda_i\,p_k(\lambda_i)^{2}\,c_i^2,
 $$
 
-where $c_i$ are the coordinates of $e_0$ in the eigenbasis of $A$. The idea is that if $d$ is large and the eigenvalues are well-spread out, the sum in the expression may be estimated as an integral with respect to a continuous density.  To make this precise define the **spectral error measure**
+where $c_i$ are the coordinates of $e_0$ in the eigenbasis of $H$. The idea is that if $d$ is large and the eigenvalues are well-spread out, the sum in the expression may be estimated as an integral with respect to a continuous density.  To make this precise define the **spectral error measure**
 
 $$\mu = \sum_{i=1}^d c_i^2\,\delta_{\lambda_i},$$
 
 where $\delta_{\lambda_i}$ is a Dirac delta measure. Observe that $\mu([0,\beta]) = \lVert e_0\rVert ^2$ and the error can be written as an integral:
 
 $$
-f(x_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,d\mu(\lambda). \tag{16}
+f(w_k) - f^\ast = \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,d\mu(\lambda). \tag{16}
 $$
 
-When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $A$ is $\rho_A$ and the error components are roughly uniform ($c_i^2 \approx \lVert e_0\rVert ^2/d$), then $\phi(\lambda) \approx \lVert e_0\rVert ^2\rho_A(\lambda)$. Note that $\phi$ need not be integrable; what matters is that the error integral $(16)$, which has an extra factor of $\lambda$, converges.
+When $d$ is large and the eigenvalues are well-spread, the discrete measure $\mu$ is well-approximated by a continuous density. Suppose $d\mu(\lambda) \approx \phi(\lambda)\,d\lambda$ for a nonnegative function $\phi$---the **spectral error density**. The density $\phi$ encodes both the eigenvalue distribution and the initial error profile: if the eigenvalue density of $H$ is $\rho_H$ and the error components are roughly uniform ($c_i^2 \approx \lVert e_0\rVert ^2/d$), then $\phi(\lambda) \approx \lVert e_0\rVert ^2\rho_H(\lambda)$. Note that $\phi$ need not be integrable; what matters is that the error integral $(16)$, which has an extra factor of $\lambda$, converges.
 
-Under this approximation, $f(x_k) - f^\ast \approx \mathcal{E}_k$, where
+Under this approximation, $f(w_k) - f^\ast \approx \mathcal{E}_k$, where
 
 $$
 \mathcal{E}_k := \frac{1}{2}\int_0^\beta \lambda\,p_k(\lambda)^{2}\,\phi(\lambda)\,d\lambda.
@@ -1016,15 +1016,15 @@ The figure below illustrates the three regimes. The left panel plots the spectra
 
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Example (polynomial eigenvalue decay).** Kernels such as Laplace and Matérn have eigenvalues that decay polynomially: $\lambda_i \asymp i^{-\alpha}$ for some $\alpha > 0$. To find the corresponding spectral exponent $a$,  we can compute the eigenvalue density $\rho_A$. The empirical CDF of the eigenvalues is $F(\lambda) = \tfrac{1}{d}\cdot \lvert\lbrace i:\lambda_i \leq \lambda\rbrace \rvert$. Since $\lambda_i = Ci^{-\alpha}$ is decreasing, $\lambda_i \leq \lambda$ iff $i \geq (C/\lambda)^{1/\alpha}$, so
+**Example (polynomial eigenvalue decay).** Kernels such as Laplace and Matérn have eigenvalues that decay polynomially: $\lambda_i \asymp i^{-\alpha}$ for some $\alpha > 0$. To find the corresponding spectral exponent $a$,  we can compute the eigenvalue density $\rho_H$. The empirical CDF of the eigenvalues is $F(\lambda) = \tfrac{1}{d}\cdot \lvert\lbrace i:\lambda_i \leq \lambda\rbrace \rvert$. Since $\lambda_i = Ci^{-\alpha}$ is decreasing, $\lambda_i \leq \lambda$ iff $i \geq (C/\lambda)^{1/\alpha}$, so
 
 $$F(\lambda) \approx 1 - \frac{(C/\lambda)^{1/\alpha}}{d} = 1 - \frac{C^{1/\alpha}}{d}\,\lambda^{-1/\alpha}.$$
 
-Differentiating gives $\rho_A(\lambda) = F'(\lambda) \propto \lambda^{-1/\alpha - 1}$. With isotropic error ($c_i^2 \approx \lVert e_0\rVert^2/d$), the spectral error density is $\phi(\lambda)  \propto \lambda^{-1/\alpha - 1}$. Matching to $\phi = M\lambda^{a-1}$ gives $a = -1/\alpha$. 
+Differentiating gives $\rho_H(\lambda) = F'(\lambda) \propto \lambda^{-1/\alpha - 1}$. With isotropic error ($c_i^2 \approx \lVert e_0\rVert^2/d$), the spectral error density is $\phi(\lambda)  \propto \lambda^{-1/\alpha - 1}$. Matching to $\phi = M\lambda^{a-1}$ gives $a = -1/\alpha$. 
 
-Since $a = -1/\alpha < 0$, the total mass $\lVert e_0\rVert^2 = \int \phi\,d\lambda$ diverges---the density $\phi(\lambda) \propto \lambda^{-1/\alpha-1}$ has a non-integrable singularity at $\lambda = 0$. In kernel regression (starting from $x_0 = 0$), this has a concrete interpretation: the initial error is $e_0 = A^{-1}b$, so its spectral coefficients are $c_i = b_i/\lambda_i$. Because $\lambda_i \to 0$ polynomially, the coefficients $c_i$ grow for modes with small eigenvalues. As $n$ increases, more and more modes with tiny eigenvalues appear, each contributing a large $c_i^2$ term, and $\lVert e_0\rVert^2 = \sum c_i^2$ diverges. In particular, the vanilla rate $O(\lVert e_0\rVert ^2/k)$ becomes meaningless.
+Since $a = -1/\alpha < 0$, the total mass $\lVert e_0\rVert^2 = \int \phi\,d\lambda$ diverges---the density $\phi(\lambda) \propto \lambda^{-1/\alpha-1}$ has a non-integrable singularity at $\lambda = 0$. In kernel regression (starting from $w_0 = 0$), this has a concrete interpretation: the initial error is $e_0 = H^{-1}b$, so its spectral coefficients are $c_i = b_i/\lambda_i$. Because $\lambda_i \to 0$ polynomially, the coefficients $c_i$ grow for modes with small eigenvalues. As $n$ increases, more and more modes with tiny eigenvalues appear, each contributing a large $c_i^2$ term, and $\lVert e_0\rVert^2 = \sum c_i^2$ diverges. In particular, the vanilla rate $O(\lVert e_0\rVert ^2/k)$ becomes meaningless.
 
-Suppose more generally that $c_i$ satisfy a source condition $e_0 = A^s w$, and therefore $c_i = \lambda_i^s w_i$. If in addition, the coordinates $w_i$ are isotropic ($w_i^2 \approx \lVert w\rVert^2/d$), the spectral error density becomes $\phi(\lambda) \propto \lambda^{2s}\rho_A(\lambda) \propto \lambda^{- \tfrac{1}{\alpha} - 1+2s}$. The source condition counteracts the $1/\lambda_i$ blow-up: $c_i = \lambda_i^s w_i$ decays with the eigenvalues. 
+Suppose more generally that $c_i$ satisfy a source condition $e_0 = H^s u$, and therefore $c_i = \lambda_i^s u_i$. If in addition, the coordinates $u_i$ are isotropic ($u_i^2 \approx \lVert u\rVert^2/d$), the spectral error density becomes $\phi(\lambda) \propto \lambda^{2s}\rho_H(\lambda) \propto \lambda^{- \tfrac{1}{\alpha} - 1+2s}$. The source condition counteracts the $1/\lambda_i$ blow-up: $c_i = \lambda_i^s u_i$ decays with the eigenvalues. 
 
 </div>
 
@@ -1071,7 +1071,7 @@ The following table summarizes these regimes in general.
 <div style="background-color: #f7f7f7; border-left: 4px solid #999; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
 
-**Example (Matérn kernels in $\mathbb{R}^p$).** A Matérn-$m$ kernel in dimension $p$ has eigenvalue decay $\lambda_i \asymp i^{-(2m+p)/p}$, so $\alpha = (2m+p)/p$ and the base spectral exponent is $a = -p/(2m+p)$. A source condition $e_0 = A^s w$ with isotropic $w$ shifts this to $a_{\mathrm{eff}} = 2s - \tfrac{p}{2m+p}$, giving the rate $\mathcal{E}_k = O(k^{-(2s + 1 - \frac{p}{2m+p})})$. The table below lists several concrete cases in $p=1$.
+**Example (Matérn kernels in $\mathbb{R}^p$).** A Matérn-$m$ kernel in dimension $p$ has eigenvalue decay $\lambda_i \asymp i^{-(2m+p)/p}$, so $\alpha = (2m+p)/p$ and the base spectral exponent is $a = -p/(2m+p)$. A source condition $e_0 = H^s u$ with isotropic $u$ shifts this to $a_{\mathrm{eff}} = 2s - \tfrac{p}{2m+p}$, giving the rate $\mathcal{E}_k = O(k^{-(2s + 1 - \frac{p}{2m+p})})$. The table below lists several concrete cases in $p=1$.
 
 | Kernel | $m$ | $a$ (no source) | Rate ($s=0$) | $a_{\mathrm{eff}}$ ($s=\tfrac{1}{2}$) | Rate ($s=\tfrac{1}{2}$) |
 |---|---|---|---|---|---|
@@ -1090,11 +1090,11 @@ Crucially, the spectral integral bound depends on the density parameter $M$, not
 
 
 
-**Effect of kernel smoothness.** The figure below compares GD convergence on the *same* target function $h(x) = \sin(2\pi x) + \tfrac{1}{2}\cos(4\pi x)$ across the Matérn family: Laplace ($m=\tfrac12$), Matérn 3/2, Matérn 5/2, and Gaussian. The y-axis shows the relative gap $(f(x_k)-f^\ast)/(f(x_0)-f^\ast)$. The ordering is striking and at first glance counter-intuitive: *rougher* kernels converge faster. The Gaussian kernel makes essentially no progress in 5000 iterations, while the Laplace kernel reduces the gap by five orders of magnitude.
+**Effect of kernel smoothness.** The figure below compares GD convergence on the *same* target function $h(x) = \sin(2\pi x) + \tfrac{1}{2}\cos(4\pi x)$ across the Matérn family: Laplace ($m=\tfrac12$), Matérn 3/2, Matérn 5/2, and Gaussian. The y-axis shows the relative gap $(f(w_k)-f^\ast)/(f(w_0)-f^\ast)$. The ordering is striking and at first glance counter-intuitive: *rougher* kernels converge faster. The Gaussian kernel makes essentially no progress in 5000 iterations, while the Laplace kernel reduces the gap by five orders of magnitude.
 
-The initial error norms illustrate the divergence phenomenon discussed above. With $n=200$ points and the same target, the initial function gaps $f(x_0)-f^\ast$ are nearly identical across the first three kernels ($\approx 0.01$), yet $\lVert e_0\rVert^2$ explodes as the kernel gets smoother:
+The initial error norms illustrate the divergence phenomenon discussed above. With $n=200$ points and the same target, the initial function gaps $f(w_0)-f^\ast$ are nearly identical across the first three kernels ($\approx 0.01$), yet $\lVert e_0\rVert^2$ explodes as the kernel gets smoother:
 
-| Kernel | $\lVert e_0\rVert^2$ | $f(x_0)-f^\ast$ | $\kappa$ |
+| Kernel | $\lVert e_0\rVert^2$ | $f(w_0)-f^\ast$ | $\kappa$ |
 |---|---|---|---|
 | Laplace | $\approx 1$ | $\approx 0.013$ | $1.4 \times 10^5$ |
 | Matérn 3/2 | $\approx 700$ | $\approx 0.012$ | $1.1 \times 10^{10}$ |
@@ -1109,12 +1109,12 @@ The function gap (which contains the stabilizing $\lambda_i$ factor) is dimensio
 
 ### The Laplace method for positive definite spectra
 
-When $A \succ 0$, the eigenvalues lie in $[\alpha, \beta]$ with $\alpha > 0$, and the base rate of convergence for GD is exponential: $O((1-\alpha/\beta)^{2k})$. The spectral integral can still yield improvements, but they take the form of a *polynomial correction* to the exponential rate rather than a change in the polynomial exponent. The argument is based on the so-called Laplace estimate for integrals of exponential functions.
+When $H \succ 0$, the eigenvalues lie in $[\alpha, \beta]$ with $\alpha > 0$, and the base rate of convergence for GD is exponential: $O((1-\alpha/\beta)^{2k})$. The spectral integral can still yield improvements, but they take the form of a *polynomial correction* to the exponential rate rather than a change in the polynomial exponent. The argument is based on the so-called Laplace estimate for integrals of exponential functions.
 
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 7.3 (Laplace upper bound).** *Let $A \succ 0$ with eigenvalues in $[\alpha, \beta]$, and suppose the spectral error density $\phi$ satisfies*
+**Theorem 7.3 (Laplace upper bound).** *Let $H \succ 0$ with eigenvalues in $[\alpha, \beta]$, and suppose the spectral error density $\phi$ satisfies*
 
 $$\phi(\lambda) \leq C\,(\lambda - \alpha)^p \qquad \textit{on } [\alpha, \beta]$$
 
@@ -1162,7 +1162,7 @@ $$
 
 which completes the proof. <span style="float: right;">$\square$</span>
 
-Compared with the worst-case bound $f(x_k) - f^\ast \leq (1-\alpha/\beta)^{2k}(f(x_0)-f^\ast)$, the Laplace estimate reveals a polynomial improvement of order $k^{-(p+1)}$ that depends on how the spectral density vanishes at the left edge of the spectrum. A flat density ($p = 0$) gives a $1/k$ improvement; a square-root vanishing ($p = 1/2$) gives $k^{-3/2}$; higher-order vanishing gives even larger gains.
+Compared with the worst-case bound $f(w_k) - f^\ast \leq (1-\alpha/\beta)^{2k}(f(w_0)-f^\ast)$, the Laplace estimate reveals a polynomial improvement of order $k^{-(p+1)}$ that depends on how the spectral density vanishes at the left edge of the spectrum. A flat density ($p = 0$) gives a $1/k$ improvement; a square-root vanishing ($p = 1/2$) gives $k^{-3/2}$; higher-order vanishing gives even larger gains.
 
 The figure below compares several edge exponents $p$ against the same exponential backbone, showing the progressive polynomial correction predicted by Theorem 7.3.
 
@@ -1170,43 +1170,43 @@ The figure below compares several edge exponents $p$ against the same exponentia
 
 ### Application: Marchenko--Pastur spectrum
 
-We now specialize to the linear least-squares setting from the beginning of the notes, but with a random design matrix $D\in\mathbb{R}^{n\times d}$ whose entries are iid with zero mean and unit variance. Consider
+We now specialize to the linear least-squares setting from the beginning of the notes, but with a random design matrix $X\in\mathbb{R}^{n\times d}$ whose entries are iid with zero mean and unit variance. Consider
 
 $$
-\min_{x\in\mathbb{R}^d} \frac{1}{2n}\|Dx-y\|^2.
+\min_{w\in\mathbb{R}^d} \frac{1}{2n}\|Xw-y\|^2.
 $$
 
-This is exactly the quadratic problem from Section 1, equivalently the problem of solving the normal equations $Ax=b$, with
+This is exactly the quadratic problem from Section 1, equivalently the problem of solving the normal equations $Hw=b$, with
 
 $$
-A=\frac{1}{n}D^\top D,\qquad b=\frac{1}{n}D^\top y.
+H=\frac{1}{n}X^\top X,\qquad b=\frac{1}{n}X^\top y.
 $$
 
-The **Marchenko--Pastur distribution** arises as the limiting spectral distribution of the sample covariance / Gram matrix $A = \tfrac{1}{n}D^\top D$ when the entries of $D \in \mathbb{R}^{n \times d}$ are iid with zero mean and unit variance, in the proportional asymptotic regime 
+The **Marchenko--Pastur distribution** arises as the limiting spectral distribution of the sample covariance / Gram matrix $H = \tfrac{1}{n}X^\top X$ when the entries of $X \in \mathbb{R}^{n \times d}$ are iid with zero mean and unit variance, in the proportional asymptotic regime 
 
 $$\tfrac{d}{n} \to \gamma > 0\qquad \textrm{as}\qquad n\to \infty.$$ 
 
-Here, convergence is meant in the following precise sense. Letting $\lambda_1(A),\dots,\lambda_d(A)$ denote the eigenvalues of $A$, define the *empirical spectral measure*
+Here, convergence is meant in the following precise sense. Letting $\lambda_1(H),\dots,\lambda_d(H)$ denote the eigenvalues of $H$, define the *empirical spectral measure*
 
 $$
-\hat{\mu}_A \;=\; \frac{1}{d}\sum_{i=1}^{d}\delta_{\lambda_i(A)},
+\hat{\mu}_H \;=\; \frac{1}{d}\sum_{i=1}^{d}\delta_{\lambda_i(H)},
 $$
 
-Note that this measure is itself random because $A$ is random. Marchenko and Pastur showed that $\hat{\mu}\_A$ weakly converges to a deterministic limit measure $\mu\_{\mathrm{MP}}$, called *Marchenko--Pastur law*. That is for any bounded continuous function $f$, it holds:
+Note that this measure is itself random because $H$ is random. Marchenko and Pastur showed that $\hat{\mu}\_H$ weakly converges to a deterministic limit measure $\mu\_{\mathrm{MP}}$, called *Marchenko--Pastur law*. That is for any bounded continuous function $f$, it holds:
 
 $$
-\int f\,d\hat{\mu}_A \;\xrightarrow[n\to\infty]{\text{a.s.}}\; \int f\,d\mu_{\mathrm{MP}}.
+\int f\,d\hat{\mu}_H \;\xrightarrow[n\to\infty]{\text{a.s.}}\; \int f\,d\mu_{\mathrm{MP}}.
 $$
 
-This type of weak convergence is denoted $\hat{\mu}\_A\;\Rightarrow\;\mu\_{\mathrm{MP}}$.
+This type of weak convergence is denoted $\hat{\mu}\_H\;\Rightarrow\;\mu\_{\mathrm{MP}}$.
 
-The animation below illustrates this convergence for the three regimes $\gamma \in \lbrace 0.5,\,1,\,2\rbrace $ (with iid standard Gaussian entries in $D$). For each frame a fresh $D$ is drawn at the given $n$, the $d$ eigenvalues of $A=\tfrac{1}{n}D^\top D$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\lbrace B_j\rbrace $ on the $\lambda$-axis, and each bin height equals
+The animation below illustrates this convergence for the three regimes $\gamma \in \lbrace 0.5,\,1,\,2\rbrace $ (with iid standard Gaussian entries in $X$). For each frame a fresh $X$ is drawn at the given $n$, the $d$ eigenvalues of $H=\tfrac{1}{n}X^\top X$ are computed, and their *empirical frequency density* is plotted: the eigenvalues are sorted into equal-width bins $\lbrace B_j\rbrace $ on the $\lambda$-axis, and each bin height equals
 
 $$
-\frac{\#\{i:\lambda_i(A) \in B_j\}}{d \cdot \lvert B_j\rvert},
+\frac{\#\{i:\lambda_i(H) \in B_j\}}{d \cdot \lvert B_j\rvert},
 $$
 
-so that the total area of the histogram equals $1$ (matching the mass of $\hat{\mu}\_A$). As $n$ grows, this histogram collapses onto the Marchenko--Pastur density curve overlaid in black. In the rank-deficient case $\gamma = 2$ the matrix $A$ has exactly $d - n$ zero eigenvalues, which form an atom of mass $1-1/\gamma$ at $\lambda=0$ in $\hat\mu_A$; those are excluded from the histogram, so the bulk integrates to the remaining mass $1/\gamma$ and aligns with $\rho\_{\mathrm{MP}}$ on $[\lambda\_-,\lambda\_+]$.
+so that the total area of the histogram equals $1$ (matching the mass of $\hat{\mu}\_H$). As $n$ grows, this histogram collapses onto the Marchenko--Pastur density curve overlaid in black. In the rank-deficient case $\gamma = 2$ the matrix $H$ has exactly $d - n$ zero eigenvalues, which form an atom of mass $1-1/\gamma$ at $\lambda=0$ in $\hat\mu_H$; those are excluded from the histogram, so the bulk integrates to the remaining mass $1/\gamma$ and aligns with $\rho\_{\mathrm{MP}}$ on $[\lambda\_-,\lambda\_+]$.
 
 ![Empirical spectrum converging to the Marchenko--Pastur law](figures/mp_empirical_spectrum.gif)
 
@@ -1216,7 +1216,7 @@ $$
 \mu_{MP} \;=\; \max\!\left(0,\;1-\tfrac{1}{\gamma}\right)\,\delta_{0} \;+\; \rho_{MP}(\lambda)\,d\lambda,
 $$
 
-consisting of (i) a point mass at $\lambda=0$ of weight $\max(0,\,1-1/\gamma)$, which is nonzero only when $\gamma > 1$ and accounts for the $d-n$ forced zero eigenvalues of $A$, and (ii) an absolutely continuous part supported on $[\lambda_-,\lambda_+]$ with density
+consisting of (i) a point mass at $\lambda=0$ of weight $\max(0,\,1-1/\gamma)$, which is nonzero only when $\gamma > 1$ and accounts for the $d-n$ forced zero eigenvalues of $H$, and (ii) an absolutely continuous part supported on $[\lambda_-,\lambda_+]$ with density
 
 $$
 \rho_{MP}(\lambda) = \frac{\sqrt{(\lambda_+ - \lambda)(\lambda - \lambda_-)}}{2\pi\gamma\,\lambda}, \qquad \lambda \in [\lambda_-, \lambda_+],
@@ -1230,11 +1230,11 @@ $$
 \nu_d:=\sum_{i=1}^d c_i^2\,\delta_{\lambda_i}
 $$
 
-has the same asymptotic shape as the empirical spectral measure of $A$, that is
+has the same asymptotic shape as the empirical spectral measure of $H$, that is
 
 $$\nu_d \;\Rightarrow\; \lVert e_0\rVert^2\,\mu_{MP}, \qquad \text{a.s.     as    }       n\to\infty,\ d/n\to\gamma.$$
 
-This is the only property used below and holds for example if we initialize at $x_0=0$ and $x^{\ast}\sim \mathcal{N}(0,\frac{R}{d}I_d)$ for any constant $R>0$.
+This is the only property used below and holds for example if we initialize at $w_0=0$ and $w_\ast\sim \mathcal{N}(0,\frac{R}{d}I_d)$ for any constant $R>0$.
 
 Let us now look at the convergence of GD for the least squares problem.
 
@@ -1269,7 +1269,7 @@ $$
 \mathcal{E}_k \;\sim\; \frac{\lVert e_0\rVert^2}{\sqrt{2\pi}\,k^{3/2}} \qquad \text{as } k \to \infty.
 $$
 
-3. **$\gamma > 1$ (rank deficient).** The empirical spectrum has an atom at $0$ of asymptotic mass $1-1/\gamma$, so globally $\alpha=0$. However, the nonzero spectrum still lies in $[(\sqrt{\gamma}-1)^2,\ (\sqrt{\gamma}+1)^2]$. Since the objective gap carries the factor $\lambda$ in $(16)$, the nullspace part does not contribute to $f(x_k)-f^\ast$. Therefore the nonzero spectral component behaves as in the positive definite case, with
+3. **$\gamma > 1$ (rank deficient).** The empirical spectrum has an atom at $0$ of asymptotic mass $1-1/\gamma$, so globally $\alpha=0$. However, the nonzero spectrum still lies in $[(\sqrt{\gamma}-1)^2,\ (\sqrt{\gamma}+1)^2]$. Since the objective gap carries the factor $\lambda$ in $(16)$, the nullspace part does not contribute to $f(w_k)-f^\ast$. Therefore the nonzero spectral component behaves as in the positive definite case, with
 
 $$
 \alpha_{\mathrm{eff}} = (\sqrt{\gamma}-1)^2,\qquad \beta=(\sqrt{\gamma}+1)^2,
@@ -1355,13 +1355,13 @@ $$
 This is the abstract problem of Theorem 7.4. It suffices now to identify an orthogonal basis of $\mathcal{P}_k$ in $L^2(\mu)$. Apply the affine change of variables
 
 $$
-x(\lambda) \;:=\; \frac{\lambda}{2}-1,
+w(\lambda) \;:=\; \frac{\lambda}{2}-1,
 $$
 
-which maps $[0,4]$ to $[-1,1]$. With this change of coordinates we have $\sqrt{\lambda(4-\lambda)}=2\sqrt{1-x^2}$ and $d\lambda=2\,dx$, hence $d\mu = \tfrac{2}{\pi}\sqrt{1-x^2}\,dx$. A standard fact is that the Chebyshev polynomials of the second kind $U_j$ from Section 6 are orthogonal on $[-1,1]$ with weight $\sqrt{1-x^2}$ and their square norm is $\int_{-1}^{1}U_j(x)^2\sqrt{1-x^2}\,dx=\pi/2$. Therefore
+which maps $[0,4]$ to $[-1,1]$. With this change of coordinates we have $\sqrt{\lambda(4-\lambda)}=2\sqrt{1-w^2}$ and $d\lambda=2\,dw$, hence $d\mu = \tfrac{2}{\pi}\sqrt{1-w^2}\,dw$. A standard fact is that the Chebyshev polynomials of the second kind $U_j$ from Section 6 are orthogonal on $[-1,1]$ with weight $\sqrt{1-w^2}$ and their square norm is $\int_{-1}^{1}U_j(w)^2\sqrt{1-w^2}\,dw=\pi/2$. Therefore
 
 $$
-q_j(\lambda) \;:=\; U_j\!\bigl(x(\lambda)\bigr),
+q_j(\lambda) \;:=\; U_j\!\bigl(w(\lambda)\bigr),
 $$
 
 is an *orthonormal* basis of $\mathcal{P}_k$ in $L^2(\mu)$. Using the identities $U_j(-1)=(-1)^j(j+1)$ and $U_j(1)=j+1$ from Section 6 gives $q_j(0)^2=(j+1)^2$. Substituting into the orthogonal-polynomial formula $(21)$ gives
@@ -1374,17 +1374,17 @@ Multiplying by $\lVert e_0\rVert^2/2$ yields the bound $(22)$. <span style="floa
 
 Two remarks comparing $(22)$ with the GD bound at $\gamma=1$ are in order.
 
-1. **Improvement over the universal CG bound.** The universal CG bound from Theorem 6.3 gives $f(x_k^{\mathrm{CG}})-f^\ast=O(\lVert e_0\rVert^2/k^{2})$. The MP analysis improves this to $O(\lVert e_0\rVert^2/k^{3})$.
+1. **Improvement over the universal CG bound.** The universal CG bound from Theorem 6.3 gives $f(w_k^{\mathrm{CG}})-f^\ast=O(\lVert e_0\rVert^2/k^{2})$. The MP analysis improves this to $O(\lVert e_0\rVert^2/k^{3})$.
 
 2. **Comparison with GD.** Contrasting $(22)$ with the GD asymptotic $\mathcal E_k\sim \lVert e_0\rVert^2/(\sqrt{2\pi}\,k^{3/2})$ derived in regime $2$ above, CG converges at the faster rate $k^{-3}$ at the critical aspect ratio.
 
-**Numerical illustration.** The figure below confirms both rates on a random linear least-squares problem at the critical aspect ratio. We draw $D\in\mathbb R^{n\times n}$ with iid standard Gaussian entries ($n=d=1500$, so $\gamma=1$), form $A=\tfrac{1}{n}D^\top D$ (whose limiting spectrum is $\mu_{MP}$ on $[0,4]$), pick $x^\ast$ uniformly on the sphere of radius $\sqrt{n}$, and run GD with stepsize $\eta=1/\lambda_{\max}(A)$ and CG starting from $x_0=0$, plotting the median objective gap over $30$ independent trials (shaded bands show the $10$--$90\%$ interquantile range). Both curves match their predicted sublinear rates --- $O(k^{-3/2})$ for GD and $O(k^{-3})$ for CG. The GD band is essentially invisible (the empirical rate is highly self-averaging across draws of $A$), while the CG band widens slightly in the tail, reflecting CG's greater sensitivity to the random small-eigenvalue structure of $A$.
+**Numerical illustration.** The figure below confirms both rates on a random linear least-squares problem at the critical aspect ratio. We draw $X\in\mathbb R^{n\times n}$ with iid standard Gaussian entries ($n=d=1500$, so $\gamma=1$), form $H=\tfrac{1}{n}X^\top X$ (whose limiting spectrum is $\mu_{MP}$ on $[0,4]$), pick $w_\ast$ uniformly on the sphere of radius $\sqrt{n}$, and run GD with stepsize $\eta=1/\lambda_{\max}(H)$ and CG starting from $w_0=0$, plotting the median objective gap over $30$ independent trials (shaded bands show the $10$--$90\%$ interquantile range). Both curves match their predicted sublinear rates --- $O(k^{-3/2})$ for GD and $O(k^{-3})$ for CG. The GD band is essentially invisible (the empirical rate is highly self-averaging across draws of $H$), while the CG band widens slightly in the tail, reflecting CG's greater sensitivity to the random small-eigenvalue structure of $H$.
 
 ![Sublinear convergence of GD and CG on random least squares at $\gamma=1$](figures/convergence_mp_gamma1.png)
 
-As the final application of the spectral integral approach, we now derive convergence of CG under a power-law spectrum. We assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. The relevant measure is therefore  $d\mu(\lambda):=\lambda\,\phi(\lambda)\,d\lambda=M\lambda^{a}\,d\lambda$. After the affine rescaling $x=2\lambda/\beta-1$ that maps $[0,\beta]$ to $[-1,1]$, this measure becomes $d\mu=M(\beta/2)^{a+1}(1+x)^{a}\,dx$, so the relevant orthogonal family is that of the classical **Jacobi polynomials** with parameters $(0,a)$. We briefly recall their definition and the three properties used in the proof below.
+As the final application of the spectral integral approach, we now derive convergence of CG under a power-law spectrum. We assume the spectral error density is $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$ for some $M>0$ and $a>-1$. The relevant measure is therefore  $d\mu(\lambda):=\lambda\,\phi(\lambda)\,d\lambda=M\lambda^{a}\,d\lambda$. After the affine rescaling $w=2\lambda/\beta-1$ that maps $[0,\beta]$ to $[-1,1]$, this measure becomes $d\mu=M(\beta/2)^{a+1}(1+w)^{a}\,dw$, so the relevant orthogonal family is that of the classical **Jacobi polynomials** with parameters $(0,a)$. We briefly recall their definition and the three properties used in the proof below.
 
-**Jacobi polynomials.** For parameters $p,q>-1$, the *Jacobi polynomials* $\lbrace P_k^{(p,q)}\rbrace_{k\geq 0}$ are a family of polynomials with $\deg P_k^{(p,q)}=k$ that are orthogonal on $[-1,1]$ with respect to the weight $w_{p,q}(x):=(1-x)^{p}(1+x)^{q}$, normalized by the convention
+**Jacobi polynomials.** For parameters $p,q>-1$, the *Jacobi polynomials* $\lbrace P_k^{(p,q)}\rbrace_{k\geq 0}$ are a family of polynomials with $\deg P_k^{(p,q)}=k$ that are orthogonal on $[-1,1]$ with respect to the weight $\omega_{p,q}(w):=(1-w)^{p}(1+w)^{q}$, normalized by the convention
 
 $$
 P_k^{(p,q)}(1) \;=\; \binom{k+p}{k}.
@@ -1395,7 +1395,7 @@ $$
 1. **Orthogonality and squared norms:**
 
 $$
-\int_{-1}^{1} P_i^{(0,a)}(x)\,P_j^{(0,a)}(x)\,(1+x)^{a}\,dx \;=\; \frac{2^{a+1}}{2j+a+1}\,{\bf 1}_{i=j}.
+\int_{-1}^{1} P_i^{(0,a)}(w)\,P_j^{(0,a)}(w)\,(1+w)^{a}\,dw \;=\; \frac{2^{a+1}}{2j+a+1}\,{\bf 1}_{i=j}.
 $$
 
 2. **Endpoint identity:**
@@ -1436,19 +1436,19 @@ $$
 This is the abstract problem of Theorem 7.4. By the orthogonal-polynomial form $(20)$, it suffices to identify an orthogonal basis of $\mathcal{P}_k$ in $L^{2}(\mu)$. Apply the affine change of variables
 
 $$
-x(\lambda) \;:=\; \frac{2\lambda}{\beta}-1,
+w(\lambda) \;:=\; \frac{2\lambda}{\beta}-1,
 $$
 
-which maps $[0,\beta]$ to $[-1,1]$. Hence we have $d\mu = M(\beta/2)^{a+1}(1+x)^{a}\,dx$. Classically, the so-called Jacobi polynomials $P_j^{(0,a)}$ are orthogonal on $[-1,1]$ with weight $(1+x)^{a}$ and squared norms
+which maps $[0,\beta]$ to $[-1,1]$. Hence we have $d\mu = M(\beta/2)^{a+1}(1+w)^{a}\,dw$. Classically, the so-called Jacobi polynomials $P_j^{(0,a)}$ are orthogonal on $[-1,1]$ with weight $(1+w)^{a}$ and squared norms
 
 $$
-\int_{-1}^{1} P_j^{(0,a)}(x)^{2}\,(1+x)^{a}\,dx \;=\; \frac{2^{a+1}}{2j+a+1},
+\int_{-1}^{1} P_j^{(0,a)}(w)^{2}\,(1+w)^{a}\,dw \;=\; \frac{2^{a+1}}{2j+a+1},
 $$
 
 That is,
 
 $$
-q_j(\lambda) \;:=\; P_j^{(0,a)}\!\bigl(x(\lambda)\bigr)
+q_j(\lambda) \;:=\; P_j^{(0,a)}\!\bigl(w(\lambda)\bigr)
 $$
 
 is an orthogonal basis of $\mathcal{P}_k$ in $L^{2}(\mu)$. A standard computation therefore shows
@@ -1468,7 +1468,7 @@ Substituting into $(23)$ yields $(24)$. <span style="float: right;">$\square$</s
 Thus we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to the rate of gradient descent $O(k^{-(a+1)})$ in Theorem 7.2.
 
 
-**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\lbrace \tfrac{1}{2},1,\tfrac{3}{2}\rbrace $. For each $a$, we set $d=2 \times 10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretization of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $x_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across a long time horizon. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps.
+**Numerical illustration.** The figure below confirms $(24)$ on a synthetic diagonal problem with prescribed power-law density. We pick $\beta=1$ and three exponents $a\in\lbrace \tfrac{1}{2},1,\tfrac{3}{2}\rbrace $. For each $a$, we set $d=2 \times 10^{4}$, place the eigenvalues $\lambda_i$ at the equispaced quantiles of $\phi(\lambda)/\int\phi$ on $(0,\beta]$, and choose the initial error coordinates $c_i^{2}$ so that the discrete spectral measure $\sum_i c_i^{2}\delta_{\lambda_i}$ is the natural Riemann discretization of $\phi(\lambda)\,d\lambda$. We then run GD with $\eta=1/\beta$ and CG starting from $w_0=0$. The dotted reference lines plot the predicted asymptotics $(17)$ and $(24)$ with the constants written in closed form (no fitting). For every $a$, the empirical GD curve hugs its $k^{-(a+1)}$ reference across a long time horizon. The CG curves match the steeper $k^{-2(a+1)}$ slope over the polynomial regime before falling off the cliff to numerical zero, the latter reflecting CG's exact-arithmetic property of converging in at most $d$ steps.
 
 ![Sublinear convergence of GD and CG under power-law spectral density](figures/convergence_powerlaw.png)
 
@@ -1477,11 +1477,11 @@ Thus we see a significant acceleration of $O(k^{-2(a+1)})$ for CG compared to th
 
 ## 8. Stochastic Gradient Descent for Least Squares {#sec-8}
 
-All the algorithms studied so far---gradient descent, Chebyshev-accelerated gradient descent, and CG---access the matrix $A$ only through matrix-vector products $v\mapsto Av$. For the canonical least squares problem 
+All the algorithms studied so far---gradient descent, Chebyshev-accelerated gradient descent, and CG---access the matrix $H$ only through matrix-vector products $v\mapsto Hv$. For the canonical least squares problem 
 
-$$\min_{x\in \mathbb{R}^d} f(x):=\tfrac{1}{2n}\|Dx-y\|^2,$$ 
+$$\min_{w\in \mathbb{R}^d} f(w):=\tfrac{1}{2n}\|Xw-y\|^2,$$ 
 
-each such matrix vector product requires access to every row of $D\in \mathbb{R}^{n\times d}$ and requires $O(nd)$ basic arithmetic operations. When the dataset is large, this can be prohibitively expensive, and the runtime is dominated by data access rather than by the number of iterations.
+each such matrix vector product requires access to every row of $X\in \mathbb{R}^{n\times d}$ and requires $O(nd)$ basic arithmetic operations. When the dataset is large, this can be prohibitively expensive, and the runtime is dominated by data access rather than by the number of iterations.
 
 The natural alternative is **stochastic gradient descent (SGD)**, which at each step replaces the full gradient by a cheap unbiased estimator computed from a single data point, or a small batch. In this section, we analyze the performance of this algorithm. 
 
@@ -1500,7 +1500,7 @@ $$
 H := \mathbb{E}[xx^\top] \qquad\textrm{and set}\qquad \mu := \lambda_{\min}(H).
 $$
 
-We assume $H \succ 0$ throughout the section. As usual, for a vector $u$, we will use the norm $\lVert u\rVert _H^2 := u^\top H u$ induced by $H$. Exactly as in the deterministic least squares problem of Section 1 under the identification $A=H$, the excess population risk is the exact quadratic form 
+We assume $H \succ 0$ throughout the section. As usual, for a vector $u$, we will use the norm $\lVert u\rVert _H^2 := u^\top H u$ induced by $H$. Exactly as in the deterministic least squares problem of Section 1, the excess population risk is the exact quadratic form 
 
 $$L(w) - L(w_\ast) = \tfrac{1}{2}\|w - w_\ast\|_H^2.$$
 
@@ -2002,7 +2002,7 @@ $$\mathbb{E}[L(w_t)] - L(w_\ast) \;\leq\; e^{-\gamma\mu t}\,R^2\,\lVert w_0 - w_
 
 This is a sharp departure from the noisy regime: in interpolation, *constant-stepsize* SGD --- with no averaging, no decreasing stepsize, and no batch growth --- already achieves linear convergence, contracting at the per-step rate $\gamma\mu$, optimized to $\mu/R^2$ at $\gamma = 1/R^2$.
 
-A canonical example is the **discrete consistent linear system**: given $D \in \mathbb{R}^{n\times d}$ with rows $d_1,\ldots,d_n$ and $y \in \mathbb{R}^n$ satisfying $y = D w_\ast$ for some $w_\ast$, Corollary 8.4 governs the constant-stepsize SGD iteration in which $(x,y) = (d_i, y_i)$ is sampled uniformly from $\lbrace 1,\ldots,n\rbrace$. In this setup $H = D^\top D / n$, $\mu = \sigma_{\min}^2(D)/n$, and the smallest valid $R^2$ in $(25)$ is $\max_i \lVert d_i\rVert^2$, so the optimal stepsize $\gamma = 1/R^2$ yields the SGD rate $\sigma_{\min}^2(D)/(n\,\max_i\lVert d_i\rVert^2)$.
+A canonical example is the **discrete consistent linear system**: given $X \in \mathbb{R}^{n\times d}$ with rows $x_1,\ldots,x_n$ and $y \in \mathbb{R}^n$ satisfying $y = X w_\ast$ for some $w_\ast$, Corollary 8.4 governs the constant-stepsize SGD iteration in which $(x,y) = (x_i, y_i)$ is sampled uniformly from $\lbrace 1,\ldots,n\rbrace$. In this setup $H = X^\top X / n$, $\mu = \sigma_{\min}^2(X)/n$, and the smallest valid $R^2$ in $(25)$ is $\max_i \lVert x_i\rVert^2$, so the optimal stepsize $\gamma = 1/R^2$ yields the SGD rate $\sigma_{\min}^2(X)/(n\,\max_i\lVert x_i\rVert^2)$.
 
 A natural question is whether one can do better by exploiting the row geometry. The classical **randomized Kaczmarz** algorithm of Strohmer and Vershynin [SV09] does exactly this: it samples rows with norm-weighted probability and uses a row-adaptive stepsize that performs an exact orthogonal projection at each step.
 
@@ -2010,19 +2010,19 @@ A natural question is whether one can do better by exploiting the row geometry. 
 
 **Algorithm 2** (Randomized Kaczmarz)
 
-**Input:** $D \in \mathbb{R}^{n\times d}$ with nonzero rows $d_1, \ldots, d_n$, $\;y \in \mathbb{R}^n$, $\;w_0 \in \mathbb{R}^d$
+**Input:** $X \in \mathbb{R}^{n\times d}$ with nonzero rows $x_1, \ldots, x_n$, $\;y \in \mathbb{R}^n$, $\;w_0 \in \mathbb{R}^d$
 
-Set $p_i = \lVert d_i\rVert^2 / \lVert D\rVert_F^2$ for $i = 1, \ldots, n$
+Set $p_i = \lVert x_i\rVert^2 / \lVert X\rVert_F^2$ for $i = 1, \ldots, n$
 
 **For** $t = 0, 1, 2, \ldots$ do:
 
 $\qquad$ sample $i_t \in \lbrace 1, \ldots, n\rbrace$ with probability $p_{i_t}$
 
-$\qquad w_{t+1} = w_t \;+\; \dfrac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t}$
+$\qquad w_{t+1} = w_t \;+\; \dfrac{y_{i_t} - \langle x_{i_t}, w_t\rangle}{\lVert x_{i_t}\rVert^2}\,x_{i_t}$
 
 </div>
 
-Each update can be geometrically understood as an orthogonal projection: $w_{t+1}$ is the closest point to $w_t$ in the affine hyperplane $\lbrace w \in \mathbb{R}^d : \langle d_{i_t}, w\rangle = y_{i_t}\rbrace$. To make the geometry concrete, consider the 2D consistent system with $n=5$ unit-norm rows $d_1,\ldots,d_5 \in \mathbb{R}^2$ and right-hand side $y_i = \langle d_i, w_\ast\rangle$, so that the lines $\ell_i = \lbrace w \in \mathbb{R}^2 : \langle d_i, w\rangle = y_i\rbrace$ all pass through the common point $w_\ast$. Starting from a fixed $w_0$, each Kaczmarz step picks one of the five lines (uniformly, since $\lVert d_i\rVert = 1$) and replaces $w_t$ by its orthogonal projection onto that line. The animation below shows the first $14$ iterations: at each step the chosen line $\ell_{i_t}$ is drawn in red and the dashed arrow traces the projection from $w_t$ to $w_{t+1}$.
+Each update can be geometrically understood as an orthogonal projection: $w_{t+1}$ is the closest point to $w_t$ in the affine hyperplane $\lbrace w \in \mathbb{R}^d : \langle x_{i_t}, w\rangle = y_{i_t}\rbrace$. To make the geometry concrete, consider the 2D consistent system with $n=5$ unit-norm rows $x_1,\ldots,x_5 \in \mathbb{R}^2$ and right-hand side $y_i = \langle x_i, w_\ast\rangle$, so that the lines $\ell_i = \lbrace w \in \mathbb{R}^2 : \langle x_i, w\rangle = y_i\rbrace$ all pass through the common point $w_\ast$. Starting from a fixed $w_0$, each Kaczmarz step picks one of the five lines (uniformly, since $\lVert x_i\rVert = 1$) and replaces $w_t$ by its orthogonal projection onto that line. The animation below shows the first $14$ iterations: at each step the chosen line $\ell_{i_t}$ is drawn in red and the dashed arrow traces the projection from $w_t$ to $w_{t+1}$.
 
 <p style="text-align: center;"><img src="figures/kaczmarz_2d.gif" alt="Randomized Kaczmarz on a 2D consistent linear system" /></p>
 
@@ -2030,49 +2030,49 @@ Each update can be geometrically understood as an orthogonal projection: $w_{t+1
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 8.5 (Strohmer-Vershynin).** *Assume $D \in \mathbb{R}^{n\times d}$ has linearly independent columns and that $y = D w_\ast$. The randomized Kaczmarz iterates of Algorithm 2 satisfy*
+**Theorem 8.5 (Strohmer-Vershynin).** *Assume $X \in \mathbb{R}^{n\times d}$ has linearly independent columns and that $y = X w_\ast$. The randomized Kaczmarz iterates of Algorithm 2 satisfy*
 
-$$\mathbb{E}\,\lVert w_t - w_\ast\rVert^2 \;\leq\; \Big(1 - \frac{\sigma_{\min}^2(D)}{\lVert D\rVert_F^2}\Big)^t\,\lVert w_0 - w_\ast\rVert^2.$$
+$$\mathbb{E}\,\lVert w_t - w_\ast\rVert^2 \;\leq\; \Big(1 - \frac{\sigma_{\min}^2(X)}{\lVert X\rVert_F^2}\Big)^t\,\lVert w_0 - w_\ast\rVert^2.$$
 
 </div>
 
-*Proof.* Subtract $w_\ast$ from both sides of the Kaczmarz update and use the equality $y_{i_t} = \langle d_{i_t}, w_\ast\rangle$ to rewrite the residual as $y_{i_t} - \langle d_{i_t}, w_t\rangle = -\langle d_{i_t},\,w_t - w_\ast\rangle$, giving
+*Proof.* Subtract $w_\ast$ from both sides of the Kaczmarz update and use the equality $y_{i_t} = \langle x_{i_t}, w_\ast\rangle$ to rewrite the residual as $y_{i_t} - \langle x_{i_t}, w_t\rangle = -\langle x_{i_t},\,w_t - w_\ast\rangle$, giving
 
-$$w_{t+1} - w_\ast \;=\; (w_t - w_\ast) \;-\; \frac{\langle d_{i_t},\,w_t - w_\ast\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t}.$$
+$$w_{t+1} - w_\ast \;=\; (w_t - w_\ast) \;-\; \frac{\langle x_{i_t},\,w_t - w_\ast\rangle}{\lVert x_{i_t}\rVert^2}\,x_{i_t}.$$
 
 Squaring and expanding yields the estimate
 
-$$\lVert w_{t+1} - w_\ast\rVert^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; 2\,\frac{\langle d_{i_t},\,w_t - w_\ast\rangle^2}{\lVert d_{i_t}\rVert^2} \;+\; \frac{\langle d_{i_t},\,w_t - w_\ast\rangle^2}{\lVert d_{i_t}\rVert^4}\,\lVert d_{i_t}\rVert^2,$$
+$$\lVert w_{t+1} - w_\ast\rVert^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; 2\,\frac{\langle x_{i_t},\,w_t - w_\ast\rangle^2}{\lVert x_{i_t}\rVert^2} \;+\; \frac{\langle x_{i_t},\,w_t - w_\ast\rangle^2}{\lVert x_{i_t}\rVert^4}\,\lVert x_{i_t}\rVert^2,$$
 
 Combining the cross term and the last term, we therefore arrive at the expression
 
-$$\lVert w_{t+1} - w_\ast\rVert^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{\langle d_{i_t},\, w_t - w_\ast\rangle^2}{\lVert d_{i_t}\rVert^2}.$$
+$$\lVert w_{t+1} - w_\ast\rVert^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{\langle x_{i_t},\, w_t - w_\ast\rangle^2}{\lVert x_{i_t}\rVert^2}.$$
 
 Taking conditional expectation over $i_t \sim p$, we obtain
 
-$$\mathbb{E}\bigl[\lVert w_{t+1}-w_\ast\rVert^2 \,\big|\, w_t\bigr] \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{1}{\lVert D\rVert_F^2}\sum_{i=1}^n \langle d_i,\,w_t - w_\ast\rangle^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{\lVert D(w_t - w_\ast)\rVert^2}{\lVert D\rVert_F^2}.$$
+$$\mathbb{E}\bigl[\lVert w_{t+1}-w_\ast\rVert^2 \,\big|\, w_t\bigr] \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{1}{\lVert X\rVert_F^2}\sum_{i=1}^n \langle x_i,\,w_t - w_\ast\rangle^2 \;=\; \lVert w_t - w_\ast\rVert^2 \;-\; \frac{\lVert X(w_t - w_\ast)\rVert^2}{\lVert X\rVert_F^2}.$$
 
-Linear independence of the columns of $D$ yields $\lVert Du\rVert^2 \geq \sigma_{\min}^2(D)\,\lVert u\rVert^2$ for every $u \in \mathbb{R}^d$, so
+Linear independence of the columns of $X$ yields $\lVert Xu\rVert^2 \geq \sigma_{\min}^2(X)\,\lVert u\rVert^2$ for every $u \in \mathbb{R}^d$, so
 
-$$\mathbb{E}\bigl[\lVert w_{t+1}-w_\ast\rVert^2 \,\big|\, w_t\bigr] \;\leq\; \Big(1 - \frac{\sigma_{\min}^2(D)}{\lVert D\rVert_F^2}\Big)\,\lVert w_t - w_\ast\rVert^2.$$
+$$\mathbb{E}\bigl[\lVert w_{t+1}-w_\ast\rVert^2 \,\big|\, w_t\bigr] \;\leq\; \Big(1 - \frac{\sigma_{\min}^2(X)}{\lVert X\rVert_F^2}\Big)\,\lVert w_t - w_\ast\rVert^2.$$
 
 Iterating this one-step contraction from $t=0$ produces the claim. <span style="float: right;">$\square$</span>
 
-**Comparison with SGD.** Writing $\overline{\lVert d\rVert^2} := \tfrac{1}{n}\sum_i\lVert d_i\rVert^2$ for the average squared row norm, the Kaczmarz rate of Theorem 8.5 reads $\sigma_{\min}^2(D)/\lVert D\rVert_F^2 = \sigma_{\min}^2(D)/(n\,\overline{\lVert d\rVert^2})$. Lining this up with the SGD rate derived above, we obtain the comparison
+**Comparison with SGD.** Writing $\overline{\lVert x\rVert^2} := \tfrac{1}{n}\sum_i\lVert x_i\rVert^2$ for the average squared row norm, the Kaczmarz rate of Theorem 8.5 reads $\sigma_{\min}^2(X)/\lVert X\rVert_F^2 = \sigma_{\min}^2(X)/(n\,\overline{\lVert x\rVert^2})$. Lining this up with the SGD rate derived above, we obtain the comparison
 
-$$\underbrace{\frac{\sigma_{\min}^2(D)}{n\,\max_i\lVert d_i\rVert^2}}_{\text{SGD (uniform sampling)}} \;\leq\; \underbrace{\frac{\sigma_{\min}^2(D)}{n\,\overline{\lVert d\rVert^2}}}_{\text{Kaczmarz}},$$
+$$\underbrace{\frac{\sigma_{\min}^2(X)}{n\,\max_i\lVert x_i\rVert^2}}_{\text{SGD (uniform sampling)}} \;\leq\; \underbrace{\frac{\sigma_{\min}^2(X)}{n\,\overline{\lVert x\rVert^2}}}_{\text{Kaczmarz}},$$
 
-Note that we are only comparing upper-bounds on performance. Nonetheless, the comparison is meaningful. The difference between the two bound is whether the *worst* or the *average* squared row norm appears in the denominator. The two coincide when all row norms are equal; the Kaczmarz rate dominates by the row-norm spread $\max_i\lVert d_i\rVert^2 / \overline{\lVert d\rVert^2}$, which can be arbitrarily large when the rows are scaled very differently. Behind the gain is a small algorithmic shift: Kaczmarz draws rows with norm-weighted probability rather than uniformly, and uses the row-adaptive stepsize $1/\lVert d_{i_t}\rVert^2$ rather than the global $1/\max_i\lVert d_i\rVert^2$. Together these two adjustments swap $\max_i\lVert d_i\rVert^2$ for $\overline{\lVert d\rVert^2}$ in the per-step contraction.
+Note that we are only comparing upper-bounds on performance. Nonetheless, the comparison is meaningful. The difference between the two bound is whether the *worst* or the *average* squared row norm appears in the denominator. The two coincide when all row norms are equal; the Kaczmarz rate dominates by the row-norm spread $\max_i\lVert x_i\rVert^2 / \overline{\lVert x\rVert^2}$, which can be arbitrarily large when the rows are scaled very differently. Behind the gain is a small algorithmic shift: Kaczmarz draws rows with norm-weighted probability rather than uniformly, and uses the row-adaptive stepsize $1/\lVert x_{i_t}\rVert^2$ rather than the global $1/\max_i\lVert x_i\rVert^2$. Together these two adjustments swap $\max_i\lVert x_i\rVert^2$ for $\overline{\lVert x\rVert^2}$ in the per-step contraction.
 
-**Remark (why not just solve a smaller linear subsystem?).** A natural alternative to Kaczmarz is to pick a small subset of $m \geq d$ rows of $D$ and solve the reduced system $D_S w = y_S$ directly. Deterministic row selection is delicate: an arbitrary $d$-row submatrix can have a much smaller minimum singular value than $D$ itself, and finding a *well-conditioned* subset is hard in general (the column-subset-selection problem). The randomized version --- random row sampling --- leads to a different class of techniques called **sketching**. The two techniques are largely complementary. 
+**Remark (why not just solve a smaller linear subsystem?).** A natural alternative to Kaczmarz is to pick a small subset of $m \geq d$ rows of $X$ and solve the reduced system $X_S w = y_S$ directly. Deterministic row selection is delicate: an arbitrary $d$-row submatrix can have a much smaller minimum singular value than $X$ itself, and finding a *well-conditioned* subset is hard in general (the column-subset-selection problem). The randomized version --- random row sampling --- leads to a different class of techniques called **sketching**. The two techniques are largely complementary. 
 
-**Remark (why not rescale rows and run standard SGD?).** Another tempting reduction is to renormalize each equation, $\tilde d_i := d_i/\lVert d_i\rVert$ and $\tilde y_i := y_i/\lVert d_i\rVert$, so that the rescaled system $\tilde D w = \tilde y$ has unit-norm rows. The rescaling also changes the stepsize prescribed by Theorem 8.1: the smallest valid $R^2$ is now $\tilde R^2 = \max_i\lVert\tilde d_i\rVert^2 = 1$, so the optimal stepsize on the rescaled problem is $\gamma = 1/\tilde R^2 = 1$ rather than the smaller $1/\max_i\lVert d_i\rVert^2$ used on the original. With this prescribed stepsize, standard SGD on $\tilde D w = \tilde y$ produces the update
+**Remark (why not rescale rows and run standard SGD?).** Another tempting reduction is to renormalize each equation, $\tilde x_i := x_i/\lVert x_i\rVert$ and $\tilde y_i := y_i/\lVert x_i\rVert$, so that the rescaled system $\tilde X w = \tilde y$ has unit-norm rows. The rescaling also changes the stepsize prescribed by Theorem 8.1: the smallest valid $R^2$ is now $\tilde R^2 = \max_i\lVert\tilde x_i\rVert^2 = 1$, so the optimal stepsize on the rescaled problem is $\gamma = 1/\tilde R^2 = 1$ rather than the smaller $1/\max_i\lVert x_i\rVert^2$ used on the original. With this prescribed stepsize, standard SGD on $\tilde X w = \tilde y$ produces the update
 
-$$w_{t+1} = w_t + (\tilde y_{i_t} - \langle \tilde d_{i_t}, w_t\rangle)\,\tilde d_{i_t} \;=\; w_t + \frac{y_{i_t} - \langle d_{i_t}, w_t\rangle}{\lVert d_{i_t}\rVert^2}\,d_{i_t},$$
+$$w_{t+1} = w_t + (\tilde y_{i_t} - \langle \tilde x_{i_t}, w_t\rangle)\,\tilde x_{i_t} \;=\; w_t + \frac{y_{i_t} - \langle x_{i_t}, w_t\rangle}{\lVert x_{i_t}\rVert^2}\,x_{i_t},$$
 
-which is the Kaczmarz projection step. Indeed, this is exactly Algorithm 2 applied to the rescaled system $(\tilde D,\tilde y)$, since the norm-weighted distribution $p_i = \lVert\tilde d_i\rVert^2/\lVert\tilde D\rVert_F^2$ collapses to uniform when all rows have unit norm. So the question is *which system one applies the projection update to*: the original $(D,y)$, where the norm-weighted distribution favors long rows, or the rescaled $(\tilde D,\tilde y)$, where every row is sampled equally. The two are different algorithms, and Theorem 8.5 gives correspondingly different rates: $\sigma_{\min}^2(D)/\lVert D\rVert_F^2$ on the original, $\sigma_{\min}^2(\tilde D)/n$ on the rescaled. The rescaling can either improve or degrade $\sigma_{\min}$, so neither variant dominates the other in general.
+which is the Kaczmarz projection step. Indeed, this is exactly Algorithm 2 applied to the rescaled system $(\tilde X,\tilde y)$, since the norm-weighted distribution $p_i = \lVert\tilde x_i\rVert^2/\lVert\tilde X\rVert_F^2$ collapses to uniform when all rows have unit norm. So the question is *which system one applies the projection update to*: the original $(X,y)$, where the norm-weighted distribution favors long rows, or the rescaled $(\tilde X,\tilde y)$, where every row is sampled equally. The two are different algorithms, and Theorem 8.5 gives correspondingly different rates: $\sigma_{\min}^2(X)/\lVert X\rVert_F^2$ on the original, $\sigma_{\min}^2(\tilde X)/n$ on the rescaled. The rescaling can either improve or degrade $\sigma_{\min}$, so neither variant dominates the other in general.
 
-**Numerical illustration.** The figure below compares the three algorithms above --- uniform-sampling SGD on $D$ with stepsize $\gamma = 1/\max_i\lVert d_i\rVert^2$, uniform-sampling SGD on the row-rescaled system $\tilde D, \tilde y$ with stepsize $\gamma = 1$, and randomized Kaczmarz --- on a synthetic interpolation least-squares instance with $n=500$, $d=50$, and rows $d_i \sim \mathcal{N}(0, I_d)$ rescaled so that the row norms span a multiplicative range of $8$. The right-hand side is $y = D w_\ast$ for a random unit vector $w_\ast$, and all three algorithms start from $w_0 = 0$. Solid curves are the median of $\lVert w_t - w_\ast\rVert^2$ over $25$ trials and the shaded ribbons are the corresponding $10$--$90\%$ interquantile bands. All three curves exhibit linear convergence, with Kaczmarz roughly $6\times$ steeper than the original-scale SGD --- exactly the row-norm spread $\max_i\lVert d_i\rVert^2/\overline{\lVert d\rVert^2}$. On this isotropic example rescaled SGD is in fact slightly faster still, since the rescaling here improves the conditioning of the gram matrix; on other instances the ranking of the green and blue curves can flip.
+**Numerical illustration.** The figure below compares the three algorithms above --- uniform-sampling SGD on $X$ with stepsize $\gamma = 1/\max_i\lVert x_i\rVert^2$, uniform-sampling SGD on the row-rescaled system $\tilde X, \tilde y$ with stepsize $\gamma = 1$, and randomized Kaczmarz --- on a synthetic interpolation least-squares instance with $n=500$, $d=50$, and rows $x_i \sim \mathcal{N}(0, I_d)$ rescaled so that the row norms span a multiplicative range of $8$. The right-hand side is $y = X w_\ast$ for a random unit vector $w_\ast$, and all three algorithms start from $w_0 = 0$. Solid curves are the median of $\lVert w_t - w_\ast\rVert^2$ over $25$ trials and the shaded ribbons are the corresponding $10$--$90\%$ interquantile bands. All three curves exhibit linear convergence, with Kaczmarz roughly $6\times$ steeper than the original-scale SGD --- exactly the row-norm spread $\max_i\lVert x_i\rVert^2/\overline{\lVert x\rVert^2}$. On this isotropic example rescaled SGD is in fact slightly faster still, since the rescaling here improves the conditioning of the gram matrix; on other instances the ranking of the green and blue curves can flip.
 
 ![Randomized Kaczmarz vs uniform-sampling SGD on an interpolation least-squares problem](figures/kaczmarz_vs_sgd.png)
 
@@ -2082,9 +2082,9 @@ The Kaczmarz method itself, in its deterministic cyclic form, dates back to Kacz
 
 ## 9. Lower Bounds for First-Order and Stochastic Algorithms {#sec-9}
 
-This section establishes that the upper bounds developed in Sections 2--4 and Section 8 are sharp, by exhibiting matching lower bounds in two settings of interest. The first is the **deterministic optimization** setting of Sections 2--4: we close the loophole left by the polynomial/Krylov framework, which only constrains methods whose iterates lie in $x_0 + \mathcal{K}_k(A,r_0)$, and show that even algorithms allowed to query gradients at arbitrary points cannot beat the Chebyshev/CG rate $O(\sqrt{\kappa}\,\log(1/\varepsilon))$. The hard instance is the tridiagonal **chain quadratic** of Nemirovski and Yudin [NY83]. The second is the **stochastic estimation** setting of Section 8: we show that on the well-specified additive-Gaussian-noise least-squares problem, no algorithm processing $T$ samples can extract excess risk smaller than $\sigma^2 d/(2T)$, matching tail-averaged streaming SGD up to an absolute constant. The argument is the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
+This section establishes that the upper bounds developed in Sections 2--4 and Section 8 are sharp, by exhibiting matching lower bounds in two settings of interest. The first is the **deterministic optimization** setting of Sections 2--4: we close the loophole left by the polynomial/Krylov framework, which only constrains methods whose iterates lie in $w_0 + \mathcal{K}_k(H,r_0)$, and show that even algorithms allowed to query gradients at arbitrary points cannot beat the Chebyshev/CG rate $O(\sqrt{\kappa}\,\log(1/\varepsilon))$. The hard instance is the tridiagonal **chain quadratic** of Nemirovski and Yudin [NY83]. The second is the **stochastic estimation** setting of Section 8: we show that on the well-specified additive-Gaussian-noise least-squares problem, no algorithm processing $T$ samples can extract excess risk smaller than $\sigma^2 d/(2T)$, matching tail-averaged streaming SGD up to an absolute constant. The argument is the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
 
-For the first setting, we restrict to **deterministic first-order algorithms**, by which we mean a procedure $\mathcal{A}$ producing iterates $x_0, x_1, \ldots \in \mathbb{R}^d$ in which $x_0$ is a fixed deterministic vector --- depending on the problem only through known parameters--- and $x_{t+1}$ is a fixed deterministic function of the past gradients $g_0 = \nabla f(x_0), \ldots, g_t = \nabla f(x_t)$. This includes gradient descent with any sequence of stepsizes, conjugate gradients, and indeed any reasonable first-order method.
+For the first setting, we restrict to **deterministic first-order algorithms**, by which we mean a procedure $\mathcal{A}$ producing iterates $w_0, w_1, \ldots \in \mathbb{R}^d$ in which $w_0$ is a fixed deterministic vector --- depending on the problem only through known parameters--- and $w_{t+1}$ is a fixed deterministic function of the past gradients $g_0 = \nabla f(w_0), \ldots, g_t = \nabla f(w_t)$. This includes gradient descent with any sequence of stepsizes, conjugate gradients, and indeed any reasonable first-order method.
 
 ### Zero-chain quadratics
 
@@ -2130,7 +2130,7 @@ $$
 
 every coordinate of $z^\ast$ is nonzero, with magnitudes decreasing linearly from near $1$ at $i = 1$ to near $0$ at $i = d$. The chain property is immediate from tridiagonality of $T$: the $i$th entry of $\nabla\bar f(z) = Tz - e_1$ depends only on $z_{i-1}, z_i, z_{i+1}$, so a vector supported on the first $m$ coordinates produces a gradient supported on the first $m+1$. Hence $\bar f$ is a zero-chain quadratic.
 
-The animation below shows the chain property at work: gradient descent is run on $\bar f$ from $x_0 = 0$, and at every step the supports of $x_t$ (left panel) and $\nabla\bar f(x_t)$ (right panel) are exactly $\{1,\ldots,t\}$ and $\{1,\ldots,t+1\}$. Untouched coordinates are gray; activated coordinates are blue.
+The animation below shows the chain property at work: gradient descent is run on $\bar f$ from $w_0 = 0$, and at every step the supports of $w_t$ (left panel) and $\nabla\bar f(w_t)$ (right panel) are exactly $\{1,\ldots,t\}$ and $\{1,\ldots,t+1\}$. Untouched coordinates are gray; activated coordinates are blue.
 
 ![Chain property of the tridiagonal quadratic: each gradient query activates one new coordinate](figures/chain_property.gif)
 
@@ -2141,14 +2141,14 @@ The animation below shows the chain property at work: gradient descent is run on
 **Example (Rescaling).** The class of zero-chain quadratics is closed under positive scalar rescaling of the input and output: if $\bar f$ is a zero-chain quadratic on $\mathbb{R}^d$ and $\alpha, \gamma > 0$ are any constants, then the rescaled function
 
 $$
-f(x) \;:=\; \alpha\,\bar f(\gamma\,x)
+f(w) \;:=\; \alpha\,\bar f(\gamma\,w)
 $$
 
-is itself a zero-chain quadratic. Indeed, the chain rule gives $\nabla f(x) = \alpha\gamma\,\nabla\bar f(\gamma x)$ and the zero-chain property follows immediately. This closure under rescaling will let us tune the smoothness constant and the initial distance $\lVert x_0 - x^\ast\rVert$ to any prescribed values without losing the chain structure.
+is itself a zero-chain quadratic. Indeed, the chain rule gives $\nabla f(w) = \alpha\gamma\,\nabla\bar f(\gamma w)$ and the zero-chain property follows immediately. This closure under rescaling will let us tune the smoothness constant and the initial distance $\lVert w_0 - w_\ast\rVert$ to any prescribed values without losing the chain structure.
 
 </div>
 
-If we had a guarantee that the iterates of any deterministic first-order method always satisfied $x_t \in E_{2t+1}$, the chain property would already yield a clean lower bound on $\lVert x_t - x^\ast\rVert$ from the part of the minimizer that the iterate cannot reach. Of course, no such guarantee holds --- a method is free to query off-coordinate points. The next lemma resolves the difficulty: by composing a zero-chain quadratic with a carefully chosen rotation, we force any deterministic first-order method to discover new coordinates two at a time.
+If we had a guarantee that the iterates of any deterministic first-order method always satisfied $w_t \in E_{2t+1}$, the chain property would already yield a clean lower bound on $\lVert w_t - w_\ast\rVert$ from the part of the minimizer that the iterate cannot reach. Of course, no such guarantee holds --- a method is free to query off-coordinate points. The next lemma resolves the difficulty: by composing a zero-chain quadratic with a carefully chosen rotation, we force any deterministic first-order method to discover new coordinates two at a time.
 
 ### The rotation lemma
 
@@ -2158,13 +2158,13 @@ If we had a guarantee that the iterates of any deterministic first-order method 
 **Lemma 9.1 (Rotation neutralizes arbitrary queries).** *Let $\bar f$ be a zero-chain quadratic on $\mathbb{R}^d$, fix $k \ge 0$, and assume $d \ge 2k + 2$. For every deterministic first-order algorithm $\mathcal{A}$ there exists an orthogonal matrix $Q \in \mathbb{R}^{d\times d}$ such that, when $\mathcal{A}$ is run on*
 
 $$
-f(x) \;:=\; \bar f(Q^\top x),
+f(w) \;:=\; \bar f(Q^\top w),
 $$
 
-*the iterates $x_0, x_1, \ldots, x_k$ produced by $\mathcal{A}$ satisfy*
+*the iterates $w_0, w_1, \ldots, w_k$ produced by $\mathcal{A}$ satisfy*
 
 $$
-Q^\top x_t \in E_{2t+1}, \qquad Q^\top \nabla f(x_t) \in E_{2t+2}, \qquad t = 0, 1, \ldots, k.
+Q^\top w_t \in E_{2t+1}, \qquad Q^\top \nabla f(w_t) \in E_{2t+2}, \qquad t = 0, 1, \ldots, k.
 $$
 
 </div>
@@ -2174,26 +2174,26 @@ So although $\mathcal{A}$ is allowed to query *anywhere* in $\mathbb{R}^d$, on t
 *Proof.* Write $Q = [q_1, q_2, \ldots, q_d]$, with the columns $q_i$ to be chosen orthonormal. We construct them two at a time, maintaining the invariant
 
 $$
-Q^\top x_i \in E_{2i+1}, \qquad Q^\top g_i \in E_{2i+2}, \qquad g_i := \nabla f(x_i),
+Q^\top w_i \in E_{2i+1}, \qquad Q^\top g_i \in E_{2i+2}, \qquad g_i := \nabla f(w_i),
 $$
 
-for every completed round $i$. The animation below previews the construction: each round adds two new columns of $Q$ (orange strip on the right), the rotated iterate $Q^\top x_t$ acquires two new nonzero coordinates (heatmap column), and the rotated representations of earlier iterates remain frozen — the new $q$'s lie in the orthogonal complement of everything queried so far, so $Q^\top x_s$ for $s < t$ is unaffected by extending $Q$.
+for every completed round $i$. The animation below previews the construction: each round adds two new columns of $Q$ (orange strip on the right), the rotated iterate $Q^\top w_t$ acquires two new nonzero coordinates (heatmap column), and the rotated representations of earlier iterates remain frozen — the new $q$'s lie in the orthogonal complement of everything queried so far, so $Q^\top w_s$ for $s < t$ is unaffected by extending $Q$.
 
 ![Adaptive construction of Q in the proof of Lemma 9.1: each round adds two columns of Q without disturbing past iterates](figures/rotation_lemma.gif)
 
-*Base step ($t = 0$).* The algorithm chooses $x_0$ before any gradients are available, so $x_0$ is a fixed deterministic vector. If $x_0 \neq 0$, choose $q_1 = x_0/\lVert x_0\rVert$; if $x_0 = 0$, choose $q_1$ to be any unit vector. In either case $x_0 \in \operatorname{span}\lbrace q_1\rbrace$, and therefore $Q^\top x_0 \in E_1$. Before the gradient oracle can return $g_0 = \nabla f(x_0) = Q\,\nabla\bar f(Q^\top x_0)$, we also commit $q_2$ to be any unit vector orthogonal to $q_1$. With $q_1, q_2$ fixed, the chain rule gives $Q^\top g_0 = \nabla \bar f(Q^\top x_0)$, and the chain property of $\bar f$ yields $Q^\top g_0 \in E_2$.
+*Base step ($t = 0$).* The algorithm chooses $w_0$ before any gradients are available, so $w_0$ is a fixed deterministic vector. If $w_0 \neq 0$, choose $q_1 = w_0/\lVert w_0\rVert$; if $w_0 = 0$, choose $q_1$ to be any unit vector. In either case $w_0 \in \operatorname{span}\lbrace q_1\rbrace$, and therefore $Q^\top w_0 \in E_1$. Before the gradient oracle can return $g_0 = \nabla f(w_0) = Q\,\nabla\bar f(Q^\top w_0)$, we also commit $q_2$ to be any unit vector orthogonal to $q_1$. With $q_1, q_2$ fixed, the chain rule gives $Q^\top g_0 = \nabla \bar f(Q^\top w_0)$, and the chain property of $\bar f$ yields $Q^\top g_0 \in E_2$.
 
-*Inductive step.* Suppose the invariant holds for rounds $0, \dots, t$ with $t \le k-1$, and that $q_1, \dots, q_{2t+2}$ have already been fixed. By assumption, $Q^\top x_i \in E_{2i+1}$ and $Q^\top g_i \in E_{2i+2}$ for all $i \le t$, so each of the past oracle answers $g_0, \dots, g_t$ is determined by the columns $q_1,\dots,q_{2t+2}$ alone. How we eventually complete $Q$ on the orthogonal complement of $\operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ does not affect any of those answers.
+*Inductive step.* Suppose the invariant holds for rounds $0, \dots, t$ with $t \le k-1$, and that $q_1, \dots, q_{2t+2}$ have already been fixed. By assumption, $Q^\top w_i \in E_{2i+1}$ and $Q^\top g_i \in E_{2i+2}$ for all $i \le t$, so each of the past oracle answers $g_0, \dots, g_t$ is determined by the columns $q_1,\dots,q_{2t+2}$ alone. How we eventually complete $Q$ on the orthogonal complement of $\operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ does not affect any of those answers.
 
-Since $\mathcal{A}$ is deterministic, the next iterate $x_{t+1} = \Phi_{t+1}(g_0, \dots, g_t)$ is a fixed vector of $\mathbb{R}^d$, known to us before any column of $Q$ outside $S_t := \operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ is committed. Decompose $x_{t+1}$ into its $S_t$- and $S_t^\perp$-components,
+Since $\mathcal{A}$ is deterministic, the next iterate $w_{t+1} = \Phi_{t+1}(g_0, \dots, g_t)$ is a fixed vector of $\mathbb{R}^d$, known to us before any column of $Q$ outside $S_t := \operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ is committed. Decompose $w_{t+1}$ into its $S_t$- and $S_t^\perp$-components,
 
 $$
-x_{t+1} = P_{S_t} x_{t+1} + \underbrace{P_{S_t^{\perp}} x_{t+1}}_{=:r_{t+1}},
+w_{t+1} = P_{S_t} w_{t+1} + \underbrace{P_{S_t^{\perp}} w_{t+1}}_{=:r_{t+1}},
 $$
 
-and choose the next basis vector along the orthogonal projection of $x_{t+1}$ onto $S_t^\perp$: if $r_{t+1} \neq 0$, set $q_{2t+3} = r_{t+1}/\lVert r_{t+1}\rVert$; otherwise let $q_{2t+3}$ be any unit vector in $S_t^\perp$. In either case $q_{2t+3} \perp S_t$ and $x_{t+1} \in \operatorname{span}\lbrace q_1,\dots,q_{2t+3}\rbrace$, so $Q^\top x_{t+1} \in E_{2t+3}$.
+and choose the next basis vector along the orthogonal projection of $w_{t+1}$ onto $S_t^\perp$: if $r_{t+1} \neq 0$, set $q_{2t+3} = r_{t+1}/\lVert r_{t+1}\rVert$; otherwise let $q_{2t+3}$ be any unit vector in $S_t^\perp$. In either case $q_{2t+3} \perp S_t$ and $w_{t+1} \in \operatorname{span}\lbrace q_1,\dots,q_{2t+3}\rbrace$, so $Q^\top w_{t+1} \in E_{2t+3}$.
 
-Next we commit one more column, $q_{2t+4}$, taken to be any unit vector in $S_t^\perp$ orthogonal to $q_{2t+3}$. Such a vector exists because $\dim S_t^\perp = d - (2t+2) \ge 2$ when $t \le k-1$ and $d \ge 2k+2$. With $q_1, \dots, q_{2t+4}$ now committed, the chain rule $\nabla f(x) = Q\,\nabla\bar f(Q^\top x)$ gives $Q^\top g_{t+1} = \nabla\bar f(Q^\top x_{t+1})$. Plugging the containment $Q^\top x_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
+Next we commit one more column, $q_{2t+4}$, taken to be any unit vector in $S_t^\perp$ orthogonal to $q_{2t+3}$. Such a vector exists because $\dim S_t^\perp = d - (2t+2) \ge 2$ when $t \le k-1$ and $d \ge 2k+2$. With $q_1, \dots, q_{2t+4}$ now committed, the chain rule $\nabla f(w) = Q\,\nabla\bar f(Q^\top w)$ gives $Q^\top g_{t+1} = \nabla\bar f(Q^\top w_{t+1})$. Plugging the containment $Q^\top w_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
 
 $$
 Q^\top g_{t+1} \in E_{2t+4},
@@ -2217,10 +2217,10 @@ Step 3 is now an explicit calculation on the tridiagonal example.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.2 (Lower bound).** *Fix $k \ge 1$ and $\beta, R > 0$, and set $d := 4k+2$. There exist a convex quadratic $f : \mathbb{R}^d \to \mathbb{R}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$ and an initialization $x_0$ with $\lVert x_0 - x^\ast\rVert = R$ such that for every deterministic first-order algorithm $\mathcal{A}$ the iterates satisfy*
+**Theorem 9.2 (Lower bound).** *Fix $k \ge 1$ and $\beta, R > 0$, and set $d := 4k+2$. There exist a convex quadratic $f : \mathbb{R}^d \to \mathbb{R}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$ and an initialization $w_0$ with $\lVert w_0 - w_\ast\rVert = R$ such that for every deterministic first-order algorithm $\mathcal{A}$ the iterates satisfy*
 
 $$
-f(x_k) - f^\ast \;\ge\; \frac{3}{128}\cdot\frac{\beta\,R^2}{(k+1)^2}.
+f(w_k) - f^\ast \;\ge\; \frac{3}{128}\cdot\frac{\beta\,R^2}{(k+1)^2}.
 $$
 
 </div>
@@ -2231,24 +2231,24 @@ $$
 \alpha \;:=\; \frac{\beta\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \gamma \;:=\; \frac{\lVert z^\ast\rVert}{R}.
 $$
 
-By the rescaling example, $\tilde f(z) := \alpha\,\bar f(\gamma\,z)$ is itself a zero-chain quadratic. Lemma 9.1 applied to $\tilde f$ therefore furnishes an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance
+By the rescaling example, $\tilde f(z) := \alpha\,\bar f(\gamma\,z)$ is itself a zero-chain quadratic. Lemma 9.1 applied to $\tilde f$ therefore furnishes an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $w_0 = 0$ on the hard instance
 
 $$
-f(x) \;:=\; \tilde f(Q^\top x) \;=\; \alpha\,\bar f\bigl(\gamma\,Q^\top x\bigr),
+f(w) \;:=\; \tilde f(Q^\top w) \;=\; \alpha\,\bar f\bigl(\gamma\,Q^\top w\bigr),
 $$
 
 the iterates satisfy
 
 $$
-Q^\top x_t \;\in\; E_{2t+1}, \qquad \forall\, t = 0, 1, \ldots, k.
+Q^\top w_t \;\in\; E_{2t+1}, \qquad \forall\, t = 0, 1, \ldots, k.
 $$
 
-This function $f$ has the required parameters: its Hessian is $\alpha\gamma^2\,Q T Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\gamma^2\,\lVert T\rVert_{\mathrm{op}} = \beta$, and its minimizer is $x^\ast = Q\,z^\ast/\gamma$ with $\lVert x_0 - x^\ast\rVert = \lVert z^\ast\rVert/\gamma = R$.
+This function $f$ has the required parameters: its Hessian is $\alpha\gamma^2\,Q T Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\gamma^2\,\lVert T\rVert_{\mathrm{op}} = \beta$, and its minimizer is $w_\ast = Q\,z^\ast/\gamma$ with $\lVert w_0 - w_\ast\rVert = \lVert z^\ast\rVert/\gamma = R$.
 
-Setting $w := \gamma\,Q^\top x_k \in E_{2k+1}$, we obtain
+Setting $v := \gamma\,Q^\top w_k \in E_{2k+1}$, we obtain
 
 $$
-f(x_k) - f^\ast \;=\; \alpha\,\bigl(\bar f(w) - \bar f^\ast\bigr) \;\ge\; \alpha\,\bigl(\,\textstyle\min_{u \in E_{2k+1}}\,\bar f(u)\, -\, \bar f^\ast\bigr).
+f(w_k) - f^\ast \;=\; \alpha\,\bigl(\bar f(v) - \bar f^\ast\bigr) \;\ge\; \alpha\,\bigl(\,\textstyle\min_{u \in E_{2k+1}}\,\bar f(u)\, -\, \bar f^\ast\bigr).
 $$
 
 The minimizer of $\bar f$ over $E_{2k+1}$ solves the truncated tridiagonal system $T_{2k+1}\,u_{1:2k+1} = e_1$, with explicit solution 
@@ -2268,7 +2268,7 @@ $$\lVert z^\ast\rVert^2 \;=\; \frac{1}{(d+1)^2}\sum_{i=1}^d i^2 \;=\; \frac{d(2d
  yield $\alpha \ge 3\,\beta R^2 / (4(4k+2))$. Substituting gives
 
 $$
-f(x_k) - f^\ast \;\ge\; \frac{3\,\beta R^2}{4(4k+2)} \cdot \frac{2k+1}{2(4k+3)(2k+2)} \;=\; \frac{3\,\beta R^2}{32\,(4k+3)\,(k+1)} \;\ge\; \frac{3}{128}\cdot\frac{\beta R^2}{(k+1)^2},
+f(w_k) - f^\ast \;\ge\; \frac{3\,\beta R^2}{4(4k+2)} \cdot \frac{2k+1}{2(4k+3)(2k+2)} \;=\; \frac{3\,\beta R^2}{32\,(4k+3)\,(k+1)} \;\ge\; \frac{3}{128}\cdot\frac{\beta R^2}{(k+1)^2},
 $$
 
 as claimed. <span style="float: right;">$\square$</span>
@@ -2283,39 +2283,39 @@ Theorem 9.2 closes the gap in the *worst case*: no deterministic first-order met
 
 The answer is that the structured rate is tight: *the same residual polynomial that drives the CG upper bound also certifies a matching lower bound for every deterministic first-order method*, up to a constant shift $k \mapsto 2k+1$. Our goal is to show why this is the case. 
 
-We begin by recalling from Section 7 the **spectral measure** $\mu := \sum_{i=1}^d c_i^2\,\delta_{\lambda_i}$ on $[0,\beta]$, where $c_i$ are the coordinates of the initial error $x_0 - x^\ast$ in the eigenbasis of $A$. Rewriting $(4b)$ as an integral against $\mu$ gives the spectral-measure form of the CG identity:
+We begin by recalling from Section 7 the **spectral measure** $\mu := \sum_{i=1}^d c_i^2\,\delta_{\lambda_i}$ on $[0,\beta]$, where $c_i$ are the coordinates of the initial error $w_0 - w_\ast$ in the eigenbasis of $H$. Rewriting $(4b)$ as an integral against $\mu$ gives the spectral-measure form of the CG identity:
 
 $$
-f(x_k^{\mathrm{CG}}) - f^\ast \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}~\int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda), \tag{61}
+f(w_k^{\mathrm{CG}}) - f^\ast \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}~\int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda), \tag{61}
 $$
 
 We will now show that the conjugate gradient method is optimal in a much stronger sense than the minimax bound we have already proved: the worst-case instance for any deterministic first-order algorithm can be chosen to have *any prescribed spectral measure*.
 
-We will need the following simple helper lemma. We call a tridiagonal matrix $A\in\mathbb{R}^{d\times d}$ *irreducible* if all of its off-diagonal entries are nonzero:
+We will need the following simple helper lemma. We call a tridiagonal matrix $H\in\mathbb{R}^{d\times d}$ *irreducible* if all of its off-diagonal entries are nonzero:
 
 $$
-A_{i,i+1} = A_{i+1,i} \ne 0, \qquad \forall\, i = 1, \ldots, d-1.
+H_{i,i+1} = H_{i+1,i} \ne 0, \qquad \forall\, i = 1, \ldots, d-1.
 $$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma 9.3 (Krylov subspaces of irreducible tridiagonal matrices).** *If $A \in \mathbb{R}^{d \times d}$ is irreducible and tridiagonal, then the Krylov subspace $\mathcal{K}_t(A, e_1)$ coincides with the coordinate subspace $E_t$ for every $t \ge 1$.*
+**Lemma 9.3 (Krylov subspaces of irreducible tridiagonal matrices).** *If $H \in \mathbb{R}^{d \times d}$ is irreducible and tridiagonal, then the Krylov subspace $\mathcal{K}_t(H, e_1)$ coincides with the coordinate subspace $E_t$ for every $t \ge 1$.*
 
 </div>
 
-*Proof.* Since $A$ is tridiagonal, the inclusion $A E_m \subset E_{m+1}$ holds, and therefore
+*Proof.* Since $H$ is tridiagonal, the inclusion $H E_m \subset E_{m+1}$ holds, and therefore
 
 $$
-\operatorname{span}\{e_1,\, Ae_1,\, \ldots,\, A^{m-1} e_1\} \subset E_m. \tag{62}
+\operatorname{span}\{e_1,\, He_1,\, \ldots,\, H^{m-1} e_1\} \subset E_m. \tag{62}
 $$
 
-Conversely, the $(j+1)$-st coordinate of $A^j e_1$ is
+Conversely, the $(j+1)$-st coordinate of $H^j e_1$ is
 
 $$
-A_{j+1,j}\,A_{j,j-1}\cdots A_{2,1},
+H_{j+1,j}\,H_{j,j-1}\cdots H_{2,1},
 $$
 
-which is nonzero by irreducibility. Thus we have $A^j e_1 \in E_{j+1} \setminus E_j$, and by dimension counting the inclusion $(62)$ holds as equality. <span style="float: right;">$\square$</span>
+which is nonzero by irreducibility. Thus we have $H^j e_1 \in E_{j+1} \setminus E_j$, and by dimension counting the inclusion $(62)$ holds as equality. <span style="float: right;">$\square$</span>
 
 
 Next, we need the following lemma that constructs an irreducible, positive semidefinite, tridiagonal problem with any prescribed spectral measure.
@@ -2323,10 +2323,10 @@ Next, we need the following lemma that constructs an irreducible, positive semid
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma 9.4 (Exact Jacobi realization of a finite measure).** *Consider an atomic measure $\mu = \sum_{i=1}^d w_i\,\delta_{\theta_i}$ with atoms $0 < \theta_1 < \cdots < \theta_d \le \beta$ and weights $w_i > 0$. Then there exist an irreducible, positive-semidefinite, tridiagonal matrix $A \in \mathbb{R}^{d \times d}$ with $\lVert A\rVert_{\mathrm{op}} \le \beta$ and a scalar $\tau > 0$ such that the spectral measure $\mu_{A,x^\ast}$ of the convex quadratic problem with data*
+**Lemma 9.4 (Exact Jacobi realization of a finite measure).** *Consider an atomic measure $\mu = \sum_{i=1}^d \rho_i\,\delta_{\theta_i}$ with atoms $0 < \theta_1 < \cdots < \theta_d \le \beta$ and weights $\rho_i > 0$. Then there exist an irreducible, positive-semidefinite, tridiagonal matrix $H \in \mathbb{R}^{d \times d}$ with $\lVert H\rVert_{\mathrm{op}} \le \beta$ and a scalar $\tau > 0$ such that the spectral measure $\mu_{H,w_\ast}$ of the convex quadratic problem with data*
 
 $$
-x_0 = 0, \qquad b := \tau e_1, \qquad x^\ast := A^{-1} b,
+w_0 = 0, \qquad b := \tau e_1, \qquad w_\ast := H^{-1} b,
 $$
 
 *coincides exactly with $\mu$.*
@@ -2347,15 +2347,15 @@ $$
 
 where $q_i$ has degree exactly $i$ and is orthogonal to every polynomial of degree at most $i-1$.
 
-Let $M_\lambda$ be the operator of multiplication by $\lambda$ on $L^2(\nu)$, and let $A$ be its matrix in the basis $\{q_0, \ldots, q_{d-1}\}$, that is:
+Let $M_\lambda$ be the operator of multiplication by $\lambda$ on $L^2(\nu)$, and let $H$ be its matrix in the basis $\{q_0, \ldots, q_{d-1}\}$, that is:
 
 $$
-A_{ij} \;:=\; \langle q_{i-1},\, \lambda\,q_{j-1}\rangle_{L^2(\nu)}, \qquad i,j = 1, \ldots, d.
+H_{ij} \;:=\; \langle q_{i-1},\, \lambda\,q_{j-1}\rangle_{L^2(\nu)}, \qquad i,j = 1, \ldots, d.
 $$
 
-The matrix $A$ is symmetric. It is also tridiagonal: if $i > j+1$, then $\lambda\,q_{j-1}$ has degree $j \le i-2$ and is therefore orthogonal to $q_{i-1}$. Symmetry gives the same conclusion when $i < j-1$.
+The matrix $H$ is symmetric. It is also tridiagonal: if $i > j+1$, then $\lambda\,q_{j-1}$ has degree $j \le i-2$ and is therefore orthogonal to $q_{i-1}$. Symmetry gives the same conclusion when $i < j-1$.
 
-We next show that $A$ is irreducible. Choose each $q_n$ to have positive leading coefficient $\kappa_n > 0$. Comparing leading terms in the expansion of $\lambda\,q_n$ in the orthonormal basis gives
+We next show that $H$ is irreducible. Choose each $q_n$ to have positive leading coefficient $\kappa_n > 0$. Comparing leading terms in the expansion of $\lambda\,q_n$ in the orthonormal basis gives
 
 $$
 \lambda\,q_n \;=\; \frac{\kappa_n}{\kappa_{n+1}}\,q_{n+1} + \text{lower-degree terms}.
@@ -2364,10 +2364,10 @@ $$
 Taking inner products with $q_{n+1}$, we get
 
 $$
-A_{n+2,n+1} \;=\; \langle q_{n+1},\, \lambda\,q_n\rangle_{L^2(\nu)} \;=\; \frac{\kappa_n}{\kappa_{n+1}} \;>\; 0.
+H_{n+2,n+1} \;=\; \langle q_{n+1},\, \lambda\,q_n\rangle_{L^2(\nu)} \;=\; \frac{\kappa_n}{\kappa_{n+1}} \;>\; 0.
 $$
 
-Thus every off-diagonal entry of $A$ is nonzero.
+Thus every off-diagonal entry of $H$ is nonzero.
 
 The spectral bounds are immediate from the multiplication operator. If $p \in L^2(\nu)$ is nonzero, then
 
@@ -2381,33 +2381,33 @@ $$
 \langle p,\, M_\lambda\,p\rangle_{L^2(\nu)} \;\le\; \beta\,\lVert p\rVert_{L^2(\nu)}^2.
 $$
 
-Hence $A$ is positive definite and $\lVert A\rVert_{\mathrm{op}} \le \beta$.
+Hence $H$ is positive definite and $\lVert H\rVert_{\mathrm{op}} \le \beta$.
 
 It remains to identify the spectral measure. For any vector $z$ and any polynomial $p$, the spectral measure of $z$ satisfies
 
 $$
-z^\top p(A)\,z \;=\; \int p(\lambda)\,d\mu_{A,z}(\lambda); \tag{63}
+z^\top p(H)\,z \;=\; \int p(\lambda)\,d\mu_{H,z}(\lambda); \tag{63}
 $$
 
-this is immediate from an eigenvalue decomposition of $A$. Set $\tau := \sqrt{M_2}$, $b := \tau\,e_1$, and
+this is immediate from an eigenvalue decomposition of $H$. Set $\tau := \sqrt{M_2}$, $b := \tau\,e_1$, and
 
 $$
-x^\ast \;:=\; A^{-1} b \;=\; \tau\,A^{-1} e_1.
+w_\ast \;:=\; H^{-1} b \;=\; \tau\,H^{-1} e_1.
 $$
 
-The vector $e_1$ corresponds to the constant polynomial $q_0 \equiv 1$, and $A$ represents multiplication by $\lambda$. Therefore, for every polynomial $p$, we have
+The vector $e_1$ corresponds to the constant polynomial $q_0 \equiv 1$, and $H$ represents multiplication by $\lambda$. Therefore, for every polynomial $p$, we have
 
 $$
 \begin{aligned}
-(x^\ast)^\top p(A)\,x^\ast
-&= \tau^2\,e_1^\top A^{-1} p(A)\,A^{-1} e_1 \\
+(w_\ast)^\top p(H)\,w_\ast
+&= \tau^2\,e_1^\top H^{-1} p(H)\,H^{-1} e_1 \\
 &= \tau^2\,\langle 1,\, \lambda^{-1}\,p(\lambda)\,\lambda^{-1}\rangle_{L^2(\nu)} \\
 &= \tau^2 \int \lambda^{-2}\,p(\lambda)\,d\nu(\lambda) \\
 &= \int p(\lambda)\,d\mu(\lambda).
 \end{aligned}
 $$
 
-Combining this identity with $(63)$ shows that $\mu_{A,x^\ast}$ and $\mu$ integrate every polynomial in the same way. Since both measures are finite atomic, they are equal. <span style="float: right;">$\square$</span>
+Combining this identity with $(63)$ shows that $\mu_{H,w_\ast}$ and $\mu$ integrate every polynomial in the same way. Since both measures are finite atomic, they are equal. <span style="float: right;">$\square$</span>
 
 
 We are now ready to prove the optimality of CG. To simplify notation, for a positive measure $\nu$ on $(0,\beta]$, define
@@ -2420,10 +2420,10 @@ $$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.5 (Optimality of CG).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a finite positive atomic measure $\mu$ on $(0,\beta]$ that has at least $2t+2$ atoms. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance whose spectral error measure $\mu_{A,x^\ast}$ is exactly $\mu$ and whose $t$-th iterate after initialization $x_0 = 0$ satisfies*
+**Theorem 9.5 (Optimality of CG).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a finite positive atomic measure $\mu$ on $(0,\beta]$ that has at least $2t+2$ atoms. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance whose spectral error measure $\mu_{H,w_\ast}$ is exactly $\mu$ and whose $t$-th iterate after initialization $w_0 = 0$ satisfies*
 
 $$
-f(x_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
+f(w_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
 $$
 
 </div>
@@ -2431,42 +2431,42 @@ $$
 *Proof.* Fix a deterministic first-order algorithm $\mathcal{A}$, and write
 
 $$
-\mu \;=\; \sum_{i=1}^d w_i\,\delta_{\lambda_i}, \qquad 0 < \lambda_1 < \cdots < \lambda_d \le \beta, \qquad w_i > 0,
+\mu \;=\; \sum_{i=1}^d \rho_i\,\delta_{\lambda_i}, \qquad 0 < \lambda_1 < \cdots < \lambda_d \le \beta, \qquad w_i > 0,
 $$
 
-where $d \ge 2t + 2$. Applying Lemma 9.4 to $\mu$, we obtain an irreducible, tridiagonal, positive semidefinite matrix $A$ with $\lVert A\rVert_{\mathrm{op}} \le \beta$, a scalar $\tau > 0$, and the vector $b = \tau e_1$ such that the quadratic
+where $d \ge 2t + 2$. Applying Lemma 9.4 to $\mu$, we obtain an irreducible, tridiagonal, positive semidefinite matrix $H$ with $\lVert H\rVert_{\mathrm{op}} \le \beta$, a scalar $\tau > 0$, and the vector $b = \tau e_1$ such that the quadratic
 
 $$
-\bar f(z) \;=\; \tfrac{1}{2} z^\top A z - b^\top z
+\bar f(z) \;=\; \tfrac{1}{2} z^\top H z - b^\top z
 $$
 
-has minimizer $x^\ast = A^{-1}b$ and spectral error measure $\mu_{A,x^\ast} = \mu$.
+has minimizer $w_\ast = H^{-1}b$ and spectral error measure $\mu_{H,w_\ast} = \mu$.
 
-Moreover $\bar f$ is zero-chain, since tridiagonality gives $A E_m \subset E_{m+1}$ and $b \in E_1$. Applying Lemma 9.1, we deduce that there is an orthogonal matrix $Q$ such that the algorithm $\mathcal{A}$ applied to
+Moreover $\bar f$ is zero-chain, since tridiagonality gives $H E_m \subset E_{m+1}$ and $b \in E_1$. Applying Lemma 9.1, we deduce that there is an orthogonal matrix $Q$ such that the algorithm $\mathcal{A}$ applied to
 
 $$
-f(x) \;=\; \bar f(Q^\top x)
+f(w) \;=\; \bar f(Q^\top w)
 $$
 
 produces iterates satisfying
 
 $$
-Q^\top x_s \in E_{2s+1}, \qquad \forall\, s = 0, 1, \ldots, t.
+Q^\top w_s \in E_{2s+1}, \qquad \forall\, s = 0, 1, \ldots, t.
 $$
 
 Orthogonal changes of variables preserve the spectral error measure, and therefore the rotated instance $f$ also has spectral error measure $\mu$. Since $2t+1 \le d$ and $b$ is a nonzero multiple of $e_1$, the helper lemma above ensures the equality
 
 $$
-E_{2t+1} \;=\; \mathcal{K}_{2t+1}(A, b).
+E_{2t+1} \;=\; \mathcal{K}_{2t+1}(H, b).
 $$
 
-Thus the inclusion $Q^\top x_t \in \mathcal{K}_{2t+1}(A, b)$ holds, and consequently
+Thus the inclusion $Q^\top w_t \in \mathcal{K}_{2t+1}(H, b)$ holds, and consequently
 
 $$
-f(x_t) - f^\ast \;=\; \bar f(Q^\top x_t) - \bar f^\ast \;\ge\; \min_{u \,\in\, \mathcal{K}_{2t+1}(A,b)} \bar f(u) - \bar f^\ast.
+f(w_t) - f^\ast \;=\; \bar f(Q^\top w_t) - \bar f^\ast \;\ge\; \min_{u \,\in\, \mathcal{K}_{2t+1}(H,b)} \bar f(u) - \bar f^\ast.
 $$
 
-Using the Krylov polynomial identity $(61)$ and the equality $\mu_{A,x^\ast} = \mu$, the right-hand side equals $\mathcal{E}_{2t+1}(\mu)$, which completes the proof. <span style="float: right;">$\square$</span>
+Using the Krylov polynomial identity $(61)$ and the equality $\mu_{H,w_\ast} = \mu$, the right-hand side equals $\mathcal{E}_{2t+1}(\mu)$, which completes the proof. <span style="float: right;">$\square$</span>
 
 
 Let us spell out what the construction gives in two common spectral regimes.
@@ -2476,7 +2476,7 @@ Let us spell out what the construction gives in two common spectral regimes.
 **Example (Atomic power laws).** For $a > -1$ and $d \ge 2t + 2$, set
 
 $$
-\mu_d \;=\; \sum_{i=1}^d w_i\,\delta_{\lambda_i}, \qquad \lambda_i \asymp \frac{i}{d}, \qquad w_i \asymp d^{-a}\,i^{a-1}.
+\mu_d \;=\; \sum_{i=1}^d \rho_i\,\delta_{\lambda_i}, \qquad \lambda_i \asymp \frac{i}{d}, \qquad \rho_i \asymp d^{-a}\,i^{a-1}.
 $$
 
 Theorem 9.5 gives the lower bound $\mathcal{E}_{2t+1}(\mu_d)$. For $d$ large relative to $t$, the atomic measure $\mu_d$ is a Riemann discretization of the continuum power-law density $\phi(\lambda) = \lambda^{a-1}$ on $(0,1]$, so
@@ -2494,7 +2494,7 @@ This is exactly the rate established for CG under a power-law spectral density i
 **Example (Atomic Marchenko--Pastur hard edge).** For $d \ge 2t + 2$, set
 
 $$
-\mu_d \;=\; \sum_{i=1}^d w_i\,\delta_{\lambda_i}, \qquad \lambda_i \asymp \left(\frac{i}{d}\right)^{\!2}, \qquad w_i \asymp d^{-1}.
+\mu_d \;=\; \sum_{i=1}^d \rho_i\,\delta_{\lambda_i}, \qquad \lambda_i \asymp \left(\frac{i}{d}\right)^{\!2}, \qquad \rho_i \asymp d^{-1}.
 $$
 
 Then $\mu_d([0, s]) \asymp s^{1/2}$, so the continuum hard-edge limit is the power-law case $a = 1/2$. For $d$ large relative to $t$,
@@ -2520,7 +2520,7 @@ The construction relies on a classical ingredient: Gauss quadrature. This basic 
 
 **Lemma 9.6 (Gauss quadrature).** *Let $\mu$ be a positive Borel measure on $[0,\beta]$ supported on at least $N+1$ distinct points, with finite moments up to order $2N-1$. Then there exist points $\theta_1 < \cdots < \theta_N$ in the interior of the convex hull of $\mathrm{supp}(\mu)$ and positive weights $w_1,\ldots,w_N > 0$ such that the atomic measure*
 
-$$\mu_N \;:=\; \sum_{j=1}^N w_j\,\delta_{\theta_j} \tag{64}
+$$\mu_N \;:=\; \sum_{j=1}^N \rho_j\,\delta_{\theta_j} \tag{64}
 $$
 
 *agrees with $\mu$ on every polynomial of degree at most $2N-1$:*
@@ -2557,7 +2557,7 @@ $$
 
 Define the weights
 
-$$w_j:=\int \ell_j(\lambda)\,d\mu(\lambda).
+$$\rho_j:=\int \ell_j(\lambda)\,d\mu(\lambda).
 $$
 
 We claim that these weights give exact integration on $\mathcal{P}\_{2N-1}$. Fix $P\in \mathcal{P}\_{2N-1}$. Since $\tilde p_N$ is a degree-$N$ polynomial, ordinary polynomial long division lets us write $P$ uniquely as
@@ -2578,7 +2578,7 @@ has the same value as $r$ at every node $\theta_i$. Since both sides have degree
 $$
 \int r\,d\mu
 =\sum_{j=1}^N r(\theta_j)\int \ell_j\,d\mu
-=\sum_{j=1}^N r(\theta_j)w_j
+=\sum_{j=1}^N r(\theta_j)\rho_j
 =\int r\,d\mu_N.
 $$
 
@@ -2589,7 +2589,7 @@ $$
 
 for some $h_j\in\mathcal{P}_{N-2}$. Orthogonality again gives $\int \tilde p_N h_j\,d\mu=0$, and therefore
 
-$$w_j=\int \ell_j\,d\mu=\int \ell_j^2\,d\mu>0.
+$$\rho_j=\int \ell_j\,d\mu=\int \ell_j^2\,d\mu>0.
 $$
 
 Combining this with the reduction from $P$ to $r$ proves $(\dagger)$. <span style="float: right;">$\square$</span>
@@ -2599,10 +2599,10 @@ Combining the Gauss quadrature reduction of Lemma 9.6 with the atomic optimality
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.7 (Optimality of CG up to low-degree moments).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a positive Borel measure $\mu$ on $(0,\beta]$ supported on at least $2t+3$ distinct points. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance on $\mathbb{R}^{2t+2}$ whose spectral error measure $\mu\_{A,x^\ast}$ agrees with $\mu$ on $\mathcal{P}\_{4t+3}$ and whose $t$-th iterate after initialization $x_0 = 0$ satisfies*
+**Theorem 9.7 (Optimality of CG up to low-degree moments).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a positive Borel measure $\mu$ on $(0,\beta]$ supported on at least $2t+3$ distinct points. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance on $\mathbb{R}^{2t+2}$ whose spectral error measure $\mu\_{H,w_\ast}$ agrees with $\mu$ on $\mathcal{P}\_{4t+3}$ and whose $t$-th iterate after initialization $w_0 = 0$ satisfies*
 
 $$
-f(x_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
+f(w_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
 $$
 
 </div>
@@ -2610,13 +2610,13 @@ $$
 *Proof.* Fix a deterministic first-order algorithm and set $N := 2t + 2$. By Lemma 9.6, the $N$-point Gauss quadrature rule
 
 $$
-\mu_N \;=\; \sum_{j=1}^N w_j\,\delta_{\theta_j}, \qquad 0 < \theta_1 < \cdots < \theta_N \le \beta, \qquad w_j > 0,
+\mu_N \;=\; \sum_{j=1}^N \rho_j\,\delta_{\theta_j}, \qquad 0 < \theta_1 < \cdots < \theta_N \le \beta, \qquad w_j > 0,
 $$
 
 agrees with $\mu$ on $\mathcal{P}\_{2N-1} = \mathcal{P}\_{4t+3}$. Applying Theorem 9.5 to $\mu_N$, we obtain a convex quadratic instance on $\mathbb{R}^N$ whose spectral error measure equals $\mu_N$ exactly and whose $t$-th iterate satisfies
 
 $$
-f(x_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu_N).
+f(w_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu_N).
 $$
 
 For every $p \in \mathcal{P}\_{2t+1}$, the integrand $\lambda\,p(\lambda)^2$ has degree at most $4t+3$, so the moment-matching identity gives $\mathcal{E}\_{2t+1}(\mu_N) = \mathcal{E}\_{2t+1}(\mu)$, completing the proof. <span style="float: right;">$\square$</span>
@@ -3706,8 +3706,8 @@ The notes combine ideas that appear in different communities; the table below ma
 
 | Method | Positive definite ($\alpha > 0$) | Positive semidefinite ($\alpha = 0$) |
 |--------|----------------------------------|--------------------------------------|
-| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon)$ |
-| Chebyshev GD / Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ (CG: at most $m\le d$ steps) | $O(\sqrt{\beta\,\lVert x_0 - x^\ast\rVert ^2/\varepsilon})$ (CG: at most $m\le d$ steps) |
+| Gradient descent | $O(\kappa\,\ln(1/\varepsilon))$ | $O(\beta\,\lVert w_0 - w_\ast\rVert ^2/\varepsilon)$ |
+| Chebyshev GD / Conjugate Gradient | $O(\sqrt{\kappa}\,\ln(1/\varepsilon))$ (CG: at most $m\le d$ steps) | $O(\sqrt{\beta\,\lVert w_0 - w_\ast\rVert ^2/\varepsilon})$ (CG: at most $m\le d$ steps) |
 
 
 
@@ -3715,7 +3715,7 @@ The notes combine ideas that appear in different communities; the table below ma
 
 | Setting | Assumption | GD rate | CG rate |
 |---------|-----------|---------|---------|
-| Source condition, order $s$ | $e_0 = A^s w$ | $O(k^{-(1+2s)})$ | --- |
+| Source condition, order $s$ | $e_0 = H^s u$ | $O(k^{-(1+2s)})$ | --- |
 | Power-law model $(\alpha,\beta)$ | $\lambda_i \sim i^{-\alpha}$, $\delta_i \sim i^{-\beta/2}$ | $\Theta(k^{-(\alpha+\beta-1)/\alpha})$ | --- |
 | Power-law density (Theorems 7.2, 7.6) | $\phi(\lambda)=M\lambda^{a-1}$ on $(0,\beta]$, $a>-1$ | $\Theta(k^{-(a+1)})$ | $O(k^{-2(a+1)})$ |
 | PD, edge exponent $p$ | $\phi(\lambda) \sim (\lambda-\alpha)^p$ | $(1-1/\kappa)^{2k} \cdot O(k^{-(p+1)})$ | --- |

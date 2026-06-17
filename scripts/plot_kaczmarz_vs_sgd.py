@@ -190,13 +190,13 @@ def main() -> None:
     ax.fill_between(iters, sgd_lo, sgd_hi, color=color_sgd, alpha=0.15, linewidth=0)
     ax.semilogy(
         iters, sgd_med, "-", color=color_sgd, linewidth=1.8,
-        label=r"SGD on $D$ (uniform, $\gamma=1/R^2$)",
+        label=r"SGD on $X$ (uniform, $\gamma=1/R^2$)",
     )
 
     ax.fill_between(iters, resc_lo, resc_hi, color=color_resc, alpha=0.15, linewidth=0)
     ax.semilogy(
         iters, resc_med, "-", color=color_resc, linewidth=1.8,
-        label=r"SGD on rescaled $\tilde D$ (uniform, $\gamma=1$)",
+        label=r"SGD on rescaled $\tilde X$ (uniform, $\gamma=1$)",
     )
 
     ax.fill_between(iters, kac_lo, kac_hi, color=color_kac, alpha=0.15, linewidth=0)

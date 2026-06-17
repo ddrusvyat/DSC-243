@@ -111,7 +111,7 @@ def main():
               alpha=0.6, label=r"$O(k^{-3.6})$ (Cor 7.1)")
 
     ax.set_xlabel("Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$f(x_k) - f^\ast$", fontsize=12)
+    ax.set_ylabel(r"$f(w_k) - f^\ast$", fontsize=12)
     ax.set_title(
         rf"Convergence on kernel regression "
         rf"(Laplace, $n={n}$, $\sigma={sigma}$, "

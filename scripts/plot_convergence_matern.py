@@ -98,7 +98,7 @@ def main():
               f"  C_rel={bound_const:.2e}")
 
     ax.set_xlabel("Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$(f(x_k) - f^\ast)\,/\,(f(x_0) - f^\ast)$", fontsize=12)
+    ax.set_ylabel(r"$(f(w_k) - f^\ast)\,/\,(f(w_0) - f^\ast)$", fontsize=12)
     ax.set_title(
         r"GD convergence across Matérn family "
         rf"($n={n}$, $\sigma={sigma}$, "

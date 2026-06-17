@@ -129,10 +129,10 @@ def main():
               label=r"$O(k^{-3})$ (Theorem 7.5)")
 
     ax.set_xlabel("Iteration $k$", fontsize=12)
-    ax.set_ylabel(r"$f(x_k) - f^\ast$", fontsize=12)
+    ax.set_ylabel(r"$f(w_k) - f^\ast$", fontsize=12)
     ax.set_title(
         rf"Random least squares at the MP critical aspect ratio "
-        rf"($n = d = {n}$, $A = \frac{{1}}{{n}} D^\top D$)",
+        rf"($n = d = {n}$, $H = \frac{{1}}{{n}} X^\top X$)",
         fontsize=11.5,
     )
     ax.set_ylim(top=max(gd_hi[1], cg_hi[1]) * 2)

@@ -25,9 +25,9 @@ This is Part III of the lecture notes on optimization algorithms for convex quad
 
 ## 9. Lower Bounds for First-Order and Stochastic Algorithms {#sec-9}
 
-This section establishes that the upper bounds developed in [Sections 2--4](part1.html#sec-2) and [Section 8](part2.html#sec-8) are sharp, by exhibiting matching lower bounds in two settings of interest. The first is the **deterministic optimization** setting of [Sections 2--4](part1.html#sec-2): we close the loophole left by the polynomial/Krylov framework, which only constrains methods whose iterates lie in $x_0 + \mathcal{K}_k(A,r_0)$, and show that even algorithms allowed to query gradients at arbitrary points cannot beat the Chebyshev/CG rate $O(\sqrt{\kappa}\,\log(1/\varepsilon))$. The hard instance is the tridiagonal **chain quadratic** of Nemirovski and Yudin [NY83]. The second is the **stochastic estimation** setting of [Section 8](part2.html#sec-8): we show that on the well-specified additive-Gaussian-noise least-squares problem, no algorithm processing $T$ samples can extract excess risk smaller than $\sigma^2 d/(2T)$, matching tail-averaged streaming SGD up to an absolute constant. The argument is the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
+This section establishes that the upper bounds developed in [Sections 2--4](part1.html#sec-2) and [Section 8](part2.html#sec-8) are sharp, by exhibiting matching lower bounds in two settings of interest. The first is the **deterministic optimization** setting of [Sections 2--4](part1.html#sec-2): we close the loophole left by the polynomial/Krylov framework, which only constrains methods whose iterates lie in $w_0 + \mathcal{K}_k(H,r_0)$, and show that even algorithms allowed to query gradients at arbitrary points cannot beat the Chebyshev/CG rate $O(\sqrt{\kappa}\,\log(1/\varepsilon))$. The hard instance is the tridiagonal **chain quadratic** of Nemirovski and Yudin [NY83]. The second is the **stochastic estimation** setting of [Section 8](part2.html#sec-8): we show that on the well-specified additive-Gaussian-noise least-squares problem, no algorithm processing $T$ samples can extract excess risk smaller than $\sigma^2 d/(2T)$, matching tail-averaged streaming SGD up to an absolute constant. The argument is the elegant Bayesian-Gaussian-prior proof of Mourtada [Mou22].
 
-For the first setting, we restrict to **deterministic first-order algorithms**, by which we mean a procedure $\mathcal{A}$ producing iterates $x_0, x_1, \ldots \in \mathbb{R}^d$ in which $x_0$ is a fixed deterministic vector --- depending on the problem only through known parameters--- and $x_{t+1}$ is a fixed deterministic function of the past gradients $g_0 = \nabla f(x_0), \ldots, g_t = \nabla f(x_t)$. This includes gradient descent with any sequence of stepsizes, conjugate gradients, and indeed any reasonable first-order method.
+For the first setting, we restrict to **deterministic first-order algorithms**, by which we mean a procedure $\mathcal{A}$ producing iterates $w_0, w_1, \ldots \in \mathbb{R}^d$ in which $w_0$ is a fixed deterministic vector --- depending on the problem only through known parameters--- and $w_{t+1}$ is a fixed deterministic function of the past gradients $g_0 = \nabla f(w_0), \ldots, g_t = \nabla f(w_t)$. This includes gradient descent with any sequence of stepsizes, conjugate gradients, and indeed any reasonable first-order method.
 
 ### Zero-chain quadratics
 
@@ -73,7 +73,7 @@ $$
 
 every coordinate of $z^\ast$ is nonzero, with magnitudes decreasing linearly from near $1$ at $i = 1$ to near $0$ at $i = d$. The chain property is immediate from tridiagonality of $T$: the $i$th entry of $\nabla\bar f(z) = Tz - e_1$ depends only on $z_{i-1}, z_i, z_{i+1}$, so a vector supported on the first $m$ coordinates produces a gradient supported on the first $m+1$. Hence $\bar f$ is a zero-chain quadratic.
 
-The animation below shows the chain property at work: gradient descent is run on $\bar f$ from $x_0 = 0$, and at every step the supports of $x_t$ (left panel) and $\nabla\bar f(x_t)$ (right panel) are exactly $\{1,\ldots,t\}$ and $\{1,\ldots,t+1\}$. Untouched coordinates are gray; activated coordinates are blue.
+The animation below shows the chain property at work: gradient descent is run on $\bar f$ from $w_0 = 0$, and at every step the supports of $w_t$ (left panel) and $\nabla\bar f(w_t)$ (right panel) are exactly $\{1,\ldots,t\}$ and $\{1,\ldots,t+1\}$. Untouched coordinates are gray; activated coordinates are blue.
 
 ![Chain property of the tridiagonal quadratic: each gradient query activates one new coordinate](figures/chain_property.gif)
 
@@ -84,14 +84,14 @@ The animation below shows the chain property at work: gradient descent is run on
 **Example (Rescaling).** The class of zero-chain quadratics is closed under positive scalar rescaling of the input and output: if $\bar f$ is a zero-chain quadratic on $\mathbb{R}^d$ and $\alpha, \gamma > 0$ are any constants, then the rescaled function
 
 $$
-f(x) \;:=\; \alpha\,\bar f(\gamma\,x)
+f(w) \;:=\; \alpha\,\bar f(\gamma\,w)
 $$
 
-is itself a zero-chain quadratic. Indeed, the chain rule gives $\nabla f(x) = \alpha\gamma\,\nabla\bar f(\gamma x)$ and the zero-chain property follows immediately. This closure under rescaling will let us tune the smoothness constant and the initial distance $\lVert x_0 - x^\ast\rVert$ to any prescribed values without losing the chain structure.
+is itself a zero-chain quadratic. Indeed, the chain rule gives $\nabla f(w) = \alpha\gamma\,\nabla\bar f(\gamma w)$ and the zero-chain property follows immediately. This closure under rescaling will let us tune the smoothness constant and the initial distance $\lVert w_0 - w_\ast\rVert$ to any prescribed values without losing the chain structure.
 
 </div>
 
-If we had a guarantee that the iterates of any deterministic first-order method always satisfied $x_t \in E_{2t+1}$, the chain property would already yield a clean lower bound on $\lVert x_t - x^\ast\rVert$ from the part of the minimizer that the iterate cannot reach. Of course, no such guarantee holds --- a method is free to query off-coordinate points. The next lemma resolves the difficulty: by composing a zero-chain quadratic with a carefully chosen rotation, we force any deterministic first-order method to discover new coordinates two at a time.
+If we had a guarantee that the iterates of any deterministic first-order method always satisfied $w_t \in E_{2t+1}$, the chain property would already yield a clean lower bound on $\lVert w_t - w_\ast\rVert$ from the part of the minimizer that the iterate cannot reach. Of course, no such guarantee holds --- a method is free to query off-coordinate points. The next lemma resolves the difficulty: by composing a zero-chain quadratic with a carefully chosen rotation, we force any deterministic first-order method to discover new coordinates two at a time.
 
 ### The rotation lemma
 
@@ -103,13 +103,13 @@ If we had a guarantee that the iterates of any deterministic first-order method 
 **Lemma 9.1 (Rotation neutralizes arbitrary queries).** *Let $\bar f$ be a zero-chain quadratic on $\mathbb{R}^d$, fix $k \ge 0$, and assume $d \ge 2k + 2$. For every deterministic first-order algorithm $\mathcal{A}$ there exists an orthogonal matrix $Q \in \mathbb{R}^{d\times d}$ such that, when $\mathcal{A}$ is run on*
 
 $$
-f(x) \;:=\; \bar f(Q^\top x),
+f(w) \;:=\; \bar f(Q^\top w),
 $$
 
-*the iterates $x_0, x_1, \ldots, x_k$ produced by $\mathcal{A}$ satisfy*
+*the iterates $w_0, w_1, \ldots, w_k$ produced by $\mathcal{A}$ satisfy*
 
 $$
-Q^\top x_t \in E_{2t+1}, \qquad Q^\top \nabla f(x_t) \in E_{2t+2}, \qquad t = 0, 1, \ldots, k.
+Q^\top w_t \in E_{2t+1}, \qquad Q^\top \nabla f(w_t) \in E_{2t+2}, \qquad t = 0, 1, \ldots, k.
 $$
 
 </div>
@@ -119,26 +119,26 @@ So although $\mathcal{A}$ is allowed to query *anywhere* in $\mathbb{R}^d$, on t
 *Proof.* Write $Q = [q_1, q_2, \ldots, q_d]$, with the columns $q_i$ to be chosen orthonormal. We construct them two at a time, maintaining the invariant
 
 $$
-Q^\top x_i \in E_{2i+1}, \qquad Q^\top g_i \in E_{2i+2}, \qquad g_i := \nabla f(x_i),
+Q^\top w_i \in E_{2i+1}, \qquad Q^\top g_i \in E_{2i+2}, \qquad g_i := \nabla f(w_i),
 $$
 
-for every completed round $i$. The animation below previews the construction: each round adds two new columns of $Q$ (orange strip on the right), the rotated iterate $Q^\top x_t$ acquires two new nonzero coordinates (heatmap column), and the rotated representations of earlier iterates remain frozen — the new $q$'s lie in the orthogonal complement of everything queried so far, so $Q^\top x_s$ for $s < t$ is unaffected by extending $Q$.
+for every completed round $i$. The animation below previews the construction: each round adds two new columns of $Q$ (orange strip on the right), the rotated iterate $Q^\top w_t$ acquires two new nonzero coordinates (heatmap column), and the rotated representations of earlier iterates remain frozen — the new $q$'s lie in the orthogonal complement of everything queried so far, so $Q^\top w_s$ for $s < t$ is unaffected by extending $Q$.
 
 ![Adaptive construction of Q in the proof of Lemma 9.1: each round adds two columns of Q without disturbing past iterates](figures/rotation_lemma.gif)
 
-*Base step ($t = 0$).* The algorithm chooses $x_0$ before any gradients are available, so $x_0$ is a fixed deterministic vector. If $x_0 \neq 0$, choose $q_1 = x_0/\lVert x_0\rVert$; if $x_0 = 0$, choose $q_1$ to be any unit vector. In either case $x_0 \in \operatorname{span}\lbrace q_1\rbrace$, and therefore $Q^\top x_0 \in E_1$. Before the gradient oracle can return $g_0 = \nabla f(x_0) = Q\,\nabla\bar f(Q^\top x_0)$, we also commit $q_2$ to be any unit vector orthogonal to $q_1$. With $q_1, q_2$ fixed, the chain rule gives $Q^\top g_0 = \nabla \bar f(Q^\top x_0)$, and the chain property of $\bar f$ yields $Q^\top g_0 \in E_2$.
+*Base step ($t = 0$).* The algorithm chooses $w_0$ before any gradients are available, so $w_0$ is a fixed deterministic vector. If $w_0 \neq 0$, choose $q_1 = w_0/\lVert w_0\rVert$; if $w_0 = 0$, choose $q_1$ to be any unit vector. In either case $w_0 \in \operatorname{span}\lbrace q_1\rbrace$, and therefore $Q^\top w_0 \in E_1$. Before the gradient oracle can return $g_0 = \nabla f(w_0) = Q\,\nabla\bar f(Q^\top w_0)$, we also commit $q_2$ to be any unit vector orthogonal to $q_1$. With $q_1, q_2$ fixed, the chain rule gives $Q^\top g_0 = \nabla \bar f(Q^\top w_0)$, and the chain property of $\bar f$ yields $Q^\top g_0 \in E_2$.
 
-*Inductive step.* Suppose the invariant holds for rounds $0, \dots, t$ with $t \le k-1$, and that $q_1, \dots, q_{2t+2}$ have already been fixed. By assumption, $Q^\top x_i \in E_{2i+1}$ and $Q^\top g_i \in E_{2i+2}$ for all $i \le t$, so each of the past oracle answers $g_0, \dots, g_t$ is determined by the columns $q_1,\dots,q_{2t+2}$ alone. How we eventually complete $Q$ on the orthogonal complement of $\operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ does not affect any of those answers.
+*Inductive step.* Suppose the invariant holds for rounds $0, \dots, t$ with $t \le k-1$, and that $q_1, \dots, q_{2t+2}$ have already been fixed. By assumption, $Q^\top w_i \in E_{2i+1}$ and $Q^\top g_i \in E_{2i+2}$ for all $i \le t$, so each of the past oracle answers $g_0, \dots, g_t$ is determined by the columns $q_1,\dots,q_{2t+2}$ alone. How we eventually complete $Q$ on the orthogonal complement of $\operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ does not affect any of those answers.
 
-Since $\mathcal{A}$ is deterministic, the next iterate $x_{t+1} = \Phi_{t+1}(g_0, \dots, g_t)$ is a fixed vector of $\mathbb{R}^d$, known to us before any column of $Q$ outside $S_t := \operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ is committed. Decompose $x_{t+1}$ into its $S_t$- and $S_t^\perp$-components,
+Since $\mathcal{A}$ is deterministic, the next iterate $w_{t+1} = \Phi_{t+1}(g_0, \dots, g_t)$ is a fixed vector of $\mathbb{R}^d$, known to us before any column of $Q$ outside $S_t := \operatorname{span}\lbrace q_1,\dots,q_{2t+2}\rbrace$ is committed. Decompose $w_{t+1}$ into its $S_t$- and $S_t^\perp$-components,
 
 $$
-x_{t+1} = P_{S_t} x_{t+1} + \underbrace{P_{S_t^{\perp}} x_{t+1}}_{=:r_{t+1}},
+w_{t+1} = P_{S_t} w_{t+1} + \underbrace{P_{S_t^{\perp}} w_{t+1}}_{=:r_{t+1}},
 $$
 
-and choose the next basis vector along the orthogonal projection of $x_{t+1}$ onto $S_t^\perp$: if $r_{t+1} \neq 0$, set $q_{2t+3} = r_{t+1}/\lVert r_{t+1}\rVert$; otherwise let $q_{2t+3}$ be any unit vector in $S_t^\perp$. In either case $q_{2t+3} \perp S_t$ and $x_{t+1} \in \operatorname{span}\lbrace q_1,\dots,q_{2t+3}\rbrace$, so $Q^\top x_{t+1} \in E_{2t+3}$.
+and choose the next basis vector along the orthogonal projection of $w_{t+1}$ onto $S_t^\perp$: if $r_{t+1} \neq 0$, set $q_{2t+3} = r_{t+1}/\lVert r_{t+1}\rVert$; otherwise let $q_{2t+3}$ be any unit vector in $S_t^\perp$. In either case $q_{2t+3} \perp S_t$ and $w_{t+1} \in \operatorname{span}\lbrace q_1,\dots,q_{2t+3}\rbrace$, so $Q^\top w_{t+1} \in E_{2t+3}$.
 
-Next we commit one more column, $q_{2t+4}$, taken to be any unit vector in $S_t^\perp$ orthogonal to $q_{2t+3}$. Such a vector exists because $\dim S_t^\perp = d - (2t+2) \ge 2$ when $t \le k-1$ and $d \ge 2k+2$. With $q_1, \dots, q_{2t+4}$ now committed, the chain rule $\nabla f(x) = Q\,\nabla\bar f(Q^\top x)$ gives $Q^\top g_{t+1} = \nabla\bar f(Q^\top x_{t+1})$. Plugging the containment $Q^\top x_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
+Next we commit one more column, $q_{2t+4}$, taken to be any unit vector in $S_t^\perp$ orthogonal to $q_{2t+3}$. Such a vector exists because $\dim S_t^\perp = d - (2t+2) \ge 2$ when $t \le k-1$ and $d \ge 2k+2$. With $q_1, \dots, q_{2t+4}$ now committed, the chain rule $\nabla f(w) = Q\,\nabla\bar f(Q^\top w)$ gives $Q^\top g_{t+1} = \nabla\bar f(Q^\top w_{t+1})$. Plugging the containment $Q^\top w_{t+1} \in E_{2t+3}$ into the chain property of $\bar f$ then yields
 
 $$
 Q^\top g_{t+1} \in E_{2t+4},
@@ -164,10 +164,10 @@ Step 3 is now an explicit calculation on the tridiagonal example.
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.2 (Lower bound).** *Fix $k \ge 1$ and $\beta, R > 0$, and set $d := 4k+2$. There exist a convex quadratic $f : \mathbb{R}^d \to \mathbb{R}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$ and an initialization $x_0$ with $\lVert x_0 - x^\ast\rVert = R$ such that for every deterministic first-order algorithm $\mathcal{A}$ the iterates satisfy*
+**Theorem 9.2 (Lower bound).** *Fix $k \ge 1$ and $\beta, R > 0$, and set $d := 4k+2$. There exist a convex quadratic $f : \mathbb{R}^d \to \mathbb{R}$ with $\lVert\nabla^2 f\rVert_{\mathrm{op}} \le \beta$ and an initialization $w_0$ with $\lVert w_0 - w_\ast\rVert = R$ such that for every deterministic first-order algorithm $\mathcal{A}$ the iterates satisfy*
 
 $$
-f(x_k) - f^\ast \;\ge\; \frac{3}{128}\cdot\frac{\beta\,R^2}{(k+1)^2}.
+f(w_k) - f^\ast \;\ge\; \frac{3}{128}\cdot\frac{\beta\,R^2}{(k+1)^2}.
 $$
 
 </div>
@@ -178,24 +178,24 @@ $$
 \alpha \;:=\; \frac{\beta\,R^2}{\lVert T\rVert_{\mathrm{op}}\,\lVert z^\ast\rVert^2}, \qquad \gamma \;:=\; \frac{\lVert z^\ast\rVert}{R}.
 $$
 
-By the rescaling example, $\tilde f(z) := \alpha\,\bar f(\gamma\,z)$ is itself a zero-chain quadratic. Lemma 9.1 applied to $\tilde f$ therefore furnishes an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $x_0 = 0$ on the hard instance
+By the rescaling example, $\tilde f(z) := \alpha\,\bar f(\gamma\,z)$ is itself a zero-chain quadratic. Lemma 9.1 applied to $\tilde f$ therefore furnishes an orthogonal $Q$ such that, when $\mathcal{A}$ is run from $w_0 = 0$ on the hard instance
 
 $$
-f(x) \;:=\; \tilde f(Q^\top x) \;=\; \alpha\,\bar f\bigl(\gamma\,Q^\top x\bigr),
+f(w) \;:=\; \tilde f(Q^\top w) \;=\; \alpha\,\bar f\bigl(\gamma\,Q^\top w\bigr),
 $$
 
 the iterates satisfy
 
 $$
-Q^\top x_t \;\in\; E_{2t+1}, \qquad \forall\, t = 0, 1, \ldots, k.
+Q^\top w_t \;\in\; E_{2t+1}, \qquad \forall\, t = 0, 1, \ldots, k.
 $$
 
-This function $f$ has the required parameters: its Hessian is $\alpha\gamma^2\,Q T Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\gamma^2\,\lVert T\rVert_{\mathrm{op}} = \beta$, and its minimizer is $x^\ast = Q\,z^\ast/\gamma$ with $\lVert x_0 - x^\ast\rVert = \lVert z^\ast\rVert/\gamma = R$.
+This function $f$ has the required parameters: its Hessian is $\alpha\gamma^2\,Q T Q^\top$, so $\lVert\nabla^2 f\rVert_{\mathrm{op}} = \alpha\gamma^2\,\lVert T\rVert_{\mathrm{op}} = \beta$, and its minimizer is $w_\ast = Q\,z^\ast/\gamma$ with $\lVert w_0 - w_\ast\rVert = \lVert z^\ast\rVert/\gamma = R$.
 
-Setting $w := \gamma\,Q^\top x_k \in E_{2k+1}$, we obtain
+Setting $v := \gamma\,Q^\top w_k \in E_{2k+1}$, we obtain
 
 $$
-f(x_k) - f^\ast \;=\; \alpha\,\bigl(\bar f(w) - \bar f^\ast\bigr) \;\ge\; \alpha\,\bigl(\,\textstyle\min_{u \in E_{2k+1}}\,\bar f(u)\, -\, \bar f^\ast\bigr).
+f(w_k) - f^\ast \;=\; \alpha\,\bigl(\bar f(v) - \bar f^\ast\bigr) \;\ge\; \alpha\,\bigl(\,\textstyle\min_{u \in E_{2k+1}}\,\bar f(u)\, -\, \bar f^\ast\bigr).
 $$
 
 The minimizer of $\bar f$ over $E_{2k+1}$ solves the truncated tridiagonal system $T_{2k+1}\,u_{1:2k+1} = e_1$, with explicit solution 
@@ -215,7 +215,7 @@ $$\lVert z^\ast\rVert^2 \;=\; \frac{1}{(d+1)^2}\sum_{i=1}^d i^2 \;=\; \frac{d(2d
  yield $\alpha \ge 3\,\beta R^2 / (4(4k+2))$. Substituting gives
 
 $$
-f(x_k) - f^\ast \;\ge\; \frac{3\,\beta R^2}{4(4k+2)} \cdot \frac{2k+1}{2(4k+3)(2k+2)} \;=\; \frac{3\,\beta R^2}{32\,(4k+3)\,(k+1)} \;\ge\; \frac{3}{128}\cdot\frac{\beta R^2}{(k+1)^2},
+f(w_k) - f^\ast \;\ge\; \frac{3\,\beta R^2}{4(4k+2)} \cdot \frac{2k+1}{2(4k+3)(2k+2)} \;=\; \frac{3\,\beta R^2}{32\,(4k+3)\,(k+1)} \;\ge\; \frac{3}{128}\cdot\frac{\beta R^2}{(k+1)^2},
 $$
 
 as claimed. <span style="float: right;">$\square$</span>
@@ -230,45 +230,45 @@ Theorem 9.2 closes the gap in the *worst case*: no deterministic first-order met
 
 The answer is that the structured rate is tight: *the same residual polynomial that drives the CG upper bound also certifies a matching lower bound for every deterministic first-order method*, up to a constant shift $k \mapsto 2k+1$. Our goal is to show why this is the case. 
 
-We begin by recalling from [Section 7](part2.html#sec-7) the **spectral measure** $\mu := \sum_{i=1}^d c_i^2\,\delta_{\lambda_i}$ on $[0,\beta]$, where $c_i$ are the coordinates of the initial error $x_0 - x^\ast$ in the eigenbasis of $A$. Rewriting [$(4b)$](part1.html#eq-4b) as an integral against $\mu$ gives the spectral-measure form of the CG identity:
+We begin by recalling from [Section 7](part2.html#sec-7) the **spectral measure** $\mu := \sum_{i=1}^d c_i^2\,\delta_{\lambda_i}$ on $[0,\beta]$, where $c_i$ are the coordinates of the initial error $w_0 - w_\ast$ in the eigenbasis of $H$. Rewriting [$(4b)$](part1.html#eq-4b) as an integral against $\mu$ gives the spectral-measure form of the CG identity:
 
 <a id="eq-61"></a>
 
 $$
-f(x_k^{\mathrm{CG}}) - f^\ast \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}~\int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda), \tag{61}
+f(w_k^{\mathrm{CG}}) - f^\ast \;=\; \tfrac{1}{2}\min_{\substack{p \in \mathcal{P}_k \\ p(0) = 1}}~\int_0^\beta \lambda\,p(\lambda)^2\,d\mu(\lambda), \tag{61}
 $$
 
 We will now show that the conjugate gradient method is optimal in a much stronger sense than the minimax bound we have already proved: the worst-case instance for any deterministic first-order algorithm can be chosen to have *any prescribed spectral measure*.
 
-We will need the following simple helper lemma. We call a tridiagonal matrix $A\in\mathbb{R}^{d\times d}$ *irreducible* if all of its off-diagonal entries are nonzero:
+We will need the following simple helper lemma. We call a tridiagonal matrix $H\in\mathbb{R}^{d\times d}$ *irreducible* if all of its off-diagonal entries are nonzero:
 
 $$
-A_{i,i+1} = A_{i+1,i} \ne 0, \qquad \forall\, i = 1, \ldots, d-1.
+H_{i,i+1} = H_{i+1,i} \ne 0, \qquad \forall\, i = 1, \ldots, d-1.
 $$
 
 <a id="lem-9-3"></a>
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma 9.3 (Krylov subspaces of irreducible tridiagonal matrices).** *If $A \in \mathbb{R}^{d \times d}$ is irreducible and tridiagonal, then the Krylov subspace $\mathcal{K}_t(A, e_1)$ coincides with the coordinate subspace $E_t$ for every $t \ge 1$.*
+**Lemma 9.3 (Krylov subspaces of irreducible tridiagonal matrices).** *If $H \in \mathbb{R}^{d \times d}$ is irreducible and tridiagonal, then the Krylov subspace $\mathcal{K}_t(H, e_1)$ coincides with the coordinate subspace $E_t$ for every $t \ge 1$.*
 
 </div>
 
-*Proof.* Since $A$ is tridiagonal, the inclusion $A E_m \subset E_{m+1}$ holds, and therefore
+*Proof.* Since $H$ is tridiagonal, the inclusion $H E_m \subset E_{m+1}$ holds, and therefore
 
 <a id="eq-62"></a>
 
 $$
-\operatorname{span}\{e_1,\, Ae_1,\, \ldots,\, A^{m-1} e_1\} \subset E_m. \tag{62}
+\operatorname{span}\{e_1,\, He_1,\, \ldots,\, H^{m-1} e_1\} \subset E_m. \tag{62}
 $$
 
-Conversely, the $(j+1)$-st coordinate of $A^j e_1$ is
+Conversely, the $(j+1)$-st coordinate of $H^j e_1$ is
 
 $$
-A_{j+1,j}\,A_{j,j-1}\cdots A_{2,1},
+H_{j+1,j}\,H_{j,j-1}\cdots H_{2,1},
 $$
 
-which is nonzero by irreducibility. Thus we have $A^j e_1 \in E_{j+1} \setminus E_j$, and by dimension counting the inclusion $(62)$ holds as equality. <span style="float: right;">$\square$</span>
+which is nonzero by irreducibility. Thus we have $H^j e_1 \in E_{j+1} \setminus E_j$, and by dimension counting the inclusion $(62)$ holds as equality. <span style="float: right;">$\square$</span>
 
 
 Next, we need the following lemma that constructs an irreducible, positive semidefinite, tridiagonal problem with any prescribed spectral measure.
@@ -278,10 +278,10 @@ Next, we need the following lemma that constructs an irreducible, positive semid
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Lemma 9.4 (Exact Jacobi realization of a finite measure).** *Consider an atomic measure $\mu = \sum_{i=1}^d w_i\,\delta_{\theta_i}$ with atoms $0 < \theta_1 < \cdots < \theta_d \le \beta$ and weights $w_i > 0$. Then there exist an irreducible, positive-semidefinite, tridiagonal matrix $A \in \mathbb{R}^{d \times d}$ with $\lVert A\rVert_{\mathrm{op}} \le \beta$ and a scalar $\tau > 0$ such that the spectral measure $\mu_{A,x^\ast}$ of the convex quadratic problem with data*
+**Lemma 9.4 (Exact Jacobi realization of a finite measure).** *Consider an atomic measure $\mu = \sum_{i=1}^d \rho_i\,\delta_{\theta_i}$ with atoms $0 < \theta_1 < \cdots < \theta_d \le \beta$ and weights $\rho_i > 0$. Then there exist an irreducible, positive-semidefinite, tridiagonal matrix $H \in \mathbb{R}^{d \times d}$ with $\lVert H\rVert_{\mathrm{op}} \le \beta$ and a scalar $\tau > 0$ such that the spectral measure $\mu_{H,w_\ast}$ of the convex quadratic problem with data*
 
 $$
-x_0 = 0, \qquad b := \tau e_1, \qquad x^\ast := A^{-1} b,
+w_0 = 0, \qquad b := \tau e_1, \qquad w_\ast := H^{-1} b,
 $$
 
 *coincides exactly with $\mu$.*
@@ -302,15 +302,15 @@ $$
 
 where $q_i$ has degree exactly $i$ and is orthogonal to every polynomial of degree at most $i-1$.
 
-Let $M_\lambda$ be the operator of multiplication by $\lambda$ on $L^2(\nu)$, and let $A$ be its matrix in the basis $\{q_0, \ldots, q_{d-1}\}$, that is:
+Let $M_\lambda$ be the operator of multiplication by $\lambda$ on $L^2(\nu)$, and let $H$ be its matrix in the basis $\{q_0, \ldots, q_{d-1}\}$, that is:
 
 $$
-A_{ij} \;:=\; \langle q_{i-1},\, \lambda\,q_{j-1}\rangle_{L^2(\nu)}, \qquad i,j = 1, \ldots, d.
+H_{ij} \;:=\; \langle q_{i-1},\, \lambda\,q_{j-1}\rangle_{L^2(\nu)}, \qquad i,j = 1, \ldots, d.
 $$
 
-The matrix $A$ is symmetric. It is also tridiagonal: if $i > j+1$, then $\lambda\,q_{j-1}$ has degree $j \le i-2$ and is therefore orthogonal to $q_{i-1}$. Symmetry gives the same conclusion when $i < j-1$.
+The matrix $H$ is symmetric. It is also tridiagonal: if $i > j+1$, then $\lambda\,q_{j-1}$ has degree $j \le i-2$ and is therefore orthogonal to $q_{i-1}$. Symmetry gives the same conclusion when $i < j-1$.
 
-We next show that $A$ is irreducible. Choose each $q_n$ to have positive leading coefficient $\kappa_n > 0$. Comparing leading terms in the expansion of $\lambda\,q_n$ in the orthonormal basis gives
+We next show that $H$ is irreducible. Choose each $q_n$ to have positive leading coefficient $\kappa_n > 0$. Comparing leading terms in the expansion of $\lambda\,q_n$ in the orthonormal basis gives
 
 $$
 \lambda\,q_n \;=\; \frac{\kappa_n}{\kappa_{n+1}}\,q_{n+1} + \text{lower-degree terms}.
@@ -319,10 +319,10 @@ $$
 Taking inner products with $q_{n+1}$, we get
 
 $$
-A_{n+2,n+1} \;=\; \langle q_{n+1},\, \lambda\,q_n\rangle_{L^2(\nu)} \;=\; \frac{\kappa_n}{\kappa_{n+1}} \;>\; 0.
+H_{n+2,n+1} \;=\; \langle q_{n+1},\, \lambda\,q_n\rangle_{L^2(\nu)} \;=\; \frac{\kappa_n}{\kappa_{n+1}} \;>\; 0.
 $$
 
-Thus every off-diagonal entry of $A$ is nonzero.
+Thus every off-diagonal entry of $H$ is nonzero.
 
 The spectral bounds are immediate from the multiplication operator. If $p \in L^2(\nu)$ is nonzero, then
 
@@ -336,35 +336,35 @@ $$
 \langle p,\, M_\lambda\,p\rangle_{L^2(\nu)} \;\le\; \beta\,\lVert p\rVert_{L^2(\nu)}^2.
 $$
 
-Hence $A$ is positive definite and $\lVert A\rVert_{\mathrm{op}} \le \beta$.
+Hence $H$ is positive definite and $\lVert H\rVert_{\mathrm{op}} \le \beta$.
 
 It remains to identify the spectral measure. For any vector $z$ and any polynomial $p$, the spectral measure of $z$ satisfies
 
 <a id="eq-63"></a>
 
 $$
-z^\top p(A)\,z \;=\; \int p(\lambda)\,d\mu_{A,z}(\lambda); \tag{63}
+z^\top p(H)\,z \;=\; \int p(\lambda)\,d\mu_{H,z}(\lambda); \tag{63}
 $$
 
-this is immediate from an eigenvalue decomposition of $A$. Set $\tau := \sqrt{M_2}$, $b := \tau\,e_1$, and
+this is immediate from an eigenvalue decomposition of $H$. Set $\tau := \sqrt{M_2}$, $b := \tau\,e_1$, and
 
 $$
-x^\ast \;:=\; A^{-1} b \;=\; \tau\,A^{-1} e_1.
+w_\ast \;:=\; H^{-1} b \;=\; \tau\,H^{-1} e_1.
 $$
 
-The vector $e_1$ corresponds to the constant polynomial $q_0 \equiv 1$, and $A$ represents multiplication by $\lambda$. Therefore, for every polynomial $p$, we have
+The vector $e_1$ corresponds to the constant polynomial $q_0 \equiv 1$, and $H$ represents multiplication by $\lambda$. Therefore, for every polynomial $p$, we have
 
 $$
 \begin{aligned}
-(x^\ast)^\top p(A)\,x^\ast
-&= \tau^2\,e_1^\top A^{-1} p(A)\,A^{-1} e_1 \\
+(w_\ast)^\top p(H)\,w_\ast
+&= \tau^2\,e_1^\top H^{-1} p(H)\,H^{-1} e_1 \\
 &= \tau^2\,\langle 1,\, \lambda^{-1}\,p(\lambda)\,\lambda^{-1}\rangle_{L^2(\nu)} \\
 &= \tau^2 \int \lambda^{-2}\,p(\lambda)\,d\nu(\lambda) \\
 &= \int p(\lambda)\,d\mu(\lambda).
 \end{aligned}
 $$
 
-Combining this identity with $(63)$ shows that $\mu_{A,x^\ast}$ and $\mu$ integrate every polynomial in the same way. Since both measures are finite atomic, they are equal. <span style="float: right;">$\square$</span>
+Combining this identity with $(63)$ shows that $\mu_{H,w_\ast}$ and $\mu$ integrate every polynomial in the same way. Since both measures are finite atomic, they are equal. <span style="float: right;">$\square$</span>
 
 
 We are now ready to prove the optimality of CG. To simplify notation, for a positive measure $\nu$ on $(0,\beta]$, define
@@ -379,10 +379,10 @@ $$
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.5 (Optimality of CG).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a finite positive atomic measure $\mu$ on $(0,\beta]$ that has at least $2t+2$ atoms. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance whose spectral error measure $\mu_{A,x^\ast}$ is exactly $\mu$ and whose $t$-th iterate after initialization $x_0 = 0$ satisfies*
+**Theorem 9.5 (Optimality of CG).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a finite positive atomic measure $\mu$ on $(0,\beta]$ that has at least $2t+2$ atoms. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance whose spectral error measure $\mu_{H,w_\ast}$ is exactly $\mu$ and whose $t$-th iterate after initialization $w_0 = 0$ satisfies*
 
 $$
-f(x_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
+f(w_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
 $$
 
 </div>
@@ -390,42 +390,42 @@ $$
 *Proof.* Fix a deterministic first-order algorithm $\mathcal{A}$, and write
 
 $$
-\mu \;=\; \sum_{i=1}^d w_i\,\delta_{\lambda_i}, \qquad 0 < \lambda_1 < \cdots < \lambda_d \le \beta, \qquad w_i > 0,
+\mu \;=\; \sum_{i=1}^d \rho_i\,\delta_{\lambda_i}, \qquad 0 < \lambda_1 < \cdots < \lambda_d \le \beta, \qquad w_i > 0,
 $$
 
-where $d \ge 2t + 2$. Applying Lemma 9.4 to $\mu$, we obtain an irreducible, tridiagonal, positive semidefinite matrix $A$ with $\lVert A\rVert_{\mathrm{op}} \le \beta$, a scalar $\tau > 0$, and the vector $b = \tau e_1$ such that the quadratic
+where $d \ge 2t + 2$. Applying Lemma 9.4 to $\mu$, we obtain an irreducible, tridiagonal, positive semidefinite matrix $H$ with $\lVert H\rVert_{\mathrm{op}} \le \beta$, a scalar $\tau > 0$, and the vector $b = \tau e_1$ such that the quadratic
 
 $$
-\bar f(z) \;=\; \tfrac{1}{2} z^\top A z - b^\top z
+\bar f(z) \;=\; \tfrac{1}{2} z^\top H z - b^\top z
 $$
 
-has minimizer $x^\ast = A^{-1}b$ and spectral error measure $\mu_{A,x^\ast} = \mu$.
+has minimizer $w_\ast = H^{-1}b$ and spectral error measure $\mu_{H,w_\ast} = \mu$.
 
-Moreover $\bar f$ is zero-chain, since tridiagonality gives $A E_m \subset E_{m+1}$ and $b \in E_1$. Applying Lemma 9.1, we deduce that there is an orthogonal matrix $Q$ such that the algorithm $\mathcal{A}$ applied to
+Moreover $\bar f$ is zero-chain, since tridiagonality gives $H E_m \subset E_{m+1}$ and $b \in E_1$. Applying Lemma 9.1, we deduce that there is an orthogonal matrix $Q$ such that the algorithm $\mathcal{A}$ applied to
 
 $$
-f(x) \;=\; \bar f(Q^\top x)
+f(w) \;=\; \bar f(Q^\top w)
 $$
 
 produces iterates satisfying
 
 $$
-Q^\top x_s \in E_{2s+1}, \qquad \forall\, s = 0, 1, \ldots, t.
+Q^\top w_s \in E_{2s+1}, \qquad \forall\, s = 0, 1, \ldots, t.
 $$
 
 Orthogonal changes of variables preserve the spectral error measure, and therefore the rotated instance $f$ also has spectral error measure $\mu$. Since $2t+1 \le d$ and $b$ is a nonzero multiple of $e_1$, the helper lemma above ensures the equality
 
 $$
-E_{2t+1} \;=\; \mathcal{K}_{2t+1}(A, b).
+E_{2t+1} \;=\; \mathcal{K}_{2t+1}(H, b).
 $$
 
-Thus the inclusion $Q^\top x_t \in \mathcal{K}_{2t+1}(A, b)$ holds, and consequently
+Thus the inclusion $Q^\top w_t \in \mathcal{K}_{2t+1}(H, b)$ holds, and consequently
 
 $$
-f(x_t) - f^\ast \;=\; \bar f(Q^\top x_t) - \bar f^\ast \;\ge\; \min_{u \,\in\, \mathcal{K}_{2t+1}(A,b)} \bar f(u) - \bar f^\ast.
+f(w_t) - f^\ast \;=\; \bar f(Q^\top w_t) - \bar f^\ast \;\ge\; \min_{u \,\in\, \mathcal{K}_{2t+1}(H,b)} \bar f(u) - \bar f^\ast.
 $$
 
-Using the Krylov polynomial identity $(61)$ and the equality $\mu_{A,x^\ast} = \mu$, the right-hand side equals $\mathcal{E}_{2t+1}(\mu)$, which completes the proof. <span style="float: right;">$\square$</span>
+Using the Krylov polynomial identity $(61)$ and the equality $\mu_{H,w_\ast} = \mu$, the right-hand side equals $\mathcal{E}_{2t+1}(\mu)$, which completes the proof. <span style="float: right;">$\square$</span>
 
 
 Let us spell out what the construction gives in two common spectral regimes.
@@ -435,7 +435,7 @@ Let us spell out what the construction gives in two common spectral regimes.
 **Example (Atomic power laws).** For $a > -1$ and $d \ge 2t + 2$, set
 
 $$
-\mu_d \;=\; \sum_{i=1}^d w_i\,\delta_{\lambda_i}, \qquad \lambda_i \asymp \frac{i}{d}, \qquad w_i \asymp d^{-a}\,i^{a-1}.
+\mu_d \;=\; \sum_{i=1}^d \rho_i\,\delta_{\lambda_i}, \qquad \lambda_i \asymp \frac{i}{d}, \qquad \rho_i \asymp d^{-a}\,i^{a-1}.
 $$
 
 Theorem 9.5 gives the lower bound $\mathcal{E}_{2t+1}(\mu_d)$. For $d$ large relative to $t$, the atomic measure $\mu_d$ is a Riemann discretization of the continuum power-law density $\phi(\lambda) = \lambda^{a-1}$ on $(0,1]$, so
@@ -453,7 +453,7 @@ This is exactly the rate established for CG under a power-law spectral density i
 **Example (Atomic Marchenko--Pastur hard edge).** For $d \ge 2t + 2$, set
 
 $$
-\mu_d \;=\; \sum_{i=1}^d w_i\,\delta_{\lambda_i}, \qquad \lambda_i \asymp \left(\frac{i}{d}\right)^{\!2}, \qquad w_i \asymp d^{-1}.
+\mu_d \;=\; \sum_{i=1}^d \rho_i\,\delta_{\lambda_i}, \qquad \lambda_i \asymp \left(\frac{i}{d}\right)^{\!2}, \qquad \rho_i \asymp d^{-1}.
 $$
 
 Then $\mu_d([0, s]) \asymp s^{1/2}$, so the continuum hard-edge limit is the power-law case $a = 1/2$. For $d$ large relative to $t$,
@@ -483,7 +483,7 @@ The construction relies on a classical ingredient: Gauss quadrature. This basic 
 
 <a id="eq-64"></a>
 
-$$\mu_N \;:=\; \sum_{j=1}^N w_j\,\delta_{\theta_j} \tag{64}
+$$\mu_N \;:=\; \sum_{j=1}^N \rho_j\,\delta_{\theta_j} \tag{64}
 $$
 
 *agrees with $\mu$ on every polynomial of degree at most $2N-1$:*
@@ -520,7 +520,7 @@ $$
 
 Define the weights
 
-$$w_j:=\int \ell_j(\lambda)\,d\mu(\lambda).
+$$\rho_j:=\int \ell_j(\lambda)\,d\mu(\lambda).
 $$
 
 We claim that these weights give exact integration on $\mathcal{P}\_{2N-1}$. Fix $P\in \mathcal{P}\_{2N-1}$. Since $\tilde p_N$ is a degree-$N$ polynomial, ordinary polynomial long division lets us write $P$ uniquely as
@@ -541,7 +541,7 @@ has the same value as $r$ at every node $\theta_i$. Since both sides have degree
 $$
 \int r\,d\mu
 =\sum_{j=1}^N r(\theta_j)\int \ell_j\,d\mu
-=\sum_{j=1}^N r(\theta_j)w_j
+=\sum_{j=1}^N r(\theta_j)\rho_j
 =\int r\,d\mu_N.
 $$
 
@@ -552,7 +552,7 @@ $$
 
 for some $h_j\in\mathcal{P}_{N-2}$. Orthogonality again gives $\int \tilde p_N h_j\,d\mu=0$, and therefore
 
-$$w_j=\int \ell_j\,d\mu=\int \ell_j^2\,d\mu>0.
+$$\rho_j=\int \ell_j\,d\mu=\int \ell_j^2\,d\mu>0.
 $$
 
 Combining this with the reduction from $P$ to $r$ proves $(\dagger)$. <span style="float: right;">$\square$</span>
@@ -564,10 +564,10 @@ Combining the Gauss quadrature reduction of Lemma 9.6 with the atomic optimality
 
 <div style="background-color: #eef6fc; border-left: 4px solid #2980b9; padding: 1em 1.2em; margin: 1.5em 0; border-radius: 4px;" markdown="1">
 
-**Theorem 9.7 (Optimality of CG up to low-degree moments).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a positive Borel measure $\mu$ on $(0,\beta]$ supported on at least $2t+3$ distinct points. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance on $\mathbb{R}^{2t+2}$ whose spectral error measure $\mu\_{A,x^\ast}$ agrees with $\mu$ on $\mathcal{P}\_{4t+3}$ and whose $t$-th iterate after initialization $x_0 = 0$ satisfies*
+**Theorem 9.7 (Optimality of CG up to low-degree moments).** *Fix an iteration counter $t \ge 0$, a constant $\beta > 0$, and a positive Borel measure $\mu$ on $(0,\beta]$ supported on at least $2t+3$ distinct points. Then for every deterministic first-order algorithm there exists a convex quadratic problem instance on $\mathbb{R}^{2t+2}$ whose spectral error measure $\mu\_{H,w_\ast}$ agrees with $\mu$ on $\mathcal{P}\_{4t+3}$ and whose $t$-th iterate after initialization $w_0 = 0$ satisfies*
 
 $$
-f(x_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
+f(w_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu).
 $$
 
 </div>
@@ -575,13 +575,13 @@ $$
 *Proof.* Fix a deterministic first-order algorithm and set $N := 2t + 2$. By Lemma 9.6, the $N$-point Gauss quadrature rule
 
 $$
-\mu_N \;=\; \sum_{j=1}^N w_j\,\delta_{\theta_j}, \qquad 0 < \theta_1 < \cdots < \theta_N \le \beta, \qquad w_j > 0,
+\mu_N \;=\; \sum_{j=1}^N \rho_j\,\delta_{\theta_j}, \qquad 0 < \theta_1 < \cdots < \theta_N \le \beta, \qquad w_j > 0,
 $$
 
 agrees with $\mu$ on $\mathcal{P}\_{2N-1} = \mathcal{P}\_{4t+3}$. Applying Theorem 9.5 to $\mu_N$, we obtain a convex quadratic instance on $\mathbb{R}^N$ whose spectral error measure equals $\mu_N$ exactly and whose $t$-th iterate satisfies
 
 $$
-f(x_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu_N).
+f(w_t) - f^\ast \;\ge\; \mathcal{E}_{2t+1}(\mu_N).
 $$
 
 For every $p \in \mathcal{P}\_{2t+1}$, the integrand $\lambda\,p(\lambda)^2$ has degree at most $4t+3$, so the moment-matching identity gives $\mathcal{E}\_{2t+1}(\mu_N) = \mathcal{E}\_{2t+1}(\mu)$, completing the proof. <span style="float: right;">$\square$</span>

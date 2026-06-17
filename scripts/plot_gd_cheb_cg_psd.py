@@ -116,7 +116,7 @@ def main():
                  lw=1.8, ls=":", color="#2ca02c", label="CG")
 
     ax.set_xlabel("Iteration $k$", fontsize=13)
-    ax.set_ylabel(r"$f(x_k) - f^\ast$", fontsize=13)
+    ax.set_ylabel(r"$f(w_k) - f^\ast$", fontsize=13)
     ax.set_title(
         r"GD vs PSD Chebyshev vs CG: $\lambda_i = i^{-3}$, $d = 200$",
         fontsize=14,

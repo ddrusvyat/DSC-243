@@ -104,7 +104,7 @@ def main():
                     bbox=dict(boxstyle="round,pad=0.3", fc="wheat", alpha=0.7))
 
         ax.set_xlabel("Iteration $k$", fontsize=12)
-        ax.set_ylabel(r"$f(x_k) - f^\ast$", fontsize=12)
+        ax.set_ylabel(r"$f(w_k) - f^\ast$", fontsize=12)
         ax.set_title(cfg["title"], fontsize=12)
         ax.legend(fontsize=9.5, framealpha=0.9, loc="best")
         ax.grid(True, alpha=0.25, which="both")

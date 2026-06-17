@@ -81,8 +81,8 @@ def main() -> None:
         ax.axvline(0.0, color="black", linewidth=0.6, alpha=0.6)
         ax.grid(True, axis="x", alpha=0.18)
 
-    ax_x.set_xlabel(r"$\,(x_t)_i$", fontsize=12)
-    ax_g.set_xlabel(r"$\,(\nabla \bar f(x_t))_i$", fontsize=12)
+    ax_x.set_xlabel(r"$\,(w_t)_i$", fontsize=12)
+    ax_g.set_xlabel(r"$\,(\nabla \bar f(w_t))_i$", fontsize=12)
     ax_x.set_ylabel(r"coordinate $i$", fontsize=12)
 
     title_x = ax_x.set_title("", fontsize=12)
@@ -113,8 +113,8 @@ def main() -> None:
                 bar.set_color(color_inactive)
                 bar.set_edgecolor(edge_inactive)
 
-        title_x.set_text(rf"$x_t \in E_{{{x_support}}}$")
-        title_g.set_text(rf"$\nabla \bar f(x_t) \in E_{{{g_support}}}$")
+        title_x.set_text(rf"$w_t \in E_{{{x_support}}}$")
+        title_g.set_text(rf"$\nabla \bar f(w_t) \in E_{{{g_support}}}$")
         suptitle.set_text(rf"After $t = {t}$ gradient queries on $\bar f$")
 
         return list(bars_x) + list(bars_g) + [title_x, title_g, suptitle]

@@ -83,7 +83,7 @@ def main() -> None:
         ax.axvline(0.0, color="black", linewidth=0.5, alpha=0.6)
         ax.grid(True, axis="x", alpha=0.18)
         ax.set_title(
-            rf"$t = {t}$:  $x_t \in E_{{{x_support}}}$,  $\nabla\bar f(x_t)\in E_{{{g_support}}}$",
+            rf"$t = {t}$:  $w_t \in E_{{{x_support}}}$,  $\nabla\bar f(w_t)\in E_{{{g_support}}}$",
             fontsize=11,
         )
         ax.set_xlabel(r"value (rescaled)", fontsize=10)
@@ -92,9 +92,9 @@ def main() -> None:
     # Legend in figure coordinates
     from matplotlib.patches import Patch
     legend_handles = [
-        Patch(facecolor=color_active, edgecolor=edge_active, label=r"$x_t$ (solid)"),
+        Patch(facecolor=color_active, edgecolor=edge_active, label=r"$w_t$ (solid)"),
         Patch(facecolor=color_active, edgecolor=edge_active,
-              hatch="///", label=r"$\nabla\bar f(x_t)$ (hatched)"),
+              hatch="///", label=r"$\nabla\bar f(w_t)$ (hatched)"),
         Patch(facecolor=color_inactive, edgecolor=edge_inactive,
               label=r"untouched coordinates"),
     ]
