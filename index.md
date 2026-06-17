@@ -1,9 +1,11 @@
 ---
 layout: default
-title: Course Overview
+title: DSC 243 – Convex Quadratics
 ---
 
-# DSC 243 – Advanced Optimization
+# Convex Quadratics: Algorithms, Spectra, and Scaling Limits
+
+*DSC 243 — Advanced Optimization*
 
 **Instructor:** [Dmitriy Drusvyatskiy](mailto:ddrusvyatskiy@ucsd.edu)
 
