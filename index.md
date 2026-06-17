@@ -21,6 +21,7 @@ title: DSC 243 – Convex Quadratics
 - [Course outline](#course-outline)
 - [Grading policy](#grading-policy)
 - [Textbooks and references](#textbooks-and-references)
+- [How to cite](#how-to-cite)
 
 ## Course summary
 
@@ -33,7 +34,7 @@ This course develops the foundations of the modern optimization methods that for
 
 ## Notes
 
-The notes for the course are being developed. Here is the latest draft: [notes](week1.html).
+The notes for the course are available here: [notes](week1.html).
 
 ## Course outline
 
@@ -91,4 +92,21 @@ This course is largely self-contained with no required textbook. Specific result
 **High-dimensional limits of SGD.**
 
 - E. Paquette. [*High-dimensional limits of stochastic gradient descent.*](https://elliotpaquette.github.io/notes/high-d-limits-sgd-july2023.pdf) Lecture notes, Lehigh University, 2023.
+
+## How to cite
+
+If you find these notes useful, please cite them. A BibTeX entry:
+
+```bibtex
+@misc{Drusvyatskiy2026ConvexQuadratics,
+  author       = {Drusvyatskiy, Dmitriy},
+  title        = {Convex Quadratics: Algorithms, Spectra, and Scaling Limits},
+  year         = {2026},
+  howpublished = {Lecture notes, DSC 243, University of California, San Diego},
+  note         = {Accessed: \today},
+  url          = {https://ddrusvyat.github.io/DSC-243/}
+}
+```
+
+The repository also includes a [`CITATION.cff`](https://github.com/ddrusvyat/DSC-243/blob/master/CITATION.cff) file, so you can use GitHub's "Cite this repository" button to export the citation in BibTeX or APA format.
 

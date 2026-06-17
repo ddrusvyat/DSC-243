@@ -1,0 +1,24 @@
+{
+  "title": "Convex Quadratics: Algorithms, Spectra, and Scaling Limits",
+  "description": "Lecture notes for DSC 243 (Advanced Optimization) at the University of California, San Diego, developing first-order optimization methods for convex quadratic problems: gradient descent, Chebyshev acceleration, conjugate gradients, stochastic gradient methods, lower bounds, and high-dimensional scaling limits.",
+  "upload_type": "publication",
+  "publication_type": "report",
+  "access_right": "open",
+  "license": "CC-BY-4.0",
+  "creators": [
+    {
+      "name": "Drusvyatskiy, Dmitriy",
+      "affiliation": "University of California, San Diego"
+    }
+  ],
+  "keywords": [
+    "convex optimization",
+    "quadratic optimization",
+    "gradient descent",
+    "conjugate gradient",
+    "stochastic gradient descent",
+    "Krylov subspace methods",
+    "random matrix theory",
+    "lower bounds"
+  ]
+}
